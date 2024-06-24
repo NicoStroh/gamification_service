@@ -78,7 +78,7 @@ tasks.register('generateApiDocs', Exec) {
 }
 
 tasks.named('assemble') {
-    finalizedBy('generateApiDocs')
+    //finalizedBy('generateApiDocs')
 }
 
 // Automatically generate GraphQL code on project build:

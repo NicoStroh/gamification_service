@@ -28,4 +28,4 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           tags: ghcr.io/it-rex-platform/template_microservice:latest
-          push: true
+          push: false

@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:experimental
-FROM gradle:7.6.2-jdk17 AS build
+FROM gradle:8.7-jdk21 AS build
 WORKDIR /workspace/app
 
 # Copy only gradle files to container so we can install them
@@ -15,7 +15,7 @@ COPY . /workspace/app
 RUN gradle clean build -x test
 RUN mkdir -p build/dependency && (cd build/dependency; jar -xf ../libs/*-SNAPSHOT.jar)
 
-FROM eclipse-temurin:17-jdk
+FROM eclipse-temurin:21-jdk
 VOLUME /tmp
 ARG DEPENDENCY=/workspace/app/build/dependency
 COPY --from=build ${DEPENDENCY}/BOOT-INF/lib /app/lib
