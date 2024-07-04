@@ -1,4 +1,4 @@
-package de.unistuttgart.iste.meitrex.template.exception;
+package de.unistuttgart.iste.meitrex.gamification_service.exception;
 
 import de.unistuttgart.iste.meitrex.common.exception.ExceptionToGraphQlErrorConverter;
 import graphql.GraphQLError;

@@ -37,7 +37,7 @@ This package contains the GraphQL controllers (and other types of controllers if
 In some services, there is also a class called SubscriptionController which handles all dapr event subscriptions.
 
 More information can be found in
-the [Controller package](src/main/java/de/unistuttgart/iste/meitrex/template/controller/package-info.java).
+the [Controller package](src/main/java/de/unistuttgart/iste/meitrex/gamification_service/controller/package-info.java).
 
 ### Dapr package
 
@@ -64,7 +64,7 @@ The DTOs are used to transfer data between the GraphQL controller and the servic
 This package is used for exception handling. Note that with GraphQL, the exceptions are not thrown directly, but are wrapped in a `GraphQLException`, which is different that from the usual Spring Boot approach.
 
 More information can be found in
-the [Exception package](src/main/java/de/unistuttgart/iste/meitrex/template/exception/package-info.java).
+the [Exception package](src/main/java/de/unistuttgart/iste/meitrex/gamification_service/exception/package-info.java).
 
 ### Persistence package
 
@@ -87,8 +87,8 @@ The 'mapper' package is responsible for the mapping logic between the database e
 This structure helps organize the database-related components of the project, making it easier to manage and maintain.
 
 More information can be found in
-the [Entity package](src/main/java/de/unistuttgart/iste/meitrex/template/persistence/entity/package-info.java) and
-the [Repository package](src/main/java/de/unistuttgart/iste/meitrex/template/persistence/repository/package-info.java).
+the [Entity package](src/main/java/de/unistuttgart/iste/meitrex/gamification_service/persistence/entity/package-info.java) and
+the [Repository package](src/main/java/de/unistuttgart/iste/meitrex/gamification_service/persistence/repository/package-info.java).
 
 ### Service package
 
@@ -97,7 +97,7 @@ the [Repository package](src/main/java/de/unistuttgart/iste/meitrex/template/per
 This package contains all classes that are used to handle the business logic of the microservice. Services are annotated with the `@Service` annotation. Services contain only business logic and delegate the data access to the persistence layer (repositories). 
 
 More information can be found in
-the [Service package](src/main/java/de/unistuttgart/iste/meitrex/template/service/package-info.java).
+the [Service package](src/main/java/de/unistuttgart/iste/meitrex/gamification_service/service/package-info.java).
 
 ### Validation package
 
@@ -136,10 +136,10 @@ After creating a new service you need to do the following:
 
 If this template changes and you want to pull the changes to the actual microservice, you can run the following commands:
 ```bash
-git remote add template https://github.com/MEITREX/template_microservice # only necessary once
+git remote add gamification_service https://github.com/MEITREX/template_microservice # only necessary once
 git fetch --all
 git checkout [branch] # replace [branch] with the branch name you want the changes to be merged into (preferably not main)
-git merge template/main --allow-unrelated-histories
+git merge gamification_service/main --allow-unrelated-histories
 # you will probably need to commit afterwars
 ```
 

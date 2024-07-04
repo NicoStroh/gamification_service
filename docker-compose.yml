@@ -1,58 +1,58 @@
 version: "3"
 
 services:
-  database-template:
+  database-gamification:
     image: postgres:alpine
     restart: always
     expose:
-      - 1032
+      - 8232
     ports:
-      - "1032:5432"
+      - "8232:5432"
     volumes:
-      - templatedata:/var/lib/postgresql/data
+      - gamificationdata:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=root
-      - POSTGRES_DB=templatedatabase
-  app-template:
+      - POSTGRES_DB=gamification_service
+  app-gamification:
     build:
-      context: ./../template-microservice # necessary because otherwise docker-compose overrides the context path when merging multiple docker-compose.yml files
+      context: ./../gamification_service # necessary because otherwise docker-compose overrides the context path when merging multiple docker-compose.yml files
       dockerfile: Dockerfile
     restart: always
-    container_name: template_microservice
+    container_name: gamification_service
     expose:
-      - 1000
-      - 1001
+      - 8200
+      - 8201
     ports:
-      - "1000:1000"
-      - "1001:1001"
+      - "8200:8200"
+      - "8201:8201"
     depends_on:
-      - database-template
+      - database-gamification
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://database-template:5432/templatedatabase
+      SPRING_DATASOURCE_URL: jdbc:postgresql://database-gamification:5432/gamification_service
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
-  dapr-template:
+  dapr-gamification:
     image: "daprio/daprd"
     command: [
       "./daprd",
-      "--app-id", "template_service",
-      "--app-port", "1001",
-      "--dapr-http-port", "1000",
+      "--app-id", "gamification_service",
+      "--app-port", "8201",
+      "--dapr-http-port", "8200",
       "--resources-path", "./components"
     ]
     volumes:
-      - "./../template-microservice/components/:/components" # Mount our components folder for the runtime to use. The mounted location must match the --resources-path argument.
+      - "./../gamification_service/components/:/components" # Mount our components folder for the runtime to use. The mounted location must match the --resources-path argument.
     depends_on:
-      - app-template
+      - app-gamification
       - redis
-    network_mode: "service:app-template"
+    network_mode: "service:app-gamification"
   redis:
     image: "redis:alpine"
     expose:
       - "6379"
 volumes:
-  templatedata:
+  gamificationdata:
   testdata:
 networks:
   default:
