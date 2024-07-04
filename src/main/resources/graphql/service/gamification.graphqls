@@ -5,12 +5,32 @@
 # end with .graphqls
 
 
-# example
-type Template {
-  id: ID!
+type Badge {
+  badgeUUID: UUID!
   name: String!
+  description: String
+  passingPercentage: Int!
+  quizUUID: UUID
+  flashCardSetUUID: UUID
+}
+
+type UserBadge {
+  userBadgeUUID: UUID!
+  userUUID: UUID!
+  badgeUUID: UUID!
+  achieved: Boolean!
 }
 
 type Query {
-  templates: [Template]
+  userBadges(userUUID: UUID!): [UserBadge!]
+  achievedBadges(userUUID: UUID!): [UserBadge!]
+  badgesByQuiz(quizUUID: UUID!): [Badge!]
+  badgesByFlashCardSet(flashCardSetUUID: UUID!): [Badge!]
+}
+
+type Mutation {
+  assignBadgeToUser(userUUID: UUID!, badgeUUID: UUID!): String
+  markBadgeAsAchieved(userUUID: UUID!, badgeUUID: UUID!): String
+  createBadgeForQuiz(quizUUID: UUID!, name: String!, description: String, passingPercentage: Int!): Badge
+  createBadgeForFlashCardSet(flashCardSetUUID: UUID!, name: String!, description: String, passingPercentage: Int!): Badge
 }
