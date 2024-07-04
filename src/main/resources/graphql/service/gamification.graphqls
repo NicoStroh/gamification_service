@@ -1,6 +1,6 @@
 # schema file of the microservice
 
-# TODO define data types, queries and mutations
+# define data types, queries and mutations
 # this can be done in a separate files as long as they are in this folder and
 # end with .graphqls
 

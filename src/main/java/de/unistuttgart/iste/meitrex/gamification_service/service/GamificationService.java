@@ -11,7 +11,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class TemplateService {
+public class GamificationService {
 
     private final TemplateRepository templateRepository;
     private final TemplateMapper templateMapper;
