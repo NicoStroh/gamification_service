@@ -1,5 +1,6 @@
 package de.unistuttgart.iste.meitrex.gamification_service.controller;
 
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.PlayerTypeEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.service.BadgeService;
 import de.unistuttgart.iste.meitrex.gamification_service.service.PlayerTypeService;
 import de.unistuttgart.iste.meitrex.generated.dto.Badge;
@@ -24,9 +25,25 @@ public class GamificationController {
     private final PlayerTypeService playerTypeService;
     private final BadgeService badgeService;
 
+    // True if dominant playertype is achiever
     @QueryMapping
-    public PlayerType getPlayertype(@Argument UUID userUUID) {
-        return playerTypeService.getPlayerTypeByUserUUID(userUUID);
+    public boolean userCanSeeBadges(@Argument final UUID userUUID) {
+        Optional<PlayerTypeEntity> playerType = playerTypeService.getPlayerTypeByUserUUID(userUUID);
+        return playerType.isPresent() && playerType.get().isAchiever();
+    }
+
+    // True if dominant playertype is explorer
+    @QueryMapping
+    public boolean userCanSeeQuests(@Argument final UUID userUUID) {
+        Optional<PlayerTypeEntity> playerType = playerTypeService.getPlayerTypeByUserUUID(userUUID);
+        return playerType.isPresent() && playerType.get().isExplorer();
+    }
+
+    // True if dominant playertype is killer
+    @QueryMapping
+    public boolean userCanSeeScoreboard(@Argument final UUID userUUID) {
+        Optional<PlayerTypeEntity> playerType = playerTypeService.getPlayerTypeByUserUUID(userUUID);
+        return playerType.isPresent() && playerType.get().isKiller();
     }
 
     @QueryMapping

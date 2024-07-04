@@ -30,7 +30,12 @@ type UserBadge {
 }
 
 type Query {
-  getPlayertype(userUUID: UUID!): PlayerType!
+  # True if dominant playertype is achiever
+  userCanSeeBadges(userUUID: UUID!): PlayerType!
+  # True if dominant playertype is explorer
+  userCanSeeQuests(userUUID: UUID!): PlayerType!
+  # True if dominant playertype is killer
+  userCanSeeScoreboard(userUUID: UUID!): PlayerType!
 
   userBadges(userUUID: UUID!): [UserBadge!]
   achievedBadges(userUUID: UUID!): [UserBadge!]

@@ -23,33 +23,19 @@ public class PlayerTypeService {
     private final PlayerTypeRepository playerTypeRepository;
 
     public PlayerType createOrUpdatePlayerType(UUID userUUID, int achieverPercentage, int explorerPercentage, int socializerPercentage, int killerPercentage) {
-        Optional<PlayerTypeEntity> existingPlayerType = playerTypeRepository.findByUserUUID(userUUID);
-        PlayerTypeEntity playerType;
 
-        if (existingPlayerType.isPresent()) {
-            playerType = existingPlayerType.get();
-        } else {
-            playerType = new PlayerTypeEntity();
-            playerType.setUserUUID(userUUID);
-        }
-
-        playerType.setAchieverPercentage(achieverPercentage);
-        playerType.setExplorerPercentage(explorerPercentage);
-        playerType.setSocializerPercentage(socializerPercentage);
-        playerType.setKillerPercentage(killerPercentage);
+        PlayerTypeEntity playerType = new PlayerTypeEntity(userUUID,
+                achieverPercentage,
+                explorerPercentage,
+                socializerPercentage,
+                killerPercentage);
 
         return playerTypeMapper.entityToDto(playerTypeRepository.save(playerType));
+
     }
 
-    public PlayerType getPlayerTypeByUserUUID(UUID userUUID) {
-        Optional<PlayerTypeEntity> entity = playerTypeRepository.findByUserUUID(userUUID);
-        if (entity.isPresent()) {
-            return playerTypeMapper.entityToDto(entity.get());
-        }
-        PlayerType playerType = new PlayerType();
-        playerType.setUserUUID(userUUID);
-        return playerType;
+    public Optional<PlayerTypeEntity> getPlayerTypeByUserUUID(UUID userUUID) {
+        return playerTypeRepository.findByUserUUID(userUUID);
     }
-
 
 }

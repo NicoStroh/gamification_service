@@ -22,4 +22,28 @@ public class PlayerTypeEntity {
     private int socializerPercentage;
     private int killerPercentage;
 
+    public boolean isAchiever() {
+        return achieverPercentage >= explorerPercentage
+                && achieverPercentage >= socializerPercentage
+                && achieverPercentage > killerPercentage;
+    }
+
+    public boolean isExplorer() {
+        return explorerPercentage > achieverPercentage
+                && explorerPercentage >= socializerPercentage
+                && explorerPercentage > killerPercentage;
+    }
+
+    public boolean isSocializer() {
+        return socializerPercentage > achieverPercentage
+                && socializerPercentage > explorerPercentage
+                && socializerPercentage > killerPercentage;
+    }
+
+    public boolean isKiller() {
+        return killerPercentage >= achieverPercentage
+                && killerPercentage >= explorerPercentage
+                && killerPercentage >= socializerPercentage;
+    }
+
 }
