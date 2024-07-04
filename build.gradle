@@ -108,7 +108,6 @@ dependencies {
     implementation 'org.modelmapper:modelmapper:3.+'
     implementation 'com.graphql-java:graphql-java-extended-scalars:22.0'
     implementation 'com.graphql-java:graphql-java-extended-validation:22.0'
-    implementation 'com.google.code.gson:gson:2.8.9'
 
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
