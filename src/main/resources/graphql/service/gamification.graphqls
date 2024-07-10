@@ -46,8 +46,10 @@ type Query {
 type Mutation {
   createOrUpdatePlayerType(userUUID: UUID!, achieverPercentage: Int!, explorerPercentage: Int!, socializerPercentage: Int!, killerPercentage: Int!): PlayerType
 
-  assignBadgeToUser(userUUID: UUID!, badgeUUID: UUID!): String
-  markBadgeAsAchieved(userUUID: UUID!, badgeUUID: UUID!): String
-  createBadgeForQuiz(quizUUID: UUID!, name: String!, description: String, passingPercentage: Int!): Badge
-  createBadgeForFlashCardSet(flashCardSetUUID: UUID!, name: String!, description: String, passingPercentage: Int!): Badge
+  markBadgesAsAchievedIfPassedQuiz(userUUID: UUID!, quizUUID: UUID!, correctAnswers: Int!, totalAnswers: Int!): [UserBadge!]!
+  markBadgesAsAchievedIfPassedFlashCardSet(userUUID: UUID!, flashCardSetUUID: UUID!, correctAnswers: Int!, totalAnswers: Int!): [UserBadge!]!
+  assignBadgeToUser(userUUID: UUID!, badgeUUID: UUID!): UserBadge!
+  markBadgeAsAchieved(userUUID: UUID!, badgeUUID: UUID!): UserBadge!
+  createBadgesForQuiz(quizUUID: UUID!, name: String!, description: String): [Badge!]!
+  createBadgesForFlashCardSet(flashCardSetUUID: UUID!, name: String!, description: String): [Badge!]!
 }

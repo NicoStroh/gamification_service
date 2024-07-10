@@ -13,6 +13,7 @@ import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -25,23 +26,35 @@ public class GamificationController {
     private final PlayerTypeService playerTypeService;
     private final BadgeService badgeService;
 
+    private static final int lowPassingPercentage = 50;
+    private static final int middlePassingPercentage = 70;
+    private static final int highPassingPercentage = 90;
+
+
     // True if dominant playertype is achiever
     @QueryMapping
-    public boolean userCanSeeBadges(@Argument final UUID userUUID) {
+    public boolean userCanSeeBadges(@Argument UUID userUUID) {
         Optional<PlayerTypeEntity> playerType = playerTypeService.getPlayerTypeByUserUUID(userUUID);
         return playerType.isPresent() && playerType.get().isAchiever();
     }
 
     // True if dominant playertype is explorer
     @QueryMapping
-    public boolean userCanSeeQuests(@Argument final UUID userUUID) {
+    public boolean userCanSeeQuests(@Argument UUID userUUID) {
         Optional<PlayerTypeEntity> playerType = playerTypeService.getPlayerTypeByUserUUID(userUUID);
         return playerType.isPresent() && playerType.get().isExplorer();
     }
 
+    // True if dominant playertype is socializer
+    @QueryMapping
+    public boolean userCanSeeSocializerElement(@Argument UUID userUUID) {
+        Optional<PlayerTypeEntity> playerType = playerTypeService.getPlayerTypeByUserUUID(userUUID);
+        return playerType.isPresent() && playerType.get().isSocializer();
+    }
+
     // True if dominant playertype is killer
     @QueryMapping
-    public boolean userCanSeeScoreboard(@Argument final UUID userUUID) {
+    public boolean userCanSeeScoreboard(@Argument UUID userUUID) {
         Optional<PlayerTypeEntity> playerType = playerTypeService.getPlayerTypeByUserUUID(userUUID);
         return playerType.isPresent() && playerType.get().isKiller();
     }
@@ -67,6 +80,8 @@ public class GamificationController {
     }
 
 
+
+
     @MutationMapping
     public PlayerType createOrUpdatePlayerType(@Argument UUID userUUID,
                                                @Argument int achieverPercentage,
@@ -77,31 +92,51 @@ public class GamificationController {
     }
 
     @MutationMapping
-    public String assignBadgeToUser(@Argument UUID userUUID, @Argument UUID badgeUUID) {
-        badgeService.assignBadgeToUser(userUUID, badgeUUID);
-        return "Assigned Badge to User.";
+    public List<UserBadge> markBadgesAsAchievedIfPassedQuiz(@Argument UUID userUUID, @Argument UUID quizUUID, @Argument int correctAnswers, @Argument int totalAnswers) {
+        return badgeService.markBadgesAsAchievedIfPassedQuiz(userUUID, quizUUID, correctAnswers, totalAnswers);
     }
 
     @MutationMapping
-    public String markBadgeAsAchieved(@Argument UUID userUUID, @Argument UUID badgeUUID) {
-        badgeService.markBadgeAsAchieved(userUUID, badgeUUID);
-        return "Marked badge as achieved for user.";
+    public List<UserBadge> markBadgesAsAchievedIfPassedFlashCardSet(@Argument UUID userUUID, @Argument UUID flashCardSetUUID, @Argument int correctAnswers, @Argument int totalAnswers) {
+        return badgeService.markBadgesAsAchievedIfPassedFlashCardSet(userUUID, flashCardSetUUID, correctAnswers, totalAnswers);
     }
 
     @MutationMapping
-    public Badge createBadgeForQuiz(@Argument UUID quizUUID,
+    public UserBadge assignBadgeToUser(@Argument UUID userUUID, @Argument UUID badgeUUID) {
+        return badgeService.assignBadgeToUser(userUUID, badgeUUID);
+    }
+
+    @MutationMapping
+    public UserBadge markBadgeAsAchieved(@Argument UUID userUUID, @Argument UUID badgeUUID) {
+        return badgeService.markBadgeAsAchieved(userUUID, badgeUUID);
+    }
+
+    @MutationMapping
+    public List<Badge> createBadgesForQuiz(@Argument UUID quizUUID,
                                     @Argument String name,
-                                    @Argument String description,
-                                    @Argument int passingPercentage) {
-        return badgeService.createBadgeForQuiz(quizUUID, name, description, passingPercentage);
+                                    @Argument String description) {
+        List<Badge> badges = new LinkedList<Badge>();
+        // 50% Badge
+        badges.add(badgeService.createBadgeForQuiz(quizUUID, name, description, lowPassingPercentage));
+        // 70% Badge
+        badges.add(badgeService.createBadgeForQuiz(quizUUID, name, description, middlePassingPercentage));
+        // 90% Badge
+        badges.add(badgeService.createBadgeForQuiz(quizUUID, name, description, highPassingPercentage));
+        return badges;
     }
 
     @MutationMapping
-    public Badge createBadgeForFlashCardSet(@Argument UUID flashCardSetUUID,
-                                            @Argument String name,
-                                            @Argument String description,
-                                            @Argument int passingPercentage) {
-        return badgeService.createBadgeForFlashCardSet(flashCardSetUUID, name, description, passingPercentage);
+    public List<Badge> createBadgesForFlashCardSet(@Argument UUID flashCardSetUUID,
+                                           @Argument String name,
+                                           @Argument String description) {
+        List<Badge> badges = new LinkedList<Badge>();
+        // 50% Badge
+        badges.add(badgeService.createBadgeForFlashCardSet(flashCardSetUUID, name, description, lowPassingPercentage));
+        // 70% Badge
+        badges.add(badgeService.createBadgeForFlashCardSet(flashCardSetUUID, name, description, middlePassingPercentage));
+        // 90% Badge
+        badges.add(badgeService.createBadgeForFlashCardSet(flashCardSetUUID, name, description, highPassingPercentage));
+        return badges;
     }
 
 }

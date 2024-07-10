@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -57,7 +58,37 @@ public class BadgeService {
     }
 
 
-    public void assignBadgeToUser(UUID userUUID, UUID badgeUUID) {
+    public List<UserBadge> markBadgesAsAchievedIfPassedQuiz(UUID userUUID, UUID quizUUID, int correctAnswers, int totalAnswers) {
+
+        List<UserBadge> userBadges = new LinkedList<UserBadge>();
+
+        int percentage = (correctAnswers * 100) / totalAnswers;
+        List<Badge> quizBadges = this.getBadgesByQuizUUID(quizUUID);
+        for (Badge quizBadge : quizBadges) {
+            if (percentage > quizBadge.getPassingPercentage()) {
+                userBadges.add(markBadgeAsAchieved(userUUID, quizBadge.getBadgeUUID()));
+            }
+        }
+
+        return userBadges;
+    }
+
+    public List<UserBadge> markBadgesAsAchievedIfPassedFlashCardSet(UUID userUUID, UUID flashCardSetUUID, int correctAnswers, int totalAnswers) {
+
+        List<UserBadge> userBadges = new LinkedList<UserBadge>();
+
+        int percentage = (correctAnswers * 100) / totalAnswers;
+        List<Badge> flashCardSetBadges = this.getBadgesByFlashCardSetUUID(flashCardSetUUID);
+        for (Badge flashCardSetBadge : flashCardSetBadges) {
+            if (percentage > flashCardSetBadge.getPassingPercentage()) {
+                userBadges.add(markBadgeAsAchieved(userUUID, flashCardSetBadge.getBadgeUUID()));
+            }
+        }
+
+        return userBadges;
+    }
+
+    public UserBadge assignBadgeToUser(UUID userUUID, UUID badgeUUID) {
         BadgeEntity badge = badgeRepository.findById(badgeUUID).orElseThrow(() -> new RuntimeException("Badge not found"));
 
         UserBadgeEntity userBadge = new UserBadgeEntity();
@@ -65,13 +96,13 @@ public class BadgeService {
         userBadge.setBadgeUUID(badge.getBadgeUUID());
         userBadge.setAchieved(false);
 
-        userBadgeRepository.save(userBadge);
+        return badgeMapper.userBadgeEntityToDto(userBadgeRepository.save(userBadge));
     }
 
-    public void markBadgeAsAchieved(UUID userUUID, UUID badgeUUID) {
+    public UserBadge markBadgeAsAchieved(UUID userUUID, UUID badgeUUID) {
         UserBadgeEntity userBadge = userBadgeRepository.findByUserUUIDAndBadgeUUID(userUUID, badgeUUID);
         userBadge.setAchieved(true);
-        userBadgeRepository.save(userBadge);
+        return badgeMapper.userBadgeEntityToDto(userBadgeRepository.save(userBadge));
     }
 
     public Badge createBadgeForQuiz(UUID quizUUID, String name, String description, int passingPercentage) {
