@@ -61,8 +61,8 @@ type Mutation {
 
   markBadgesAsAchievedIfPassedQuiz(userUUID: UUID!, quizUUID: UUID!, correctAnswers: Int!, totalAnswers: Int!): [UserBadge!]!
   markBadgesAsAchievedIfPassedFlashCardSet(userUUID: UUID!, flashCardSetUUID: UUID!, correctAnswers: Int!, totalAnswers: Int!): [UserBadge!]!
-  createBadgesForQuiz(quizUUID: UUID!, name: String!, description: String): [Badge!]!
-  createBadgesForFlashCardSet(flashCardSetUUID: UUID!, name: String!, description: String): [Badge!]!
+  createBadgesForQuiz(quizUUID: UUID!, name: String!, description: String, courseUUID: UUID!): [Badge!]!
+  createBadgesForFlashCardSet(flashCardSetUUID: UUID!, name: String!, description: String, courseUUID: UUID!): [Badge!]!
 
 
   assignBadgeToUser(userUUID: UUID!, badgeUUID: UUID!): UserBadge!
