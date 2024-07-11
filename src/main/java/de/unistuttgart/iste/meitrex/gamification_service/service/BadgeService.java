@@ -142,38 +142,41 @@ public class BadgeService {
         return badgeMapper.userBadgeEntityToDto(userBadgeRepository.save(userBadge));
     }
 
+    public Badge addBadgeForCourseAndUsers(UUID courseUUID, BadgeEntity badgeEntity) {
+
+        CourseEntity courseEntity = courseRepository.findById(courseUUID).orElseThrow(() -> new RuntimeException("Course not found"));
+        courseEntity.addBadge(badgeEntity.getBadgeUUID());
+
+        for (UUID userUUID : courseEntity.getUserUUIDs()) {
+            assignBadgeToUser(userUUID, badgeEntity.getBadgeUUID());
+        }
+        courseRepository.save(courseEntity);
+
+        badgeEntity = badgeRepository.save(badgeEntity);
+        return badgeMapper.badgeEntityToDto(badgeEntity);
+
+    }
+
     public Badge createBadgeForQuiz(UUID quizUUID, String name, String description, int passingPercentage, UUID courseUUID) {
+
         BadgeEntity badgeEntity = new BadgeEntity();
         badgeEntity.setName(name);
         badgeEntity.setDescription(description);
         badgeEntity.setPassingPercentage(passingPercentage);
         badgeEntity.setQuizUUID(quizUUID);
 
-        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
-        if (courseEntity.isPresent()) {
-            CourseEntity course = courseEntity.get();
-            course.addBadge(badgeEntity.getBadgeUUID());
-        }
-
-        badgeEntity = badgeRepository.save(badgeEntity);
-        return badgeMapper.badgeEntityToDto(badgeEntity);
+        return addBadgeForCourseAndUsers(courseUUID, badgeEntity);
     }
 
     public Badge createBadgeForFlashCardSet(UUID flashCardSetId, String name, String description, int passingPercentage, UUID courseUUID) {
+
         BadgeEntity badgeEntity = new BadgeEntity();
         badgeEntity.setName(name);
         badgeEntity.setDescription(description);
         badgeEntity.setPassingPercentage(passingPercentage);
         badgeEntity.setFlashCardSetUUID(flashCardSetId);
 
-        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
-        if (courseEntity.isPresent()) {
-            CourseEntity course = courseEntity.get();
-            course.addBadge(badgeEntity.getBadgeUUID());
-        }
-
-        badgeEntity = badgeRepository.save(badgeEntity);
-        return badgeMapper.badgeEntityToDto(badgeEntity);
+        return addBadgeForCourseAndUsers(courseUUID, badgeEntity);
     }
 
 }
