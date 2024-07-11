@@ -99,10 +99,7 @@ public class GamificationController {
     @MutationMapping
     public String addUserToCourse(@Argument UUID userUUID,
                                 @Argument UUID courseUUID) {
-        List<Badge> badges = badgeService.getBadgesByCourseUUID(courseUUID);
-        for (Badge badge : badges) {
-            badgeService.assignBadgeToUser(userUUID, badge.getBadgeUUID());
-        }
+        badgeService.addUserToCourse(userUUID, courseUUID);
         return "Assigned badges of course to user.";
     }
 
@@ -134,28 +131,30 @@ public class GamificationController {
     @MutationMapping
     public List<Badge> createBadgesForQuiz(@Argument UUID quizUUID,
                                            @Argument String name,
-                                           @Argument String description) {
+                                           @Argument String description,
+                                           @Argument UUID courseUUID) {
         List<Badge> badges = new LinkedList<Badge>();
         // 50% Badge
-        badges.add(badgeService.createBadgeForQuiz(quizUUID, name, description, bronzePassingPercentage));
+        badges.add(badgeService.createBadgeForQuiz(quizUUID, name, description, bronzePassingPercentage, courseUUID));
         // 70% Badge
-        badges.add(badgeService.createBadgeForQuiz(quizUUID, name, description, silverPassingPercentage));
+        badges.add(badgeService.createBadgeForQuiz(quizUUID, name, description, silverPassingPercentage, courseUUID));
         // 90% Badge
-        badges.add(badgeService.createBadgeForQuiz(quizUUID, name, description, goldPassingPercentage));
+        badges.add(badgeService.createBadgeForQuiz(quizUUID, name, description, goldPassingPercentage, courseUUID));
         return badges;
     }
 
     @MutationMapping
     public List<Badge> createBadgesForFlashCardSet(@Argument UUID flashCardSetUUID,
                                                    @Argument String name,
-                                                   @Argument String description) {
+                                                   @Argument String description,
+                                                   @Argument UUID courseUUID) {
         List<Badge> badges = new LinkedList<Badge>();
         // 50% Badge
-        badges.add(badgeService.createBadgeForFlashCardSet(flashCardSetUUID, name, description, bronzePassingPercentage));
+        badges.add(badgeService.createBadgeForFlashCardSet(flashCardSetUUID, name, description, bronzePassingPercentage, courseUUID));
         // 70% Badge
-        badges.add(badgeService.createBadgeForFlashCardSet(flashCardSetUUID, name, description, silverPassingPercentage));
+        badges.add(badgeService.createBadgeForFlashCardSet(flashCardSetUUID, name, description, silverPassingPercentage, courseUUID));
         // 90% Badge
-        badges.add(badgeService.createBadgeForFlashCardSet(flashCardSetUUID, name, description, goldPassingPercentage));
+        badges.add(badgeService.createBadgeForFlashCardSet(flashCardSetUUID, name, description, goldPassingPercentage, courseUUID));
         return badges;
     }
 

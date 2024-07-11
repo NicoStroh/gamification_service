@@ -1,9 +1,11 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service;
 
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.BadgeEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.CourseEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserBadgeEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.mapper.BadgeMapper;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.BadgeRepository;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.CourseRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserBadgeRepository;
 import de.unistuttgart.iste.meitrex.generated.dto.Badge;
 import de.unistuttgart.iste.meitrex.generated.dto.UserBadge;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -26,6 +29,7 @@ public class BadgeService {
 
     private final BadgeRepository badgeRepository;
     private final UserBadgeRepository userBadgeRepository;
+    private final CourseRepository courseRepository;
 
 
     public List<UserBadge> getUserBadges(UUID userUUID) {
@@ -40,6 +44,20 @@ public class BadgeService {
         return entities.stream()
                 .map(badgeMapper::userBadgeEntityToDto)
                 .toList();
+    }
+
+    public void addUserToCourse(UUID userUUID, UUID courseUUID) {
+        List<Badge> badges = getBadgesByCourseUUID(courseUUID);
+        for (Badge badge : badges) {
+            assignBadgeToUser(userUUID, badge.getBadgeUUID());
+        }
+
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        if (courseEntity.isPresent()) {
+            CourseEntity course = courseEntity.get();
+            course.addUser(userUUID);
+            courseRepository.save(course);
+        }
     }
 
     public List<Badge> getBadgesByCourseUUID(UUID courseUUID) {
@@ -124,23 +142,35 @@ public class BadgeService {
         return badgeMapper.userBadgeEntityToDto(userBadgeRepository.save(userBadge));
     }
 
-    public Badge createBadgeForQuiz(UUID quizUUID, String name, String description, int passingPercentage) {
+    public Badge createBadgeForQuiz(UUID quizUUID, String name, String description, int passingPercentage, UUID courseUUID) {
         BadgeEntity badgeEntity = new BadgeEntity();
         badgeEntity.setName(name);
         badgeEntity.setDescription(description);
         badgeEntity.setPassingPercentage(passingPercentage);
         badgeEntity.setQuizUUID(quizUUID);
 
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        if (courseEntity.isPresent()) {
+            CourseEntity course = courseEntity.get();
+            course.addBadge(badgeEntity.getBadgeUUID());
+        }
+
         badgeEntity = badgeRepository.save(badgeEntity);
         return badgeMapper.badgeEntityToDto(badgeEntity);
     }
 
-    public Badge createBadgeForFlashCardSet(UUID flashCardSetId, String name, String description, int passingPercentage) {
+    public Badge createBadgeForFlashCardSet(UUID flashCardSetId, String name, String description, int passingPercentage, UUID courseUUID) {
         BadgeEntity badgeEntity = new BadgeEntity();
         badgeEntity.setName(name);
         badgeEntity.setDescription(description);
         badgeEntity.setPassingPercentage(passingPercentage);
         badgeEntity.setFlashCardSetUUID(flashCardSetId);
+
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        if (courseEntity.isPresent()) {
+            CourseEntity course = courseEntity.get();
+            course.addBadge(badgeEntity.getBadgeUUID());
+        }
 
         badgeEntity = badgeRepository.save(badgeEntity);
         return badgeMapper.badgeEntityToDto(badgeEntity);
