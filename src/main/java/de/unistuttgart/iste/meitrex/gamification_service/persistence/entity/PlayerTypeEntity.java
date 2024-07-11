@@ -14,6 +14,14 @@ import java.util.UUID;
 @AllArgsConstructor
 public class PlayerTypeEntity {
 
+    public enum DominantPlayerType {
+        None,
+        Achiever,
+        Explorer,
+        Socializer,
+        Killer;
+    }
+
     @Id
     private UUID userUUID;
 
@@ -21,6 +29,52 @@ public class PlayerTypeEntity {
     private int explorerPercentage;
     private int socializerPercentage;
     private int killerPercentage;
+
+    public PlayerTypeEntity.DominantPlayerType dominantPlayerType() {
+
+        if (achieverPercentage >= explorerPercentage) {
+
+            if (achieverPercentage >= socializerPercentage) {
+
+                if (achieverPercentage > killerPercentage) {
+                    return DominantPlayerType.Achiever;
+                } else {
+                    return DominantPlayerType.Killer;
+                }
+
+            } else {
+
+                if (socializerPercentage > killerPercentage) {
+                    return DominantPlayerType.Socializer;
+                } else {
+                    return DominantPlayerType.Killer;
+                }
+
+            }
+
+        } else {
+
+            if (explorerPercentage >= socializerPercentage) {
+
+                if (explorerPercentage > killerPercentage) {
+                    return DominantPlayerType.Explorer;
+                } else {
+                    return DominantPlayerType.Killer;
+                }
+
+            } else {
+
+                if (socializerPercentage > killerPercentage) {
+                    return DominantPlayerType.Socializer;
+                } else {
+                    return DominantPlayerType.Killer;
+                }
+
+            }
+
+        }
+
+    }
 
     public boolean isAchiever() {
         return achieverPercentage >= explorerPercentage

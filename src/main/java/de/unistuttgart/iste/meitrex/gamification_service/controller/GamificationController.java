@@ -30,6 +30,15 @@ public class GamificationController {
     private static final int silverPassingPercentage = 70;
     private static final int goldPassingPercentage = 90;
 
+    @QueryMapping
+    public PlayerTypeEntity.DominantPlayerType usersDominantPlayerType(@Argument UUID userUUID) {
+        Optional<PlayerTypeEntity> playerType = playerTypeService.getPlayerTypeByUserUUID(userUUID);
+        if (playerType.isPresent()) {
+            return playerType.get().dominantPlayerType();
+        } else {
+            return PlayerTypeEntity.DominantPlayerType.None;
+        }
+    }
 
     // True if dominant playertype is achiever
     @QueryMapping

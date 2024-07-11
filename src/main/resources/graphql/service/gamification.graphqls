@@ -4,6 +4,14 @@
 # this can be done in a separate files as long as they are in this folder and
 # end with .graphqls
 
+enum DominantPlayerType {
+  None
+  Achiever
+  Explorer
+  Socializer
+  Killer
+}
+
 type PlayerType {
   userUUID: UUID!
   achieverPercentage: Int!
@@ -30,6 +38,7 @@ type UserBadge {
 }
 
 type Query {
+  usersDominantPlayerType(userUUID: UUID!): DominantPlayerType!
   # True if dominant playertype is achiever
   userCanSeeBadges(userUUID: UUID!): PlayerType!
   # True if dominant playertype is explorer
