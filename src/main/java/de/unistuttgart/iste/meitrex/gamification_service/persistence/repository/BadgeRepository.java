@@ -13,5 +13,6 @@ public interface BadgeRepository extends JpaRepository<BadgeEntity, UUID> {
 
     List<BadgeEntity> findByQuizUUID(UUID quizUUID);
     List<BadgeEntity> findByFlashCardSetUUID(UUID flashCardSetUUID);
+    List<BadgeEntity> findByCourseUUID(UUID courseUUID);
 
 }

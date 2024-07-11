@@ -31,6 +31,11 @@ public class GamificationController {
     private static final int goldPassingPercentage = 90;
 
     @QueryMapping
+    public List<UserBadge> getCoursesUserBadges(@Argument UUID courseUUID, @Argument UUID userUUID) {
+        return badgeService.getUserBadgesByCourseUUID(courseUUID, userUUID);
+    }
+
+    @QueryMapping
     public PlayerTypeEntity.DominantPlayerType usersDominantPlayerType(@Argument UUID userUUID) {
         Optional<PlayerTypeEntity> playerType = playerTypeService.getPlayerTypeByUserUUID(userUUID);
         if (playerType.isPresent()) {
@@ -39,6 +44,8 @@ public class GamificationController {
             return PlayerTypeEntity.DominantPlayerType.None;
         }
     }
+
+
 
     // True if dominant playertype is achiever
     @QueryMapping
@@ -89,7 +96,15 @@ public class GamificationController {
     }
 
 
-
+    @MutationMapping
+    public String addUserToCourse(@Argument UUID userUUID,
+                                @Argument UUID courseUUID) {
+        List<Badge> badges = badgeService.getBadgesByCourseUUID(courseUUID);
+        for (Badge badge : badges) {
+            badgeService.assignBadgeToUser(userUUID, badge.getBadgeUUID());
+        }
+        return "Assigned badges of course to user.";
+    }
 
     @MutationMapping
     public PlayerType createOrUpdatePlayerType(@Argument UUID userUUID,
@@ -101,29 +116,25 @@ public class GamificationController {
     }
 
     @MutationMapping
-    public List<UserBadge> markBadgesAsAchievedIfPassedQuiz(@Argument UUID userUUID, @Argument UUID quizUUID, @Argument int correctAnswers, @Argument int totalAnswers) {
+    public List<UserBadge> markBadgesAsAchievedIfPassedQuiz(@Argument UUID userUUID,
+                                                            @Argument UUID quizUUID,
+                                                            @Argument int correctAnswers,
+                                                            @Argument int totalAnswers) {
         return badgeService.markBadgesAsAchievedIfPassedQuiz(userUUID, quizUUID, correctAnswers, totalAnswers);
     }
 
     @MutationMapping
-    public List<UserBadge> markBadgesAsAchievedIfPassedFlashCardSet(@Argument UUID userUUID, @Argument UUID flashCardSetUUID, @Argument int correctAnswers, @Argument int totalAnswers) {
+    public List<UserBadge> markBadgesAsAchievedIfPassedFlashCardSet(@Argument UUID userUUID,
+                                                                    @Argument UUID flashCardSetUUID,
+                                                                    @Argument int correctAnswers,
+                                                                    @Argument int totalAnswers) {
         return badgeService.markBadgesAsAchievedIfPassedFlashCardSet(userUUID, flashCardSetUUID, correctAnswers, totalAnswers);
     }
 
     @MutationMapping
-    public UserBadge assignBadgeToUser(@Argument UUID userUUID, @Argument UUID badgeUUID) {
-        return badgeService.assignBadgeToUser(userUUID, badgeUUID);
-    }
-
-    @MutationMapping
-    public UserBadge markBadgeAsAchieved(@Argument UUID userUUID, @Argument UUID badgeUUID) {
-        return badgeService.markBadgeAsAchieved(userUUID, badgeUUID);
-    }
-
-    @MutationMapping
     public List<Badge> createBadgesForQuiz(@Argument UUID quizUUID,
-                                    @Argument String name,
-                                    @Argument String description) {
+                                           @Argument String name,
+                                           @Argument String description) {
         List<Badge> badges = new LinkedList<Badge>();
         // 50% Badge
         badges.add(badgeService.createBadgeForQuiz(quizUUID, name, description, bronzePassingPercentage));
@@ -136,8 +147,8 @@ public class GamificationController {
 
     @MutationMapping
     public List<Badge> createBadgesForFlashCardSet(@Argument UUID flashCardSetUUID,
-                                           @Argument String name,
-                                           @Argument String description) {
+                                                   @Argument String name,
+                                                   @Argument String description) {
         List<Badge> badges = new LinkedList<Badge>();
         // 50% Badge
         badges.add(badgeService.createBadgeForFlashCardSet(flashCardSetUUID, name, description, bronzePassingPercentage));
@@ -146,6 +157,18 @@ public class GamificationController {
         // 90% Badge
         badges.add(badgeService.createBadgeForFlashCardSet(flashCardSetUUID, name, description, goldPassingPercentage));
         return badges;
+    }
+
+
+
+    @MutationMapping
+    public UserBadge assignBadgeToUser(@Argument UUID userUUID, @Argument UUID badgeUUID) {
+        return badgeService.assignBadgeToUser(userUUID, badgeUUID);
+    }
+
+    @MutationMapping
+    public UserBadge markBadgeAsAchieved(@Argument UUID userUUID, @Argument UUID badgeUUID) {
+        return badgeService.markBadgeAsAchieved(userUUID, badgeUUID);
     }
 
 }

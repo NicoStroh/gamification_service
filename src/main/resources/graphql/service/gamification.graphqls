@@ -38,7 +38,10 @@ type UserBadge {
 }
 
 type Query {
+  getCoursesUserBadges(courseUUID: UUID!, userUUID: UUID!): [UserBadge!]!
   usersDominantPlayerType(userUUID: UUID!): DominantPlayerType!
+
+
   # True if dominant playertype is achiever
   userCanSeeBadges(userUUID: UUID!): PlayerType!
   # True if dominant playertype is explorer
@@ -53,12 +56,15 @@ type Query {
 }
 
 type Mutation {
-  createOrUpdatePlayerType(userUUID: UUID!, achieverPercentage: Int!, explorerPercentage: Int!, socializerPercentage: Int!, killerPercentage: Int!): PlayerType
+  addUserToCourse(userUUID: UUID!, courseUUID: UUID!): String!
+  createOrUpdatePlayerType(userUUID: UUID!, achieverPercentage: Int!, explorerPercentage: Int!, socializerPercentage: Int!, killerPercentage: Int!): PlayerType!
 
   markBadgesAsAchievedIfPassedQuiz(userUUID: UUID!, quizUUID: UUID!, correctAnswers: Int!, totalAnswers: Int!): [UserBadge!]!
   markBadgesAsAchievedIfPassedFlashCardSet(userUUID: UUID!, flashCardSetUUID: UUID!, correctAnswers: Int!, totalAnswers: Int!): [UserBadge!]!
-  assignBadgeToUser(userUUID: UUID!, badgeUUID: UUID!): UserBadge!
-  markBadgeAsAchieved(userUUID: UUID!, badgeUUID: UUID!): UserBadge!
   createBadgesForQuiz(quizUUID: UUID!, name: String!, description: String): [Badge!]!
   createBadgesForFlashCardSet(flashCardSetUUID: UUID!, name: String!, description: String): [Badge!]!
+
+
+  assignBadgeToUser(userUUID: UUID!, badgeUUID: UUID!): UserBadge!
+  markBadgeAsAchieved(userUUID: UUID!, badgeUUID: UUID!): UserBadge!
 }

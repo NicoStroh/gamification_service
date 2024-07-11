@@ -42,6 +42,25 @@ public class BadgeService {
                 .toList();
     }
 
+    public List<Badge> getBadgesByCourseUUID(UUID courseUUID) {
+        List<BadgeEntity> entities = badgeRepository.findByCourseUUID(courseUUID);
+        return entities.stream()
+                .map(badgeMapper::badgeEntityToDto)
+                .toList();
+    }
+
+    public List<UserBadge> getUserBadgesByCourseUUID(UUID courseUUID, UUID userUUID) {
+
+        List<BadgeEntity> badgeEntities = badgeRepository.findByCourseUUID(courseUUID);
+        List<UserBadgeEntity> userBadgeEntities = new LinkedList<UserBadgeEntity>();
+
+        for (BadgeEntity badgeEntity : badgeEntities) {
+            userBadgeEntities.add(userBadgeRepository.findByUserUUIDAndBadgeUUID(userUUID, badgeEntity.getBadgeUUID()));
+        }
+        return userBadgeEntities.stream()
+                .map(badgeMapper::userBadgeEntityToDto)
+                .toList();
+    }
 
     public List<Badge> getBadgesByQuizUUID(UUID quizUUID) {
         List<BadgeEntity> entities = badgeRepository.findByQuizUUID(quizUUID);
