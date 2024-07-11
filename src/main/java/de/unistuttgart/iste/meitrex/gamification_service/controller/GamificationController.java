@@ -26,9 +26,9 @@ public class GamificationController {
     private final PlayerTypeService playerTypeService;
     private final BadgeService badgeService;
 
-    private static final int lowPassingPercentage = 50;
-    private static final int middlePassingPercentage = 70;
-    private static final int highPassingPercentage = 90;
+    private static final int bronzePassingPercentage = 50;
+    private static final int silverPassingPercentage = 70;
+    private static final int goldPassingPercentage = 90;
 
 
     // True if dominant playertype is achiever
@@ -117,11 +117,11 @@ public class GamificationController {
                                     @Argument String description) {
         List<Badge> badges = new LinkedList<Badge>();
         // 50% Badge
-        badges.add(badgeService.createBadgeForQuiz(quizUUID, name, description, lowPassingPercentage));
+        badges.add(badgeService.createBadgeForQuiz(quizUUID, name, description, bronzePassingPercentage));
         // 70% Badge
-        badges.add(badgeService.createBadgeForQuiz(quizUUID, name, description, middlePassingPercentage));
+        badges.add(badgeService.createBadgeForQuiz(quizUUID, name, description, silverPassingPercentage));
         // 90% Badge
-        badges.add(badgeService.createBadgeForQuiz(quizUUID, name, description, highPassingPercentage));
+        badges.add(badgeService.createBadgeForQuiz(quizUUID, name, description, goldPassingPercentage));
         return badges;
     }
 
@@ -131,11 +131,11 @@ public class GamificationController {
                                            @Argument String description) {
         List<Badge> badges = new LinkedList<Badge>();
         // 50% Badge
-        badges.add(badgeService.createBadgeForFlashCardSet(flashCardSetUUID, name, description, lowPassingPercentage));
+        badges.add(badgeService.createBadgeForFlashCardSet(flashCardSetUUID, name, description, bronzePassingPercentage));
         // 70% Badge
-        badges.add(badgeService.createBadgeForFlashCardSet(flashCardSetUUID, name, description, middlePassingPercentage));
+        badges.add(badgeService.createBadgeForFlashCardSet(flashCardSetUUID, name, description, silverPassingPercentage));
         // 90% Badge
-        badges.add(badgeService.createBadgeForFlashCardSet(flashCardSetUUID, name, description, highPassingPercentage));
+        badges.add(badgeService.createBadgeForFlashCardSet(flashCardSetUUID, name, description, goldPassingPercentage));
         return badges;
     }
 
