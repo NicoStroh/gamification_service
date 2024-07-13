@@ -32,42 +32,42 @@ public class PlayerTypeEntity {
 
     public PlayerTypeEntity.DominantPlayerType dominantPlayerType() {
 
-        if (achieverPercentage >= explorerPercentage) {
+        if (killerPercentage >= socializerPercentage) {
 
-            if (achieverPercentage >= socializerPercentage) {
+            if (killerPercentage >= explorerPercentage) {
 
-                if (achieverPercentage > killerPercentage) {
-                    return DominantPlayerType.Achiever;
-                } else {
+                if (killerPercentage >= achieverPercentage) {
                     return DominantPlayerType.Killer;
+                } else {
+                    return DominantPlayerType.Achiever;
                 }
 
             } else {
 
-                if (socializerPercentage > killerPercentage) {
-                    return DominantPlayerType.Socializer;
+                if (explorerPercentage >= achieverPercentage) {
+                    return DominantPlayerType.Explorer;
                 } else {
-                    return DominantPlayerType.Killer;
+                    return DominantPlayerType.Achiever;
                 }
 
             }
 
         } else {
 
-            if (explorerPercentage >= socializerPercentage) {
+            if (socializerPercentage >= explorerPercentage) {
 
-                if (explorerPercentage > killerPercentage) {
-                    return DominantPlayerType.Explorer;
+                if (socializerPercentage >= achieverPercentage) {
+                    return DominantPlayerType.Socializer;
                 } else {
-                    return DominantPlayerType.Killer;
+                    return DominantPlayerType.Achiever;
                 }
 
             } else {
 
-                if (socializerPercentage > killerPercentage) {
-                    return DominantPlayerType.Socializer;
+                if (explorerPercentage >= achieverPercentage) {
+                    return DominantPlayerType.Explorer;
                 } else {
-                    return DominantPlayerType.Killer;
+                    return DominantPlayerType.Achiever;
                 }
 
             }
@@ -77,20 +77,20 @@ public class PlayerTypeEntity {
     }
 
     public boolean isAchiever() {
-        return achieverPercentage >= explorerPercentage
-                && achieverPercentage >= socializerPercentage
+        return achieverPercentage > explorerPercentage
+                && achieverPercentage > socializerPercentage
                 && achieverPercentage > killerPercentage;
     }
 
     public boolean isExplorer() {
-        return explorerPercentage > achieverPercentage
-                && explorerPercentage >= socializerPercentage
+        return explorerPercentage >= achieverPercentage
+                && explorerPercentage > socializerPercentage
                 && explorerPercentage > killerPercentage;
     }
 
     public boolean isSocializer() {
-        return socializerPercentage > achieverPercentage
-                && socializerPercentage > explorerPercentage
+        return socializerPercentage >= achieverPercentage
+                && socializerPercentage >= explorerPercentage
                 && socializerPercentage > killerPercentage;
     }
 
