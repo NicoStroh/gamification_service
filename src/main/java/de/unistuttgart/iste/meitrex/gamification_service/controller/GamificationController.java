@@ -39,7 +39,7 @@ public class GamificationController {
     public PlayerTypeEntity.DominantPlayerType usersDominantPlayerType(@Argument UUID userUUID) {
         Optional<PlayerTypeEntity> playerType = playerTypeService.getPlayerTypeByUserUUID(userUUID);
         if (playerType.isPresent()) {
-            return playerType.get().dominantPlayerType();
+            return playerType.get().getDominantPlayerType();
         } else {
             return PlayerTypeEntity.DominantPlayerType.None;
         }

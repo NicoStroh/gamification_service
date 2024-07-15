@@ -24,13 +24,17 @@ public class PlayerTypeService {
 
     public PlayerType createOrUpdatePlayerType(UUID userUUID, int achieverPercentage, int explorerPercentage, int socializerPercentage, int killerPercentage) {
 
-        PlayerTypeEntity playerType = new PlayerTypeEntity(userUUID,
-                achieverPercentage,
-                explorerPercentage,
-                socializerPercentage,
-                killerPercentage);
+        PlayerTypeEntity playerTypeEntity = new PlayerTypeEntity();
+        playerTypeEntity.setUserUUID(userUUID);
 
-        return playerTypeMapper.entityToDto(playerTypeRepository.save(playerType));
+        playerTypeEntity.setAchieverPercentage(achieverPercentage);
+        playerTypeEntity.setExplorerPercentage(explorerPercentage);
+        playerTypeEntity.setSocializerPercentage(socializerPercentage);
+        playerTypeEntity.setKillerPercentage(killerPercentage);
+
+        playerTypeEntity.setDominantPlayerType(playerTypeEntity.dominantPlayerType());
+
+        return playerTypeMapper.entityToDto(playerTypeRepository.save(playerTypeEntity));
 
     }
 
