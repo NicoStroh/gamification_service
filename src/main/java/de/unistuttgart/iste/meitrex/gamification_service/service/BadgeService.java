@@ -54,6 +54,7 @@ public class BadgeService {
             assignBadgeToUser(userUUID, badge.getBadgeUUID());
         }
 
+        List<CourseEntity> debug = courseRepository.findAll();
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
         if (courseEntity.isPresent()) {
             CourseEntity course = courseEntity.get();

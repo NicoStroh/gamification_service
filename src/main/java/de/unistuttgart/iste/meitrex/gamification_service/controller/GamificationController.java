@@ -63,7 +63,7 @@ public class GamificationController {
 
     // True if dominant playertype is socializer
     @QueryMapping
-    public boolean userCanSeeSocializerElement(@Argument UUID userUUID) {
+    public boolean userCanSeeTeamForum(@Argument UUID userUUID) {
         Optional<PlayerTypeEntity> playerType = playerTypeService.getPlayerTypeByUserUUID(userUUID);
         return playerType.isPresent() && playerType.get().isSocializer();
     }

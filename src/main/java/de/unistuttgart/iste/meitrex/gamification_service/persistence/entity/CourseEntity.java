@@ -16,7 +16,6 @@ import java.util.UUID;
 public class CourseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID courseUUID;
 
     @ElementCollection

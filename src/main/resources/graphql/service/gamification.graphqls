@@ -48,6 +48,8 @@ type Query {
   userCanSeeBadges(userUUID: UUID!): PlayerType!
   # True if dominant playertype is explorer
   userCanSeeQuests(userUUID: UUID!): PlayerType!
+  # True if dominant playertype is socializier
+  userCanSeeTeamForum(userUUID: UUID!): PlayerType!
   # True if dominant playertype is killer
   userCanSeeScoreboard(userUUID: UUID!): PlayerType!
 
