@@ -35,6 +35,8 @@ type UserBadge {
   userUUID: UUID!
   badgeUUID: UUID!
   achieved: Boolean!
+  description: String
+  passingPercentage: Int!
 }
 
 type Query {

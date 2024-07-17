@@ -134,6 +134,8 @@ public class BadgeService {
         userBadge.setUserUUID(userUUID);
         userBadge.setBadgeUUID(badge.getBadgeUUID());
         userBadge.setAchieved(false);
+        userBadge.setDescription(badge.getDescription());
+        userBadge.setPassingPercentage(badge.getPassingPercentage());
 
         return badgeMapper.userBadgeEntityToDto(userBadgeRepository.save(userBadge));
     }
