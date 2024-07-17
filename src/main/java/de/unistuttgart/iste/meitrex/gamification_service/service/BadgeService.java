@@ -54,7 +54,6 @@ public class BadgeService {
             assignBadgeToUser(userUUID, badge.getBadgeUUID());
         }
 
-        List<CourseEntity> debug = courseRepository.findAll();
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
         if (courseEntity.isPresent()) {
             CourseEntity course = courseEntity.get();
@@ -157,7 +156,6 @@ public class BadgeService {
         }
         courseRepository.save(courseEntity);
 
-        badgeEntity = badgeRepository.save(badgeEntity);
         return badgeMapper.badgeEntityToDto(badgeEntity);
 
     }
@@ -169,8 +167,11 @@ public class BadgeService {
         badgeEntity.setDescription("At least " + passingPercentage + "% of your answers for the quiz " + name + " are correct.");
         badgeEntity.setPassingPercentage(passingPercentage);
         badgeEntity.setQuizUUID(quizUUID);
+        badgeEntity.setCourseUUID(courseUUID);
 
+        badgeEntity = badgeRepository.save(badgeEntity);
         return addBadgeForCourseAndUsers(courseUUID, badgeEntity);
+
     }
 
     public Badge createBadgeForFlashCardSet(UUID flashCardSetId, String name, int passingPercentage, UUID courseUUID) {
@@ -180,8 +181,11 @@ public class BadgeService {
         badgeEntity.setDescription("At least " + passingPercentage + "% of your answers for the flashcardSet " + name + " are correct.");
         badgeEntity.setPassingPercentage(passingPercentage);
         badgeEntity.setFlashCardSetUUID(flashCardSetId);
+        badgeEntity.setCourseUUID(courseUUID);
 
+        badgeEntity = badgeRepository.save(badgeEntity);
         return addBadgeForCourseAndUsers(courseUUID, badgeEntity);
+
     }
 
 }
