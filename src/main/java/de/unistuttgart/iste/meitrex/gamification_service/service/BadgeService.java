@@ -161,22 +161,22 @@ public class BadgeService {
 
     }
 
-    public Badge createBadgeForQuiz(UUID quizUUID, String name, String description, int passingPercentage, UUID courseUUID) {
+    public Badge createBadgeForQuiz(UUID quizUUID, String name, int passingPercentage, UUID courseUUID) {
 
         BadgeEntity badgeEntity = new BadgeEntity();
         badgeEntity.setName(name);
-        badgeEntity.setDescription(description);
+        badgeEntity.setDescription("At least " + passingPercentage + "% of your answers for the quiz " + name + " are correct.");
         badgeEntity.setPassingPercentage(passingPercentage);
         badgeEntity.setQuizUUID(quizUUID);
 
         return addBadgeForCourseAndUsers(courseUUID, badgeEntity);
     }
 
-    public Badge createBadgeForFlashCardSet(UUID flashCardSetId, String name, String description, int passingPercentage, UUID courseUUID) {
+    public Badge createBadgeForFlashCardSet(UUID flashCardSetId, String name, int passingPercentage, UUID courseUUID) {
 
         BadgeEntity badgeEntity = new BadgeEntity();
         badgeEntity.setName(name);
-        badgeEntity.setDescription(description);
+        badgeEntity.setDescription("At least " + passingPercentage + "% of your answers for the flashcardSet " + name + " are correct.");
         badgeEntity.setPassingPercentage(passingPercentage);
         badgeEntity.setFlashCardSetUUID(flashCardSetId);
 
