@@ -14,10 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -44,6 +41,11 @@ public class BadgeService {
         return entities.stream()
                 .map(badgeMapper::userBadgeEntityToDto)
                 .toList();
+    }
+
+    public void addCourse(UUID courseUUID) {
+        CourseEntity courseEntity = new CourseEntity(courseUUID, new HashSet<UUID>(), new HashSet<UUID>());
+        courseRepository.save(courseEntity);
     }
 
     public void addUserToCourse(UUID userUUID, UUID courseUUID) {

@@ -56,6 +56,7 @@ type Query {
 }
 
 type Mutation {
+  addCourse(courseUUID: UUID!): String!
   addUserToCourse(userUUID: UUID!, courseUUID: UUID!): String!
   createOrUpdatePlayerType(userUUID: UUID!, achieverPercentage: Int!, explorerPercentage: Int!, socializerPercentage: Int!, killerPercentage: Int!): PlayerType!
 
