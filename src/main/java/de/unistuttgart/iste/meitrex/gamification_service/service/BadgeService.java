@@ -43,9 +43,10 @@ public class BadgeService {
                 .toList();
     }
 
-    public void addCourse(UUID courseUUID) {
+    public void addCourse(UUID courseUUID, UUID lecturerUUID) {
         CourseEntity courseEntity = new CourseEntity(courseUUID, new HashSet<UUID>(), new HashSet<UUID>());
         courseRepository.save(courseEntity);
+        addUserToCourse(lecturerUUID, courseUUID);
     }
 
     public void addUserToCourse(UUID userUUID, UUID courseUUID) {

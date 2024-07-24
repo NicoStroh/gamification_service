@@ -97,8 +97,8 @@ public class GamificationController {
 
 
     @MutationMapping
-    public String addCourse(@Argument UUID courseUUID) {
-        badgeService.addCourse(courseUUID);
+    public String addCourse(@Argument UUID courseUUID, @Argument UUID lecturerUUID) {
+        badgeService.addCourse(courseUUID, lecturerUUID);
         return "Added course.";
     }
 
