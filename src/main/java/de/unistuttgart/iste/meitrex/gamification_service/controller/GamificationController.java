@@ -92,13 +92,13 @@ public class GamificationController {
         return playerType.isPresent() && playerType.get().isKiller();
     }
 
-
-
     @QueryMapping
     public List<UserBadge> getCoursesUserBadges(@Argument UUID courseUUID, @Argument UUID userUUID) {
         return badgeService.getUserBadgesByCourseUUID(courseUUID, userUUID);
     }
 
+
+    // Not used currently
     @QueryMapping
     public List<UserBadge> userBadges(@Argument UUID userUUID) {
         return badgeService.getUserBadges(userUUID);
@@ -122,14 +122,6 @@ public class GamificationController {
 
 
 
-    @MutationMapping
-    public PlayerType createOrUpdatePlayerType(@Argument UUID userUUID,
-                                               @Argument int achieverPercentage,
-                                               @Argument int explorerPercentage,
-                                               @Argument int socializerPercentage,
-                                               @Argument int killerPercentage) {
-        return playerTypeService.createOrUpdatePlayerType(userUUID, achieverPercentage, explorerPercentage, socializerPercentage, killerPercentage);
-    }
 
     @MutationMapping
     public String submitAnswer(@Argument final int questionId, @Argument final boolean answer) {
@@ -151,6 +143,15 @@ public class GamificationController {
         }
         return new PlayerTypeEntity(userUUID, false);
 
+    }
+
+    @MutationMapping
+    public PlayerType createOrUpdatePlayerType(@Argument UUID userUUID,
+                                               @Argument int achieverPercentage,
+                                               @Argument int explorerPercentage,
+                                               @Argument int socializerPercentage,
+                                               @Argument int killerPercentage) {
+        return playerTypeService.createOrUpdatePlayerType(userUUID, achieverPercentage, explorerPercentage, socializerPercentage, killerPercentage);
     }
 
 
@@ -213,6 +214,8 @@ public class GamificationController {
 
 
 
+
+    // Not used currently
     @MutationMapping
     public UserBadge assignBadgeToUser(@Argument UUID userUUID, @Argument UUID badgeUUID) {
         return badgeService.assignBadgeToUser(userUUID, badgeUUID);

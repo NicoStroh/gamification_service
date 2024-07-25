@@ -88,10 +88,10 @@ type Query {
 type Mutation {
   submitAnswer(questionId: Int!, answer: Boolean!): String
   evaluateTest(userUUID: UUID!): ShortBartleTestResultEntity!
+  createOrUpdatePlayerType(userUUID: UUID!, achieverPercentage: Int!, explorerPercentage: Int!, socializerPercentage: Int!, killerPercentage: Int!): PlayerType!
 
   addCourse(courseUUID: UUID!, lecturerUUID: UUID!): String!
   addUserToCourse(userUUID: UUID!, courseUUID: UUID!): String!
-  createOrUpdatePlayerType(userUUID: UUID!, achieverPercentage: Int!, explorerPercentage: Int!, socializerPercentage: Int!, killerPercentage: Int!): PlayerType!
 
   markBadgesAsAchievedIfPassedQuiz(userUUID: UUID!, quizUUID: UUID!, correctAnswers: Int!, totalAnswers: Int!): [UserBadge!]!
   markBadgesAsAchievedIfPassedFlashCardSet(userUUID: UUID!, flashCardSetUUID: UUID!, correctAnswers: Int!, totalAnswers: Int!): [UserBadge!]!
