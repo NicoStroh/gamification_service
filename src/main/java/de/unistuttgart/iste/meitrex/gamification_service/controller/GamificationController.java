@@ -1,6 +1,8 @@
 package de.unistuttgart.iste.meitrex.gamification_service.controller;
 
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.PlayerTypeEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.PlayerTypeTest;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.PlayerTypeTestQuestion;
 import de.unistuttgart.iste.meitrex.gamification_service.service.BadgeService;
 import de.unistuttgart.iste.meitrex.gamification_service.service.PlayerTypeService;
 import de.unistuttgart.iste.meitrex.generated.dto.Badge;
@@ -30,9 +32,25 @@ public class GamificationController {
     private static final int silverPassingPercentage = 70;
     private static final int goldPassingPercentage = 90;
 
+    private PlayerTypeTest test;
+
     @QueryMapping
-    public List<UserBadge> getCoursesUserBadges(@Argument UUID courseUUID, @Argument UUID userUUID) {
-        return badgeService.getUserBadgesByCourseUUID(courseUUID, userUUID);
+    public PlayerTypeTestQuestion[] test() {
+        this.test = new PlayerTypeTest();
+        return this.test.getQuestions();
+    }
+
+    @QueryMapping
+    public boolean userHasTakenTest(@Argument final UUID userUUID) {
+
+        Optional<PlayerTypeEntity> entity = playerTypeService.getEntity(userUUID);
+        if (entity.isEmpty()) {
+            // User is not present in playertype_database
+            playerTypeService.createUser(userUUID);
+            return false;
+        }
+        return entity.get().isUserHasTakenTest();
+
     }
 
     @QueryMapping
@@ -44,7 +62,6 @@ public class GamificationController {
             return PlayerTypeEntity.DominantPlayerType.None;
         }
     }
-
 
 
     // True if dominant playertype is achiever
@@ -75,6 +92,13 @@ public class GamificationController {
         return playerType.isPresent() && playerType.get().isKiller();
     }
 
+
+
+    @QueryMapping
+    public List<UserBadge> getCoursesUserBadges(@Argument UUID courseUUID, @Argument UUID userUUID) {
+        return badgeService.getUserBadgesByCourseUUID(courseUUID, userUUID);
+    }
+
     @QueryMapping
     public List<UserBadge> userBadges(@Argument UUID userUUID) {
         return badgeService.getUserBadges(userUUID);
@@ -96,6 +120,40 @@ public class GamificationController {
     }
 
 
+
+
+    @MutationMapping
+    public PlayerType createOrUpdatePlayerType(@Argument UUID userUUID,
+                                               @Argument int achieverPercentage,
+                                               @Argument int explorerPercentage,
+                                               @Argument int socializerPercentage,
+                                               @Argument int killerPercentage) {
+        return playerTypeService.createOrUpdatePlayerType(userUUID, achieverPercentage, explorerPercentage, socializerPercentage, killerPercentage);
+    }
+
+    @MutationMapping
+    public String submitAnswer(@Argument final int questionId, @Argument final boolean answer) {
+
+        if (this.test != null) {
+            this.test.setAnswer(questionId, answer);
+            return "Answer submitted successfully!";
+        }
+        return "No test selected!";
+
+    }
+
+    @MutationMapping
+    public PlayerTypeEntity evaluateTest(@Argument final UUID userUUID) {
+
+        if (this.test != null && !this.test.justCreated) {
+            PlayerTypeEntity playerTypeEntity = this.test.evaluateTest(userUUID);
+            return playerTypeService.saveTestResult(playerTypeEntity);
+        }
+        return new PlayerTypeEntity(userUUID, false);
+
+    }
+
+
     @MutationMapping
     public String addCourse(@Argument UUID courseUUID, @Argument UUID lecturerUUID) {
         badgeService.addCourse(courseUUID, lecturerUUID);
@@ -107,15 +165,6 @@ public class GamificationController {
                                 @Argument UUID courseUUID) {
         badgeService.addUserToCourse(userUUID, courseUUID);
         return "Assigned badges of course to user.";
-    }
-
-    @MutationMapping
-    public PlayerType createOrUpdatePlayerType(@Argument UUID userUUID,
-                                               @Argument int achieverPercentage,
-                                               @Argument int explorerPercentage,
-                                               @Argument int socializerPercentage,
-                                               @Argument int killerPercentage) {
-        return playerTypeService.createOrUpdatePlayerType(userUUID, achieverPercentage, explorerPercentage, socializerPercentage, killerPercentage);
     }
 
     @MutationMapping

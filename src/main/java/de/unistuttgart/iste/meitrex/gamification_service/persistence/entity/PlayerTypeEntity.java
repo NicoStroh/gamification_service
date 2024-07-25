@@ -22,8 +22,31 @@ public class PlayerTypeEntity {
         Killer;
     }
 
+    public PlayerTypeEntity(UUID userUUID, boolean userHasTakenTest) {
+
+        this.userUUID = userUUID;
+        this.userHasTakenTest = userHasTakenTest;
+
+    }
+
+    public PlayerTypeEntity(UUID userUUID,
+                            int achieverPercentage, int explorerPercentage,
+                            int socializerPercentage, int killerPercentage) {
+
+        this.userUUID = userUUID;
+        this.userHasTakenTest = true;
+        this.achieverPercentage = achieverPercentage;
+        this.explorerPercentage = explorerPercentage;
+        this.socializerPercentage = socializerPercentage;
+        this.killerPercentage = killerPercentage;
+        this.dominantPlayerType = this.dominantPlayerType();
+
+    }
+
     @Id
     private UUID userUUID;
+
+    private boolean userHasTakenTest;
 
     private int achieverPercentage;
     private int explorerPercentage;
@@ -79,27 +102,35 @@ public class PlayerTypeEntity {
     }
 
     public boolean isAchiever() {
-        return achieverPercentage > explorerPercentage
-                && achieverPercentage > socializerPercentage
-                && achieverPercentage > killerPercentage;
+        return this.dominantPlayerType == DominantPlayerType.Achiever;
     }
 
     public boolean isExplorer() {
-        return explorerPercentage >= achieverPercentage
-                && explorerPercentage > socializerPercentage
-                && explorerPercentage > killerPercentage;
+        return this.dominantPlayerType == DominantPlayerType.Explorer;
     }
 
     public boolean isSocializer() {
-        return socializerPercentage >= achieverPercentage
-                && socializerPercentage >= explorerPercentage
-                && socializerPercentage > killerPercentage;
+        return this.dominantPlayerType == DominantPlayerType.Socializer;
     }
 
     public boolean isKiller() {
-        return killerPercentage >= achieverPercentage
-                && killerPercentage >= explorerPercentage
-                && killerPercentage >= socializerPercentage;
+        return this.dominantPlayerType == DominantPlayerType.Killer;
+    }
+
+    public void increaseAchieverPercentage(int increase) {
+        this.achieverPercentage += increase;
+    }
+
+    public void increaseExplorerPercentage(int increase) {
+        this.explorerPercentage += increase;
+    }
+
+    public void increaseSocializerPercentage(int increase) {
+        this.socializerPercentage += increase;
+    }
+
+    public void increaseKillerPercentage(int increase) {
+        this.killerPercentage += increase;
     }
 
 }

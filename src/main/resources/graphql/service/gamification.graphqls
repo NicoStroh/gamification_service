@@ -4,6 +4,29 @@
 # this can be done in a separate files as long as they are in this folder and
 # end with .graphqls
 
+type ShortBartleTestResultEntity {
+  userHasTakenTest: Boolean!
+  achieverPercentage: Int!
+  explorerPercentage: Int!
+  socializerPercentage: Int!
+  killerPercentage: Int!
+}
+
+type PlayerTypeTestQuestion {
+  id: ID!
+  text: String!
+  option0: String!
+  option1: String!
+  selectedOption: Boolean!
+}
+
+type ShortBartleTestResult {
+  achieverPercentage: Int!
+  explorerPercentage: Int!
+  socializerPercentage: Int!
+  killerPercentage: Int!
+}
+
 enum DominantPlayerType {
   None
   Achiever
@@ -40,6 +63,9 @@ type UserBadge {
 }
 
 type Query {
+  test: [PlayerTypeTestQuestion!]!
+  userHasTakenTest(userUUID: UUID!): Boolean!
+
   getCoursesUserBadges(courseUUID: UUID!, userUUID: UUID!): [UserBadge!]!
   usersDominantPlayerType(userUUID: UUID!): DominantPlayerType!
 
@@ -60,6 +86,9 @@ type Query {
 }
 
 type Mutation {
+  submitAnswer(questionId: Int!, answer: Boolean!): String
+  evaluateTest(userUUID: UUID!): ShortBartleTestResultEntity!
+
   addCourse(courseUUID: UUID!, lecturerUUID: UUID!): String!
   addUserToCourse(userUUID: UUID!, courseUUID: UUID!): String!
   createOrUpdatePlayerType(userUUID: UUID!, achieverPercentage: Int!, explorerPercentage: Int!, socializerPercentage: Int!, killerPercentage: Int!): PlayerType!
