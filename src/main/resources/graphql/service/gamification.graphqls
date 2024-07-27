@@ -125,6 +125,6 @@ type Mutation {
   createQuiz(quizUUID: UUID!, name: String!, courseUUID: UUID!): String!
   createFlashCardSet(flashCardSetUUID: UUID!, name: String!, courseUUID: UUID!): String!
 
-  finishQuiz(userUUID: UUID!, courseUUID: UUID!, quizUUID: UUID!, correctAnswers: Int!, totalAnswers: Int!): [UserBadge!]!
-  finishFlashCardSet(userUUID: UUID!, courseUUID: UUID!, flashCardSetUUID: UUID!, correctAnswers: Int!, totalAnswers: Int!): [UserBadge!]!
+  finishQuiz(userUUID: UUID!, courseUUID: UUID!, quizUUID: UUID!, correctAnswers: Int!, totalAnswers: Int!): String
+  finishFlashCardSet(userUUID: UUID!, courseUUID: UUID!, flashCardSetUUID: UUID!, correctAnswers: Int!, totalAnswers: Int!): String
 }
