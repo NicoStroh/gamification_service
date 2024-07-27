@@ -1,0 +1,67 @@
+package de.unistuttgart.iste.meitrex.gamification_service.service;
+
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.BadgeEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.CourseEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserBadgeEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.mapper.BadgeMapper;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.BadgeRepository;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.CourseRepository;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserBadgeRepository;
+import de.unistuttgart.iste.meitrex.generated.dto.Badge;
+import de.unistuttgart.iste.meitrex.generated.dto.UserBadge;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
+
+@Service
+@RequiredArgsConstructor
+@Transactional
+@Slf4j
+public class CourseService {
+
+    private final CourseRepository courseRepository;
+
+    private final BadgeMapper badgeMapper;
+
+    public void addCourse(UUID courseUUID, UUID lecturerUUID, BadgeService badgeService, QuestService questService) {
+        CourseEntity courseEntity = new CourseEntity(courseUUID, new HashSet<UUID>(), new HashSet<UUID>());
+        courseRepository.save(courseEntity);
+        addUserToCourse(lecturerUUID, courseUUID, badgeService, questService);
+    }
+
+    public void addUserToCourse(UUID userUUID, UUID courseUUID, BadgeService badgeService, QuestService questService) {
+
+        List<Badge> badges = badgeService.getBadgesByCourseUUID(courseUUID);
+        for (Badge badge : badges) {
+            badgeService.assignBadgeToUser(userUUID, badge.getBadgeUUID());
+        }
+
+        questService.assignQuestChainToUser(userUUID, courseUUID);
+
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        if (courseEntity.isPresent()) {
+            CourseEntity course = courseEntity.get();
+            course.addUser(userUUID);
+            courseRepository.save(course);
+        }
+
+    }
+
+    public Badge addBadgeForCourseAndUsers(UUID courseUUID, BadgeEntity badgeEntity, BadgeService badgeService) {
+
+        CourseEntity courseEntity = courseRepository.findById(courseUUID).orElseThrow(() -> new RuntimeException("Course not found"));
+        courseEntity.addBadge(badgeEntity.getBadgeUUID());
+
+        for (UUID userUUID : courseEntity.getUserUUIDs()) {
+            badgeService.assignBadgeToUser(userUUID, badgeEntity.getBadgeUUID());
+        }
+        courseRepository.save(courseEntity);
+
+        return badgeMapper.badgeEntityToDto(badgeEntity);
+
+    }
+
+}

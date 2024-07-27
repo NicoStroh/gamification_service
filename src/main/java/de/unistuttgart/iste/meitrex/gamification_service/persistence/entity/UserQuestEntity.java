@@ -5,27 +5,29 @@ import lombok.*;
 
 import java.util.UUID;
 
-@Entity(name = "Badge")
+@Entity(name = "UserQuest")
 @Getter
 @Setter
 @ToString
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class BadgeEntity {
+public class UserQuestEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID badgeUUID;
+    private UUID userQuestUUID;
 
-    private String description;
+    private UUID userUUID;
 
-    private int passingPercentage;
+    private UUID questUUID;
 
     private UUID quizUUID;
 
     private UUID flashCardSetUUID;
 
-    private UUID courseUUID;
+    private boolean finished;
+
+    private String description;
 
 }

@@ -3,11 +3,12 @@ package de.unistuttgart.iste.meitrex.gamification_service.controller;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.PlayerTypeEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.PlayerTypeTest;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.PlayerTypeTestQuestion;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.QuestEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.service.BadgeService;
+import de.unistuttgart.iste.meitrex.gamification_service.service.CourseService;
 import de.unistuttgart.iste.meitrex.gamification_service.service.PlayerTypeService;
-import de.unistuttgart.iste.meitrex.generated.dto.Badge;
-import de.unistuttgart.iste.meitrex.generated.dto.PlayerType;
-import de.unistuttgart.iste.meitrex.generated.dto.UserBadge;
+import de.unistuttgart.iste.meitrex.gamification_service.service.QuestService;
+import de.unistuttgart.iste.meitrex.generated.dto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -27,10 +28,8 @@ public class GamificationController {
 
     private final PlayerTypeService playerTypeService;
     private final BadgeService badgeService;
-
-    private static final int bronzePassingPercentage = 50;
-    private static final int silverPassingPercentage = 70;
-    private static final int goldPassingPercentage = 90;
+    private final CourseService courseService;
+    private final QuestService questService;
 
     private PlayerTypeTest test;
 
@@ -97,30 +96,15 @@ public class GamificationController {
         return badgeService.getUserBadgesByCourseUUID(courseUUID, userUUID);
     }
 
-
-    // Not used currently
     @QueryMapping
-    public List<UserBadge> userBadges(@Argument UUID userUUID) {
-        return badgeService.getUserBadges(userUUID);
+    public UserQuest getCurrentUserQuest(@Argument UUID userUUID, @Argument UUID courseUUID) {
+        return questService.getCurrentUserQuest(userUUID, courseUUID);
     }
 
     @QueryMapping
-    public List<UserBadge> achievedBadges(@Argument UUID userUUID) {
-        return badgeService.getAchievedBadges(userUUID);
+    public UserQuestChain getUserQuestChain(@Argument UUID userUUID, @Argument UUID courseUUID) {
+        return questService.getUserQuestChain(userUUID, courseUUID);
     }
-
-    @QueryMapping
-    public List<Badge> badgesByQuiz(@Argument UUID quizUUID) {
-        return badgeService.getBadgesByQuizUUID(quizUUID);
-    }
-
-    @QueryMapping
-    public List<Badge> badgesByFlashCardSet(@Argument UUID flashCardSetUUID) {
-        return badgeService.getBadgesByFlashCardSetUUID(flashCardSetUUID);
-    }
-
-
-
 
 
     @MutationMapping
@@ -157,73 +141,55 @@ public class GamificationController {
 
     @MutationMapping
     public String addCourse(@Argument UUID courseUUID, @Argument UUID lecturerUUID) {
-        badgeService.addCourse(courseUUID, lecturerUUID);
+        courseService.addCourse(courseUUID, lecturerUUID, this.badgeService, this.questService);
         return "Added course.";
     }
 
     @MutationMapping
     public String addUserToCourse(@Argument UUID userUUID,
                                 @Argument UUID courseUUID) {
-        badgeService.addUserToCourse(userUUID, courseUUID);
-        return "Assigned badges of course to user.";
+        courseService.addUserToCourse(userUUID, courseUUID, this.badgeService, this.questService);
+        return "Added user to course.";
     }
 
     @MutationMapping
-    public List<UserBadge> markBadgesAsAchievedIfPassedQuiz(@Argument UUID userUUID,
-                                                            @Argument UUID quizUUID,
-                                                            @Argument int correctAnswers,
-                                                            @Argument int totalAnswers) {
-        return badgeService.markBadgesAsAchievedIfPassedQuiz(userUUID, quizUUID, correctAnswers, totalAnswers);
+    public String finishQuiz(@Argument UUID userUUID,
+                             @Argument UUID courseUUID,
+                             @Argument UUID quizUUID,
+                             @Argument int correctAnswers,
+                             @Argument int totalAnswers) {
+        badgeService.markBadgesAsAchievedIfPassedQuiz(userUUID, quizUUID, correctAnswers, totalAnswers);
+        questService.markQuestAsFinishedIfPassedQuiz(userUUID, courseUUID, quizUUID, correctAnswers, totalAnswers);
+        return "Finished quiz!";
     }
 
     @MutationMapping
-    public List<UserBadge> markBadgesAsAchievedIfPassedFlashCardSet(@Argument UUID userUUID,
-                                                                    @Argument UUID flashCardSetUUID,
-                                                                    @Argument int correctAnswers,
-                                                                    @Argument int totalAnswers) {
-        return badgeService.markBadgesAsAchievedIfPassedFlashCardSet(userUUID, flashCardSetUUID, correctAnswers, totalAnswers);
+    public String finishFlashCardSet(@Argument UUID userUUID,
+                                     @Argument UUID courseUUID,
+                                     @Argument UUID flashCardSetUUID,
+                                     @Argument int correctAnswers,
+                                     @Argument int totalAnswers) {
+        badgeService.markBadgesAsAchievedIfPassedFlashCardSet(userUUID, flashCardSetUUID, correctAnswers, totalAnswers);
+        questService.markQuestAsFinishedIfPassedFlashCardSet(userUUID, courseUUID, flashCardSetUUID, correctAnswers, totalAnswers);
+        return "Finished FlashCardSet!";
     }
 
     @MutationMapping
-    public List<Badge> createBadgesForQuiz(@Argument UUID quizUUID,
-                                           @Argument String name,
-                                           @Argument UUID courseUUID) {
-        List<Badge> badges = new LinkedList<Badge>();
-        // 50% Badge
-        badges.add(badgeService.createBadgeForQuiz(quizUUID, name, bronzePassingPercentage, courseUUID));
-        // 70% Badge
-        badges.add(badgeService.createBadgeForQuiz(quizUUID, name, silverPassingPercentage, courseUUID));
-        // 90% Badge
-        badges.add(badgeService.createBadgeForQuiz(quizUUID, name, goldPassingPercentage, courseUUID));
-        return badges;
+    public String createQuiz(@Argument UUID quizUUID,
+                             @Argument String name,
+                             @Argument UUID courseUUID) {
+        badgeService.createBadgesForQuiz(quizUUID, name, courseUUID, this.courseService);
+        questService.createQuestForQuiz(quizUUID, name, courseUUID);
+        return "Created quiz successully.";
     }
 
     @MutationMapping
-    public List<Badge> createBadgesForFlashCardSet(@Argument UUID flashCardSetUUID,
-                                                   @Argument String name,
-                                                   @Argument UUID courseUUID) {
-        List<Badge> badges = new LinkedList<Badge>();
-        // 50% Badge
-        badges.add(badgeService.createBadgeForFlashCardSet(flashCardSetUUID, name, bronzePassingPercentage, courseUUID));
-        // 70% Badge
-        badges.add(badgeService.createBadgeForFlashCardSet(flashCardSetUUID, name, silverPassingPercentage, courseUUID));
-        // 90% Badge
-        badges.add(badgeService.createBadgeForFlashCardSet(flashCardSetUUID, name, goldPassingPercentage, courseUUID));
-        return badges;
-    }
-
-
-
-
-    // Not used currently
-    @MutationMapping
-    public UserBadge assignBadgeToUser(@Argument UUID userUUID, @Argument UUID badgeUUID) {
-        return badgeService.assignBadgeToUser(userUUID, badgeUUID);
-    }
-
-    @MutationMapping
-    public UserBadge markBadgeAsAchieved(@Argument UUID userUUID, @Argument UUID badgeUUID) {
-        return badgeService.markBadgeAsAchieved(userUUID, badgeUUID);
+    public String createFlashCardSet(@Argument UUID flashCardSetUUID,
+                                     @Argument String name,
+                                     @Argument UUID courseUUID) {
+        badgeService.createBadgesForFlashCardSet(flashCardSetUUID, name, courseUUID, this.courseService);
+        questService.createQuestForFlashCardSet(flashCardSetUUID, name, courseUUID);
+        return "Created Flashcardset successully.";
     }
 
 }

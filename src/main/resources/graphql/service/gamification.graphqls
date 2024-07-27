@@ -62,11 +62,45 @@ type UserBadge {
   passingPercentage: Int!
 }
 
+type Quest {
+  questUUID: UUID!
+  quizUUID: UUID
+  flashCardSetUUID: UUID
+  description: String
+}
+
+type UserQuest {
+  userQuestUUID: UUID!
+  userUUID: UUID!
+  questUUID: UUID!
+  quizUUID: UUID
+  flashCardSetUUID: UUID
+  finished: Boolean!
+  description: String!
+}
+
+type QuestChain {
+  questChainUUID: UUID!
+  quests: [Quest!]!
+  courseUUID: UUID!
+}
+
+type UserQuestChain {
+  userQuestChainUUID: UUID!
+  userQuests: [UserQuest!]!
+  questChainUUID: UUID!
+  courseUUID: UUID!
+  currentUserQuestIndex: Int!
+  finished: Boolean!
+}
+
 type Query {
   test: [PlayerTypeTestQuestion!]!
   userHasTakenTest(userUUID: UUID!): Boolean!
 
   getCoursesUserBadges(courseUUID: UUID!, userUUID: UUID!): [UserBadge!]!
+  getCurrentUserQuest(userUUID: UUID!, courseUUID: UUID!): UserQuest!
+  getUserQuestChain(userUUID: UUID!, courseUUID: UUID!): UserQuestChain!
   usersDominantPlayerType(userUUID: UUID!): DominantPlayerType!
 
 
@@ -78,11 +112,6 @@ type Query {
   userCanSeeTeamForum(userUUID: UUID!): PlayerType!
   # True if dominant playertype is killer
   userCanSeeScoreboard(userUUID: UUID!): PlayerType!
-
-  userBadges(userUUID: UUID!): [UserBadge!]
-  achievedBadges(userUUID: UUID!): [UserBadge!]
-  badgesByQuiz(quizUUID: UUID!): [Badge!]
-  badgesByFlashCardSet(flashCardSetUUID: UUID!): [Badge!]
 }
 
 type Mutation {
@@ -93,12 +122,9 @@ type Mutation {
   addCourse(courseUUID: UUID!, lecturerUUID: UUID!): String!
   addUserToCourse(userUUID: UUID!, courseUUID: UUID!): String!
 
-  markBadgesAsAchievedIfPassedQuiz(userUUID: UUID!, quizUUID: UUID!, correctAnswers: Int!, totalAnswers: Int!): [UserBadge!]!
-  markBadgesAsAchievedIfPassedFlashCardSet(userUUID: UUID!, flashCardSetUUID: UUID!, correctAnswers: Int!, totalAnswers: Int!): [UserBadge!]!
-  createBadgesForQuiz(quizUUID: UUID!, name: String!, courseUUID: UUID!): [Badge!]!
-  createBadgesForFlashCardSet(flashCardSetUUID: UUID!, name: String!, courseUUID: UUID!): [Badge!]!
+  createQuiz(quizUUID: UUID!, name: String!, courseUUID: UUID!): String!
+  createFlashCardSet(flashCardSetUUID: UUID!, name: String!, courseUUID: UUID!): String!
 
-
-  assignBadgeToUser(userUUID: UUID!, badgeUUID: UUID!): UserBadge!
-  markBadgeAsAchieved(userUUID: UUID!, badgeUUID: UUID!): UserBadge!
+  finishQuiz(userUUID: UUID!, courseUUID: UUID!, quizUUID: UUID!, correctAnswers: Int!, totalAnswers: Int!): [UserBadge!]!
+  finishFlashCardSet(userUUID: UUID!, courseUUID: UUID!, flashCardSetUUID: UUID!, correctAnswers: Int!, totalAnswers: Int!): [UserBadge!]!
 }

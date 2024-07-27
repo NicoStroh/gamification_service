@@ -1,17 +1,16 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service;
 
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.BadgeEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.CourseEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserBadgeEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.mapper.BadgeMapper;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.BadgeRepository;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.CourseRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserBadgeRepository;
 import de.unistuttgart.iste.meitrex.generated.dto.Badge;
 import de.unistuttgart.iste.meitrex.generated.dto.UserBadge;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -22,46 +21,14 @@ import java.util.*;
 @Slf4j
 public class BadgeService {
 
-    private final BadgeMapper badgeMapper;
-
     private final BadgeRepository badgeRepository;
     private final UserBadgeRepository userBadgeRepository;
-    private final CourseRepository courseRepository;
 
+    private final BadgeMapper badgeMapper;
 
-    public List<UserBadge> getUserBadges(UUID userUUID) {
-        List<UserBadgeEntity> entities = userBadgeRepository.findByUserUUID(userUUID);
-        return entities.stream()
-                .map(badgeMapper::userBadgeEntityToDto)
-                .toList();
-    }
-
-    public List<UserBadge> getAchievedBadges(UUID userUUID) {
-        List<UserBadgeEntity> entities = userBadgeRepository.findByUserUUIDAndAchieved(userUUID, true);
-        return entities.stream()
-                .map(badgeMapper::userBadgeEntityToDto)
-                .toList();
-    }
-
-    public void addCourse(UUID courseUUID, UUID lecturerUUID) {
-        CourseEntity courseEntity = new CourseEntity(courseUUID, new HashSet<UUID>(), new HashSet<UUID>());
-        courseRepository.save(courseEntity);
-        addUserToCourse(lecturerUUID, courseUUID);
-    }
-
-    public void addUserToCourse(UUID userUUID, UUID courseUUID) {
-        List<Badge> badges = getBadgesByCourseUUID(courseUUID);
-        for (Badge badge : badges) {
-            assignBadgeToUser(userUUID, badge.getBadgeUUID());
-        }
-
-        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
-        if (courseEntity.isPresent()) {
-            CourseEntity course = courseEntity.get();
-            course.addUser(userUUID);
-            courseRepository.save(course);
-        }
-    }
+    private static final int bronzePassingPercentage = 50;
+    private static final int silverPassingPercentage = 70;
+    private static final int goldPassingPercentage = 90;
 
     public List<Badge> getBadgesByCourseUUID(UUID courseUUID) {
         List<BadgeEntity> entities = badgeRepository.findByCourseUUID(courseUUID);
@@ -147,45 +114,53 @@ public class BadgeService {
         return badgeMapper.userBadgeEntityToDto(userBadgeRepository.save(userBadge));
     }
 
-    public Badge addBadgeForCourseAndUsers(UUID courseUUID, BadgeEntity badgeEntity) {
-
-        CourseEntity courseEntity = courseRepository.findById(courseUUID).orElseThrow(() -> new RuntimeException("Course not found"));
-        courseEntity.addBadge(badgeEntity.getBadgeUUID());
-
-        for (UUID userUUID : courseEntity.getUserUUIDs()) {
-            assignBadgeToUser(userUUID, badgeEntity.getBadgeUUID());
-        }
-        courseRepository.save(courseEntity);
-
-        return badgeMapper.badgeEntityToDto(badgeEntity);
-
+    public void createBadgesForQuiz(UUID quizUUID,
+                                           String name,
+                                           UUID courseUUID,
+                                           CourseService courseService) {
+        // 50% Badge
+        createBadgeForQuiz(quizUUID, name, bronzePassingPercentage, courseUUID, courseService);
+        // 70% Badge
+        createBadgeForQuiz(quizUUID, name, silverPassingPercentage, courseUUID, courseService);
+        // 90% Badge
+        createBadgeForQuiz(quizUUID, name, goldPassingPercentage, courseUUID, courseService);
     }
 
-    public Badge createBadgeForQuiz(UUID quizUUID, String name, int passingPercentage, UUID courseUUID) {
+    public Badge createBadgeForQuiz(UUID quizUUID, String name, int passingPercentage, UUID courseUUID, CourseService courseService) {
 
         BadgeEntity badgeEntity = new BadgeEntity();
-        badgeEntity.setName(name);
         badgeEntity.setDescription("At least " + passingPercentage + "% of your answers for the quiz " + name + " are correct.");
         badgeEntity.setPassingPercentage(passingPercentage);
         badgeEntity.setQuizUUID(quizUUID);
         badgeEntity.setCourseUUID(courseUUID);
 
         badgeEntity = badgeRepository.save(badgeEntity);
-        return addBadgeForCourseAndUsers(courseUUID, badgeEntity);
+        return courseService.addBadgeForCourseAndUsers(courseUUID, badgeEntity, this);
 
     }
 
-    public Badge createBadgeForFlashCardSet(UUID flashCardSetId, String name, int passingPercentage, UUID courseUUID) {
+    public void createBadgesForFlashCardSet(UUID flashCardSetUUID,
+                                                   String name,
+                                                   UUID courseUUID,
+                                                   CourseService courseService) {
+        // 50% Badge
+        createBadgeForFlashCardSet(flashCardSetUUID, name, bronzePassingPercentage, courseUUID, courseService);
+        // 70% Badge
+        createBadgeForFlashCardSet(flashCardSetUUID, name, silverPassingPercentage, courseUUID, courseService);
+        // 90% Badge
+        createBadgeForFlashCardSet(flashCardSetUUID, name, goldPassingPercentage, courseUUID, courseService);
+    }
+
+    public Badge createBadgeForFlashCardSet(UUID flashCardSetId, String name, int passingPercentage, UUID courseUUID, CourseService courseService) {
 
         BadgeEntity badgeEntity = new BadgeEntity();
-        badgeEntity.setName(name);
         badgeEntity.setDescription("At least " + passingPercentage + "% of your answers for the flashcardSet " + name + " are correct.");
         badgeEntity.setPassingPercentage(passingPercentage);
         badgeEntity.setFlashCardSetUUID(flashCardSetId);
         badgeEntity.setCourseUUID(courseUUID);
 
         badgeEntity = badgeRepository.save(badgeEntity);
-        return addBadgeForCourseAndUsers(courseUUID, badgeEntity);
+        return courseService.addBadgeForCourseAndUsers(courseUUID, badgeEntity, this);
 
     }
 
