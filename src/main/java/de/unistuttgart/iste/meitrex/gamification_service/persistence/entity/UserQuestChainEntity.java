@@ -20,47 +20,44 @@ public class UserQuestChainEntity {
     private UUID userQuestChainUUID;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    private LinkedList<UserQuestEntity> userQuests;
+    private LinkedList<QuestEntity> quests;
 
     private UUID questChainUUID;
 
     private UUID userUUID;
-
-    private UUID courseUUID;
 
     private int currentUserQuestIndex;
 
     private boolean finished;
 
     public void finishQuest() {
-        if (currentUserQuestIndex < userQuests.size() - 1) {
-            getCurrentUserQuest().setFinished(true);
+        if (currentUserQuestIndex < quests.size() - 1) {
             currentUserQuestIndex++;
         } else {
             finished = true;
         }
     }
 
-    public UserQuestEntity getCurrentUserQuest() {
-        if (userQuests != null && currentUserQuestIndex < userQuests.size() - 1) {
-            return userQuests.get(currentUserQuestIndex);
+    public QuestEntity getCurrentUserQuest() {
+        if (this.quests != null && currentUserQuestIndex < quests.size() - 1) {
+            return quests.get(currentUserQuestIndex);
         } else {
             return null;
         }
     }
 
-    public void addUserQuest(UserQuestEntity userQuest) {
-        if (this.userQuests == null) {
-            this.userQuests = new LinkedList<UserQuestEntity>();
+    public void addQuest(QuestEntity quest) {
+        if (this.quests == null) {
+            this.quests = new LinkedList<QuestEntity>();
         }
-        this.userQuests.add(userQuest);
+        this.quests.add(quest);
     }
 
     public int length() {
-        if (this.userQuests == null) {
+        if (this.quests == null) {
             return 0;
         }
-        return this.userQuests.size();
+        return this.quests.size();
     }
 
 }

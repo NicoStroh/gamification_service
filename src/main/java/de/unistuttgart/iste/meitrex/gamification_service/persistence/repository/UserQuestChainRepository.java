@@ -10,6 +10,6 @@ import java.util.UUID;
 @Repository
 public interface UserQuestChainRepository extends JpaRepository<UserQuestChainEntity, UUID> {
 
-    UserQuestChainEntity findByCourseUUIDAndUserUUID(UUID courseUUID, UUID userUUID);
+    UserQuestChainEntity findByQuestChainUUIDAndUserUUID(UUID questChainUUID, UUID userUUID);
 
 }

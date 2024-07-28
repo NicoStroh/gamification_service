@@ -3,9 +3,7 @@ package de.unistuttgart.iste.meitrex.gamification_service.service;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.*;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.mapper.QuestMapper;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.*;
-import de.unistuttgart.iste.meitrex.generated.dto.Badge;
-import de.unistuttgart.iste.meitrex.generated.dto.UserBadge;
-import de.unistuttgart.iste.meitrex.generated.dto.UserQuest;
+import de.unistuttgart.iste.meitrex.generated.dto.Quest;
 import de.unistuttgart.iste.meitrex.generated.dto.UserQuestChain;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -25,18 +23,27 @@ public class QuestService {
 
     private final QuestMapper questMapper;
 
-    public UserQuest getCurrentUserQuest(UUID userUUID, UUID courseUUID) {
+    public Quest getCurrentUserQuest(UUID userUUID, UUID courseUUID) {
 
-        UserQuestChainEntity userQuestChainEntity = userQuestChainRepository.findByCourseUUIDAndUserUUID(courseUUID, userUUID);
+        UserQuestChainEntity userQuestChainEntity = findByUserUUIDAndCourseUUID(userUUID, courseUUID);
         if (userQuestChainEntity == null) {
             return null;
         }
-        return questMapper.userQuestEntityToDto(userQuestChainEntity.getCurrentUserQuest());
+
+        Quest quest = questMapper.questEntityToDto(userQuestChainEntity.getCurrentUserQuest());
+        quest.setFinished(false);
+        return quest;
 
     }
 
     public UserQuestChain getUserQuestChain(UUID userUUID, UUID courseUUID) {
-        return questMapper.userQuestChainEntityToDto(userQuestChainRepository.findByCourseUUIDAndUserUUID(courseUUID, userUUID));
+
+        UserQuestChainEntity userQuestChainEntity = findByUserUUIDAndCourseUUID(userUUID, courseUUID);
+        if (userQuestChainEntity == null) {
+            return null;
+        }
+        return questMapper.userQuestChainEntityToDto(userQuestChainEntity);
+
     }
 
     public void assignQuestChainToUser(UUID userUUID, UUID courseUUID) {
@@ -46,11 +53,9 @@ public class QuestService {
         UserQuestChainEntity userQuestChain = new UserQuestChainEntity();
         userQuestChain.setQuestChainUUID(questChain.getQuestChainUUID());
         userQuestChain.setUserUUID(userUUID);
-        userQuestChain.setCourseUUID(courseUUID);
         for (QuestEntity quest : questChain.getQuests()) {
-            UserQuestEntity userQuest = new UserQuestEntity();
+            QuestEntity userQuest = new QuestEntity();
             userQuest.setQuestUUID(quest.getQuestUUID());
-            userQuest.setUserUUID(userUUID);
             userQuest.setDescription(quest.getDescription());
 
             if (quest.getQuizUUID() != null) {
@@ -59,7 +64,7 @@ public class QuestService {
                 userQuest.setFlashCardSetUUID(quest.getFlashCardSetUUID());
             }
 
-            userQuestChain.addUserQuest(userQuest);
+            userQuestChain.addQuest(userQuest);
         }
         userQuestChainRepository.save(userQuestChain);
 
@@ -89,14 +94,25 @@ public class QuestService {
 
     }
 
+    private UserQuestChainEntity findByUserUUIDAndCourseUUID(UUID userUUID, UUID courseUUID) {
+
+        QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
+
+        if (questChainEntity == null) {
+            return null;
+        }
+        return userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), userUUID);
+
+    }
+
     public void markQuestAsFinishedIfPassedQuiz(UUID userUUID, UUID courseUUID, UUID quizUUID, int correctAnswers, int totalAnswers) {
 
-        UserQuestChainEntity userQuestChainEntity = userQuestChainRepository.findByCourseUUIDAndUserUUID(courseUUID, userUUID);
+        UserQuestChainEntity userQuestChainEntity = findByUserUUIDAndCourseUUID(userUUID, courseUUID);
         if (userQuestChainEntity == null) {
             return;
         }
 
-        UserQuestEntity currentUserQuestEntity = userQuestChainEntity.getCurrentUserQuest();
+        QuestEntity currentUserQuestEntity = userQuestChainEntity.getCurrentUserQuest();
         int percentage = (correctAnswers * 100) / totalAnswers;
         if (currentUserQuestEntity.getQuizUUID() == quizUUID && percentage > 70) {
             userQuestChainEntity.finishQuest();
@@ -108,12 +124,12 @@ public class QuestService {
 
     public void markQuestAsFinishedIfPassedFlashCardSet(UUID userUUID, UUID courseUUID, UUID flashCardSetUUID, int correctAnswers, int totalAnswers) {
 
-        UserQuestChainEntity userQuestChainEntity = userQuestChainRepository.findByCourseUUIDAndUserUUID(courseUUID, userUUID);
+        UserQuestChainEntity userQuestChainEntity = findByUserUUIDAndCourseUUID(userUUID, courseUUID);
         if (userQuestChainEntity == null) {
             return;
         }
 
-        UserQuestEntity currentUserQuestEntity = userQuestChainEntity.getCurrentUserQuest();
+        QuestEntity currentUserQuestEntity = userQuestChainEntity.getCurrentUserQuest();
         int percentage = (correctAnswers * 100) / totalAnswers;
         if (currentUserQuestEntity.getFlashCardSetUUID() == flashCardSetUUID && percentage > 70) {
             userQuestChainEntity.finishQuest();

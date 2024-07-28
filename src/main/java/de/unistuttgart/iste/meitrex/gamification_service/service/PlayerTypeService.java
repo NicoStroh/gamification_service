@@ -1,15 +1,12 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service;
 
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.PlayerTypeEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.mapper.PlayerTypeMapper;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.PlayerTypeRepository;
-import de.unistuttgart.iste.meitrex.generated.dto.PlayerType;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -19,20 +16,19 @@ import java.util.UUID;
 @Slf4j
 public class PlayerTypeService {
 
-    private final PlayerTypeMapper playerTypeMapper;
     private final PlayerTypeRepository playerTypeRepository;
 
     /**
      * Creates a new empty TestResult for the user.
      *
      * @param userUUID     the id of the new user that was just created
-     * @return an empty PlayerType, indicating that the user has
+     * @return an empty PlayerTypeEntity, indicating that the user has
      *                  not yet taken the PlayerTypeTest
      */
-    public PlayerType createUser(final UUID userUUID) {
+    public PlayerTypeEntity createUser(final UUID userUUID) {
 
         PlayerTypeEntity entity = new PlayerTypeEntity(userUUID, false);
-        return playerTypeMapper.entityToDto(playerTypeRepository.save(entity));
+        return playerTypeRepository.save(entity);
 
     }
 
@@ -56,7 +52,7 @@ public class PlayerTypeService {
         return playerTypeRepository.findById(userUUID);
     }
 
-    public PlayerType createOrUpdatePlayerType(UUID userUUID, int achieverPercentage, int explorerPercentage, int socializerPercentage, int killerPercentage) {
+    public PlayerTypeEntity createOrUpdatePlayerType(UUID userUUID, int achieverPercentage, int explorerPercentage, int socializerPercentage, int killerPercentage) {
 
         PlayerTypeEntity playerTypeEntity = new PlayerTypeEntity();
         playerTypeEntity.setUserUUID(userUUID);
@@ -70,7 +66,7 @@ public class PlayerTypeService {
 
         playerTypeEntity.setDominantPlayerType(playerTypeEntity.dominantPlayerType());
 
-        return playerTypeMapper.entityToDto(playerTypeRepository.save(playerTypeEntity));
+        return playerTypeRepository.save(playerTypeEntity);
 
     }
 

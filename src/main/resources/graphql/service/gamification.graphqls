@@ -20,37 +20,12 @@ type PlayerTypeTestQuestion {
   selectedOption: Boolean!
 }
 
-type ShortBartleTestResult {
-  achieverPercentage: Int!
-  explorerPercentage: Int!
-  socializerPercentage: Int!
-  killerPercentage: Int!
-}
-
 enum DominantPlayerType {
   None
   Achiever
   Explorer
   Socializer
   Killer
-}
-
-type PlayerType {
-  userUUID: UUID!
-  achieverPercentage: Int!
-  explorerPercentage: Int!
-  socializerPercentage: Int!
-  killerPercentage: Int!
-}
-
-
-type Badge {
-  badgeUUID: UUID!
-  name: String!
-  description: String
-  passingPercentage: Int!
-  quizUUID: UUID
-  flashCardSetUUID: UUID
 }
 
 type UserBadge {
@@ -66,30 +41,15 @@ type Quest {
   questUUID: UUID!
   quizUUID: UUID
   flashCardSetUUID: UUID
-  description: String
-}
-
-type UserQuest {
-  userQuestUUID: UUID!
-  userUUID: UUID!
-  questUUID: UUID!
-  quizUUID: UUID
-  flashCardSetUUID: UUID
   finished: Boolean!
   description: String!
 }
 
-type QuestChain {
-  questChainUUID: UUID!
-  quests: [Quest!]!
-  courseUUID: UUID!
-}
-
 type UserQuestChain {
   userQuestChainUUID: UUID!
-  userQuests: [UserQuest!]!
+  quests: [Quest!]!
   questChainUUID: UUID!
-  courseUUID: UUID!
+  userUUID: UUID!
   currentUserQuestIndex: Int!
   finished: Boolean!
 }
@@ -99,25 +59,25 @@ type Query {
   userHasTakenTest(userUUID: UUID!): Boolean!
 
   getCoursesUserBadges(courseUUID: UUID!, userUUID: UUID!): [UserBadge!]!
-  getCurrentUserQuest(userUUID: UUID!, courseUUID: UUID!): UserQuest!
+  getCurrentUserQuest(userUUID: UUID!, courseUUID: UUID!): Quest!
   getUserQuestChain(userUUID: UUID!, courseUUID: UUID!): UserQuestChain!
   usersDominantPlayerType(userUUID: UUID!): DominantPlayerType!
 
 
   # True if dominant playertype is achiever
-  userCanSeeBadges(userUUID: UUID!): PlayerType!
+  userCanSeeBadges(userUUID: UUID!): Boolean!
   # True if dominant playertype is explorer
-  userCanSeeQuests(userUUID: UUID!): PlayerType!
+  userCanSeeQuests(userUUID: UUID!): Boolean!
   # True if dominant playertype is socializier
-  userCanSeeTeamForum(userUUID: UUID!): PlayerType!
+  userCanSeeTeamForum(userUUID: UUID!): Boolean!
   # True if dominant playertype is killer
-  userCanSeeScoreboard(userUUID: UUID!): PlayerType!
+  userCanSeeScoreboard(userUUID: UUID!): Boolean!
 }
 
 type Mutation {
   submitAnswer(questionId: Int!, answer: Boolean!): String
   evaluateTest(userUUID: UUID!): ShortBartleTestResultEntity!
-  createOrUpdatePlayerType(userUUID: UUID!, achieverPercentage: Int!, explorerPercentage: Int!, socializerPercentage: Int!, killerPercentage: Int!): PlayerType!
+  createOrUpdatePlayerType(userUUID: UUID!, achieverPercentage: Int!, explorerPercentage: Int!, socializerPercentage: Int!, killerPercentage: Int!): String
 
   addCourse(courseUUID: UUID!, lecturerUUID: UUID!): String!
   addUserToCourse(userUUID: UUID!, courseUUID: UUID!): String!

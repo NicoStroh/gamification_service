@@ -24,8 +24,4 @@ public class UserBadgeEntity {
 
     private boolean achieved;
 
-    private String description;
-
-    private int passingPercentage;
-
 }

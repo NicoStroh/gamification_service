@@ -3,7 +3,6 @@ package de.unistuttgart.iste.meitrex.gamification_service.controller;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.PlayerTypeEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.PlayerTypeTest;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.PlayerTypeTestQuestion;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.QuestEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.service.BadgeService;
 import de.unistuttgart.iste.meitrex.gamification_service.service.CourseService;
 import de.unistuttgart.iste.meitrex.gamification_service.service.PlayerTypeService;
@@ -55,7 +54,7 @@ public class GamificationController {
     @QueryMapping
     public PlayerTypeEntity.DominantPlayerType usersDominantPlayerType(@Argument UUID userUUID) {
         Optional<PlayerTypeEntity> playerType = playerTypeService.getPlayerTypeByUserUUID(userUUID);
-        if (playerType.isPresent()) {
+        if (playerType.isPresent() && playerType.get().getDominantPlayerType() != null) {
             return playerType.get().getDominantPlayerType();
         } else {
             return PlayerTypeEntity.DominantPlayerType.None;
@@ -97,7 +96,7 @@ public class GamificationController {
     }
 
     @QueryMapping
-    public UserQuest getCurrentUserQuest(@Argument UUID userUUID, @Argument UUID courseUUID) {
+    public Quest getCurrentUserQuest(@Argument UUID userUUID, @Argument UUID courseUUID) {
         return questService.getCurrentUserQuest(userUUID, courseUUID);
     }
 
@@ -130,12 +129,13 @@ public class GamificationController {
     }
 
     @MutationMapping
-    public PlayerType createOrUpdatePlayerType(@Argument UUID userUUID,
+    public String createOrUpdatePlayerType(@Argument UUID userUUID,
                                                @Argument int achieverPercentage,
                                                @Argument int explorerPercentage,
                                                @Argument int socializerPercentage,
                                                @Argument int killerPercentage) {
-        return playerTypeService.createOrUpdatePlayerType(userUUID, achieverPercentage, explorerPercentage, socializerPercentage, killerPercentage);
+        playerTypeService.createOrUpdatePlayerType(userUUID, achieverPercentage, explorerPercentage, socializerPercentage, killerPercentage);
+        return "Updated player type successfully!";
     }
 
 

@@ -1,8 +1,8 @@
 package de.unistuttgart.iste.meitrex.gamification_service.persistence.mapper;
 
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.QuestEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserQuestChainEntity;
-import de.unistuttgart.iste.meitrex.generated.dto.UserQuest;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserQuestEntity;
+import de.unistuttgart.iste.meitrex.generated.dto.Quest;
 import de.unistuttgart.iste.meitrex.generated.dto.UserQuestChain;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -16,30 +16,37 @@ public class QuestMapper {
 
     private final ModelMapper modelMapper;
 
-    public UserQuest userQuestEntityToDto(UserQuestEntity userQuestEntity) {
-        return modelMapper.map(userQuestEntity, UserQuest.class);
-    }
-
-    public UserQuestEntity dtoToUserQuestEntity(UserQuest userQuest) {
-        return modelMapper.map(userQuest, UserQuestEntity.class);
+    public Quest questEntityToDto(QuestEntity questEntity) {
+        Quest quest = new Quest();
+        quest.setQuestUUID(questEntity.getQuestUUID());
+        quest.setDescription(questEntity.getDescription());
+        quest.setQuizUUID(questEntity.getQuizUUID());
+        quest.setFlashCardSetUUID(questEntity.getFlashCardSetUUID());
+        return quest;
     }
 
     public UserQuestChain userQuestChainEntityToDto(UserQuestChainEntity userQuestChainEntity) {
+
         UserQuestChain userQuestChain = new UserQuestChain();
 
         userQuestChain.setUserQuestChainUUID(userQuestChainEntity.getUserQuestChainUUID());
         userQuestChain.setQuestChainUUID(userQuestChainEntity.getQuestChainUUID());
-        userQuestChain.setCourseUUID(userQuestChainEntity.getCourseUUID());
+        userQuestChain.setUserUUID(userQuestChainEntity.getUserUUID());
         userQuestChain.setCurrentUserQuestIndex(userQuestChainEntity.getCurrentUserQuestIndex());
         userQuestChain.setFinished(userQuestChainEntity.isFinished());
 
-        LinkedList<UserQuest> userQuests = new LinkedList<UserQuest>();
-        for (UserQuestEntity userQuestEntity : userQuestChainEntity.getUserQuests()) {
-            userQuests.add(userQuestEntityToDto(userQuestEntity));
+        LinkedList<Quest> userQuests = new LinkedList<Quest>();
+        int i = 0;
+        for (QuestEntity userQuestEntity : userQuestChainEntity.getQuests()) {
+            Quest quest = questEntityToDto(userQuestEntity);
+            quest.setFinished(i < userQuestChain.getCurrentUserQuestIndex());
+            userQuests.add(quest);
+            i++;
         }
-        userQuestChain.setUserQuests(userQuests);
+        userQuestChain.setQuests(userQuests);
 
         return userQuestChain;
+
     }
 
 }
