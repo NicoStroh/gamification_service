@@ -23,6 +23,8 @@ public class QuestService {
 
     private final QuestMapper questMapper;
 
+    private final static int passingPercentage = 80;
+
     public Quest getCurrentUserQuest(UUID userUUID, UUID courseUUID) {
 
         UserQuestChainEntity userQuestChainEntity = findByUserUUIDAndCourseUUID(userUUID, courseUUID);
@@ -74,7 +76,7 @@ public class QuestService {
 
         QuestEntity quest = new QuestEntity();
         quest.setQuizUUID(quizUUID);
-        quest.setDescription("Finish quiz " + name + " with at least 70% correct answers to unlock the next quest!");
+        quest.setDescription("Finish quiz " + name + " with at least " + passingPercentage + "% correct answers to unlock the next quest!");
 
         QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
         questChainEntity.addQuest(quest);
@@ -86,7 +88,7 @@ public class QuestService {
 
         QuestEntity quest = new QuestEntity();
         quest.setFlashCardSetUUID(flashCardSetUUID);
-        quest.setDescription("Finish Flashcardset " + name + " with at least 70% correct answers to unlock the next quest!");
+        quest.setDescription("Finish Flashcardset " + name + " with at least " + passingPercentage + "% correct answers to unlock the next quest!");
 
         QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
         questChainEntity.addQuest(quest);
@@ -114,7 +116,7 @@ public class QuestService {
 
         QuestEntity currentUserQuestEntity = userQuestChainEntity.getCurrentUserQuest();
         int percentage = (correctAnswers * 100) / totalAnswers;
-        if (currentUserQuestEntity.getQuizUUID() == quizUUID && percentage > 70) {
+        if (currentUserQuestEntity.getQuizUUID() == quizUUID && percentage > passingPercentage) {
             userQuestChainEntity.finishQuest();
         }
 
@@ -131,7 +133,7 @@ public class QuestService {
 
         QuestEntity currentUserQuestEntity = userQuestChainEntity.getCurrentUserQuest();
         int percentage = (correctAnswers * 100) / totalAnswers;
-        if (currentUserQuestEntity.getFlashCardSetUUID() == flashCardSetUUID && percentage > 70) {
+        if (currentUserQuestEntity.getFlashCardSetUUID() == flashCardSetUUID && percentage > passingPercentage) {
             userQuestChainEntity.finishQuest();
         }
 
