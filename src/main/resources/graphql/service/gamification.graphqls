@@ -50,7 +50,7 @@ type UserQuestChain {
   quests: [Quest!]!
   questChainUUID: UUID!
   userUUID: UUID!
-  currentUserQuestIndex: Int!
+  userLevel: Int!
   finished: Boolean!
 }
 

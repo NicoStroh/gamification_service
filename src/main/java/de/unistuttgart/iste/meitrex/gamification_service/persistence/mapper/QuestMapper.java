@@ -25,21 +25,22 @@ public class QuestMapper {
         return quest;
     }
 
-    public UserQuestChain userQuestChainEntityToDto(UserQuestChainEntity userQuestChainEntity) {
+    public UserQuestChain userQuestChainEntityToDto(UserQuestChainEntity userQuestChainEntity, LinkedList<QuestEntity> quests) {
 
         UserQuestChain userQuestChain = new UserQuestChain();
 
         userQuestChain.setUserQuestChainUUID(userQuestChainEntity.getUserQuestChainUUID());
         userQuestChain.setQuestChainUUID(userQuestChainEntity.getQuestChainUUID());
         userQuestChain.setUserUUID(userQuestChainEntity.getUserUUID());
-        userQuestChain.setCurrentUserQuestIndex(userQuestChainEntity.getCurrentUserQuestIndex());
-        userQuestChain.setFinished(userQuestChainEntity.isFinished());
+        int userLevel = userQuestChainEntity.getUserLevel();
+        userQuestChain.setUserLevel(userLevel);
+        userQuestChain.setFinished(userLevel >= quests.size());
 
         LinkedList<Quest> userQuests = new LinkedList<Quest>();
         int i = 0;
-        for (QuestEntity userQuestEntity : userQuestChainEntity.getQuests()) {
+        for (QuestEntity userQuestEntity : quests) {
             Quest quest = questEntityToDto(userQuestEntity);
-            quest.setFinished(i < userQuestChain.getCurrentUserQuestIndex());
+            quest.setFinished(i < userLevel);
             userQuests.add(quest);
             i++;
         }
