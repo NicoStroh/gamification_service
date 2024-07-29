@@ -24,6 +24,7 @@ public class CourseService {
     public void addCourse(UUID courseUUID, UUID lecturerUUID, BadgeService badgeService, QuestService questService) {
         CourseEntity courseEntity = new CourseEntity(courseUUID, new HashSet<UUID>(), new HashSet<UUID>());
         courseRepository.save(courseEntity);
+        questService.addCourse(courseUUID);
         addUserToCourse(lecturerUUID, courseUUID, badgeService, questService);
     }
 
@@ -31,7 +32,7 @@ public class CourseService {
 
         List<BadgeEntity> badges = badgeService.getBadgesByCourseUUID(courseUUID);
         for (BadgeEntity badge : badges) {
-            badgeService.assignBadgeToUser(userUUID, badge.getBadgeUUID());
+            badgeService.assignBadgeToUser(userUUID, badge);
         }
 
         questService.assignQuestChainToUser(userUUID, courseUUID);
@@ -45,17 +46,15 @@ public class CourseService {
 
     }
 
-    public BadgeEntity addBadgeForCourseAndUsers(UUID courseUUID, BadgeEntity badgeEntity, BadgeService badgeService) {
+    public void addBadgeForCourseAndUsers(UUID courseUUID, BadgeEntity badgeEntity, BadgeService badgeService) {
 
         CourseEntity courseEntity = courseRepository.findById(courseUUID).orElseThrow(() -> new RuntimeException("Course not found"));
         courseEntity.addBadge(badgeEntity.getBadgeUUID());
 
         for (UUID userUUID : courseEntity.getUserUUIDs()) {
-            badgeService.assignBadgeToUser(userUUID, badgeEntity.getBadgeUUID());
+            badgeService.assignBadgeToUser(userUUID, badgeEntity);
         }
         courseRepository.save(courseEntity);
-
-        return badgeEntity;
 
     }
 

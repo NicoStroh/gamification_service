@@ -85,9 +85,7 @@ public class BadgeService {
         return userBadges;
     }
 
-    public UserBadge assignBadgeToUser(UUID userUUID, UUID badgeUUID) {
-        BadgeEntity badge = badgeRepository.findById(badgeUUID).orElseThrow(() -> new RuntimeException("Badge not found"));
-
+    public UserBadge assignBadgeToUser(UUID userUUID, BadgeEntity badge) {
         UserBadgeEntity userBadgeEntity = new UserBadgeEntity();
         userBadgeEntity.setUserUUID(userUUID);
         userBadgeEntity.setBadgeUUID(badge.getBadgeUUID());
@@ -118,7 +116,7 @@ public class BadgeService {
         createBadgeForQuiz(quizUUID, name, goldPassingPercentage, courseUUID, courseService);
     }
 
-    public BadgeEntity createBadgeForQuiz(UUID quizUUID, String name, int passingPercentage, UUID courseUUID, CourseService courseService) {
+    public void createBadgeForQuiz(UUID quizUUID, String name, int passingPercentage, UUID courseUUID, CourseService courseService) {
 
         BadgeEntity badgeEntity = new BadgeEntity();
         badgeEntity.setDescription("At least " + passingPercentage + "% of your answers for the quiz " + name + " are correct.");
@@ -127,7 +125,7 @@ public class BadgeService {
         badgeEntity.setCourseUUID(courseUUID);
 
         badgeEntity = badgeRepository.save(badgeEntity);
-        return courseService.addBadgeForCourseAndUsers(courseUUID, badgeEntity, this);
+        courseService.addBadgeForCourseAndUsers(courseUUID, badgeEntity, this);
 
     }
 
@@ -143,7 +141,7 @@ public class BadgeService {
         createBadgeForFlashCardSet(flashCardSetUUID, name, goldPassingPercentage, courseUUID, courseService);
     }
 
-    public BadgeEntity createBadgeForFlashCardSet(UUID flashCardSetId, String name, int passingPercentage, UUID courseUUID, CourseService courseService) {
+    public void createBadgeForFlashCardSet(UUID flashCardSetId, String name, int passingPercentage, UUID courseUUID, CourseService courseService) {
 
         BadgeEntity badgeEntity = new BadgeEntity();
         badgeEntity.setDescription("At least " + passingPercentage + "% of your answers for the flashcardSet " + name + " are correct.");
@@ -152,7 +150,7 @@ public class BadgeService {
         badgeEntity.setCourseUUID(courseUUID);
 
         badgeEntity = badgeRepository.save(badgeEntity);
-        return courseService.addBadgeForCourseAndUsers(courseUUID, badgeEntity, this);
+        courseService.addBadgeForCourseAndUsers(courseUUID, badgeEntity, this);
 
     }
 

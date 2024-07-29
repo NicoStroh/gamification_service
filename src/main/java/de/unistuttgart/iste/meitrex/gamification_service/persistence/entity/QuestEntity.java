@@ -10,9 +10,12 @@ import java.util.UUID;
 @Setter
 @ToString
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
 public class QuestEntity {
+
+    public QuestEntity() {
+        this.questUUID = UUID.randomUUID();
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

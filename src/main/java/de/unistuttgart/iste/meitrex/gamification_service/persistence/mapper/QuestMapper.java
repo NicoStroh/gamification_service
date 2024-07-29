@@ -9,6 +9,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedList;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -25,7 +26,7 @@ public class QuestMapper {
         return quest;
     }
 
-    public UserQuestChain userQuestChainEntityToDto(UserQuestChainEntity userQuestChainEntity, LinkedList<QuestEntity> quests) {
+    public UserQuestChain userQuestChainEntityToDto(UserQuestChainEntity userQuestChainEntity, List<QuestEntity> quests) {
 
         UserQuestChain userQuestChain = new UserQuestChain();
 
@@ -36,7 +37,7 @@ public class QuestMapper {
         userQuestChain.setUserLevel(userLevel);
         userQuestChain.setFinished(userLevel >= quests.size());
 
-        LinkedList<Quest> userQuests = new LinkedList<Quest>();
+        List<Quest> userQuests = new LinkedList<Quest>();
         int i = 0;
         for (QuestEntity userQuestEntity : quests) {
             Quest quest = questEntityToDto(userQuestEntity);

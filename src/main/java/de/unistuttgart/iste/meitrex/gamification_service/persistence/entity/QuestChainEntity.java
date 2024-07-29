@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity(name = "QuestChain")
@@ -20,7 +21,7 @@ public class QuestChainEntity {
     private UUID questChainUUID;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    private LinkedList<QuestEntity> quests;
+    private List<QuestEntity> quests;
 
     private UUID courseUUID;
 
