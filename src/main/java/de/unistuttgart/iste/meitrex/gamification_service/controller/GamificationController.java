@@ -128,16 +128,6 @@ public class GamificationController {
 
     }
 
-    @MutationMapping
-    public String createOrUpdatePlayerType(@Argument UUID userUUID,
-                                               @Argument int achieverPercentage,
-                                               @Argument int explorerPercentage,
-                                               @Argument int socializerPercentage,
-                                               @Argument int killerPercentage) {
-        playerTypeService.createOrUpdatePlayerType(userUUID, achieverPercentage, explorerPercentage, socializerPercentage, killerPercentage);
-        return "Updated player type successfully!";
-    }
-
 
     @MutationMapping
     public String addCourse(@Argument UUID courseUUID, @Argument UUID lecturerUUID) {
