@@ -43,6 +43,7 @@ type Quest {
   flashCardSetUUID: UUID
   finished: Boolean!
   description: String!
+  level: Int!
 }
 
 type UserQuestChain {
