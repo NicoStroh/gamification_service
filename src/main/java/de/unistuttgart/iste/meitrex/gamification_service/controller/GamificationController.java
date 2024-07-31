@@ -15,7 +15,6 @@ import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -41,7 +40,7 @@ public class GamificationController {
     @QueryMapping
     public boolean userHasTakenTest(@Argument final UUID userUUID) {
 
-        Optional<PlayerTypeEntity> entity = playerTypeService.getEntity(userUUID);
+        Optional<PlayerTypeEntity> entity = playerTypeService.getPlayerTypeByUserUUID(userUUID);
         if (entity.isEmpty()) {
             // User is not present in playertype_database
             playerTypeService.createUser(userUUID);
@@ -59,35 +58,6 @@ public class GamificationController {
         } else {
             return PlayerTypeEntity.DominantPlayerType.None;
         }
-    }
-
-
-    // True if dominant playertype is achiever
-    @QueryMapping
-    public boolean userCanSeeBadges(@Argument UUID userUUID) {
-        Optional<PlayerTypeEntity> playerType = playerTypeService.getPlayerTypeByUserUUID(userUUID);
-        return playerType.isPresent() && playerType.get().isAchiever();
-    }
-
-    // True if dominant playertype is explorer
-    @QueryMapping
-    public boolean userCanSeeQuests(@Argument UUID userUUID) {
-        Optional<PlayerTypeEntity> playerType = playerTypeService.getPlayerTypeByUserUUID(userUUID);
-        return playerType.isPresent() && playerType.get().isExplorer();
-    }
-
-    // True if dominant playertype is socializer
-    @QueryMapping
-    public boolean userCanSeeTeamForum(@Argument UUID userUUID) {
-        Optional<PlayerTypeEntity> playerType = playerTypeService.getPlayerTypeByUserUUID(userUUID);
-        return playerType.isPresent() && playerType.get().isSocializer();
-    }
-
-    // True if dominant playertype is killer
-    @QueryMapping
-    public boolean userCanSeeScoreboard(@Argument UUID userUUID) {
-        Optional<PlayerTypeEntity> playerType = playerTypeService.getPlayerTypeByUserUUID(userUUID);
-        return playerType.isPresent() && playerType.get().isKiller();
     }
 
     @QueryMapping

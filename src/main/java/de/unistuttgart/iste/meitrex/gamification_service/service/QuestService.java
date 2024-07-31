@@ -25,12 +25,25 @@ public class QuestService {
 
     private final static int passingPercentage = 80;
 
+    /**
+     * Creates a new empty QuestChainEntity for the course.
+     *
+     * @param courseUUID     the id of the new course that was just created
+     */
     public void addCourse(UUID courseUUID) {
         QuestChainEntity questChainEntity = new QuestChainEntity();
         questChainEntity.setCourseUUID(courseUUID);
         questChainRepository.save(questChainEntity);
     }
 
+    /**
+     * Retrieves the quest for a user and the course depending on the level of the user at this questchain
+     *
+     * @param userUUID     the id of the user
+     * @param courseUUID   the id of the course
+     *
+     * @return the Quest for the current level of the user at this course
+     */
     public Quest getCurrentUserQuest(UUID userUUID, UUID courseUUID) {
 
         QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
@@ -56,6 +69,14 @@ public class QuestService {
 
     }
 
+    /**
+     * Retrieves the complete quest chain for the user at the course
+     *
+     * @param userUUID     the id of the user
+     * @param courseUUID   the id of the course
+     *
+     * @return the UserQuestChain for the user at this course with the current level of the user
+     */
     public UserQuestChain getUserQuestChain(UUID userUUID, UUID courseUUID) {
 
         QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
@@ -73,6 +94,12 @@ public class QuestService {
 
     }
 
+    /**
+     * Assigns the questchain of the course for a user, who just joined the course
+     *
+     * @param userUUID     the id of the user
+     * @param courseUUID   the id of the course
+     */
     public void assignQuestChainToUser(UUID userUUID, UUID courseUUID) {
 
         QuestChainEntity questChain = questChainRepository.findByCourseUUID(courseUUID);
@@ -87,6 +114,13 @@ public class QuestService {
 
     }
 
+    /**
+     * Creates a quest for the given course, which suggests the user to complete the quiz with 80% correct answers
+     *
+     * @param quizUUID     the id of the created quiz
+     * @param name         the name of the quiz
+     * @param courseUUID   the id of the course
+     */
     public void createQuestForQuiz(UUID quizUUID, String name, UUID courseUUID) {
 
         QuestEntity quest = new QuestEntity();
@@ -99,6 +133,13 @@ public class QuestService {
 
     }
 
+    /**
+     * Creates a quest for the given course, which suggests the user to complete the flashcardset with 80% correct answers
+     *
+     * @param flashCardSetUUID     the id of the created flashcardset
+     * @param name                 the name of the flashcardset
+     * @param courseUUID           the id of the course
+     */
     public void createQuestForFlashCardSet(UUID flashCardSetUUID, String name, UUID courseUUID) {
 
         QuestEntity quest = new QuestEntity();
@@ -111,6 +152,14 @@ public class QuestService {
 
     }
 
+    /**
+     * Retrieves the userQuestChain for the user at the course
+     *
+     * @param userUUID     the id of the user
+     * @param courseUUID   the id of the course
+     *
+     * @return the UserQuestChainEntity for the user at this course
+     */
     private UserQuestChainEntity findByUserUUIDAndCourseUUID(UUID userUUID, UUID courseUUID) {
 
         QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
@@ -122,6 +171,16 @@ public class QuestService {
 
     }
 
+    /**
+     * Marks the current quest of the user at this course as finished, if he got more than 80% of the answers correct
+     * and the current quest points to the finished quiz
+     *
+     * @param userUUID             the id of the user
+     * @param courseUUID           the id of the course, in which the quiz is
+     * @param quizUUID             the id of the quiz
+     * @param correctAnswers       the number of correct answers, the user got for this quiz
+     * @param totalAnswers         the total number of questions in this quiz
+     */
     public void markQuestAsFinishedIfPassedQuiz(UUID userUUID, UUID courseUUID, UUID quizUUID, int correctAnswers, int totalAnswers) {
 
         UserQuestChainEntity userQuestChainEntity = findByUserUUIDAndCourseUUID(userUUID, courseUUID);
@@ -139,6 +198,16 @@ public class QuestService {
 
     }
 
+    /**
+     * Marks the current quest of the user at this course as finished, if he got more than 80% of the answers correct
+     * and the current quest points to the finished flashcardset
+     *
+     * @param userUUID             the id of the user
+     * @param courseUUID           the id of the course, in which the flashcardset is
+     * @param flashCardSetUUID     the id of the flashcardset
+     * @param correctAnswers       the number of correct answers, the user got for this flashcardset
+     * @param totalAnswers         the total number of questions in this flashcardset
+     */
     public void markQuestAsFinishedIfPassedFlashCardSet(UUID userUUID, UUID courseUUID, UUID flashCardSetUUID, int correctAnswers, int totalAnswers) {
 
         UserQuestChainEntity userQuestChainEntity = findByUserUUIDAndCourseUUID(userUUID, courseUUID);

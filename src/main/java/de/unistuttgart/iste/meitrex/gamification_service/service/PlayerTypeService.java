@@ -48,28 +48,6 @@ public class PlayerTypeService {
      * @param userUUID     the id of the user whose percentages are requested
      * @return a PlayerTypeEntity, representing the player types of the user
      */
-    public Optional<PlayerTypeEntity> getEntity(final UUID userUUID) {
-        return playerTypeRepository.findById(userUUID);
-    }
-
-    public PlayerTypeEntity createOrUpdatePlayerType(UUID userUUID, int achieverPercentage, int explorerPercentage, int socializerPercentage, int killerPercentage) {
-
-        PlayerTypeEntity playerTypeEntity = new PlayerTypeEntity();
-        playerTypeEntity.setUserUUID(userUUID);
-
-        playerTypeEntity.setUserHasTakenTest(true);
-
-        playerTypeEntity.setAchieverPercentage(achieverPercentage);
-        playerTypeEntity.setExplorerPercentage(explorerPercentage);
-        playerTypeEntity.setSocializerPercentage(socializerPercentage);
-        playerTypeEntity.setKillerPercentage(killerPercentage);
-
-        playerTypeEntity.setDominantPlayerType(playerTypeEntity.dominantPlayerType());
-
-        return playerTypeRepository.save(playerTypeEntity);
-
-    }
-
     public Optional<PlayerTypeEntity> getPlayerTypeByUserUUID(UUID userUUID) {
         return playerTypeRepository.findByUserUUID(userUUID);
     }

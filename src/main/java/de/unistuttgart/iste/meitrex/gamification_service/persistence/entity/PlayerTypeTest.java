@@ -194,6 +194,58 @@ public class PlayerTypeTest {
      *
      * @param userUUID UUID of the user
      *
+     * The questions of the test and its evalutation are the following:
+     *
+     *                 Question 0:
+     *                 - Are you interested in the Bloom's Taxonomy level of other students?
+     *                 - Yes -> S, K
+     *                 - No -> A, E
+     *
+     *                 Question 1:
+     *                 - Would you like to see which position you have on a leaderboard?
+     *                 - Yes -> A, K
+     *                 - No ->
+     *
+     *                 Question 2:
+     *                 - Are you interested in who has gathered the most experience points in the month?
+     *                 - Yes -> A, K
+     *                 - No -> E
+     *
+     *                 Question 3:
+     *                 - Do you like to collect experience points?
+     *                 - Yes -> A, K
+     *                 - No ->
+     *
+     *                 Question 4:
+     *                 - Is a user profile important for you?
+     *                 - Yes -> A, S
+     *                 - No -> E
+     *
+     *                 Question 5:
+     *                 - Do you like to display badges or achievements in your user profile?
+     *                 - Yes -> A, E, S
+     *                 - No ->
+     *
+     *                 Question 6:
+     *                 - Do you like to have a level system?
+     *                 - Yes -> A, E, K
+     *                 - No ->
+     *
+     *                 Question 7:
+     *                 - Do you like to customize your avatar/user profile with for example clothes, hats, ...?
+     *                 - Yes -> S
+     *                 - No ->
+     *
+     *                 Question 8:
+     *                 - Do you like to unlock new or hidden content?
+     *                 - Yes -> E, S
+     *                 - No ->
+     *
+     *                 Question 9:
+     *                 - If you have the choice to beat an end boss in a team or alone, what would you choose?
+     *                 - Fighting in a team -> S
+     *                 - Fighting alone -> K
+     *
      * @return a PlayerTypeEntity, representing the player types of the user
      */
     public PlayerTypeEntity evaluateTest(UUID userUUID) {
