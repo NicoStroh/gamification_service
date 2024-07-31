@@ -43,6 +43,7 @@ public class QuestMapper {
             Quest quest = questEntityToDto(userQuestEntity);
             quest.setFinished(i < userLevel);
             userQuests.add(quest);
+            quest.setLevel(i);
             i++;
         }
         userQuestChain.setQuests(userQuests);

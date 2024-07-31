@@ -136,8 +136,7 @@ public class GamificationController {
     }
 
     @MutationMapping
-    public String addUserToCourse(@Argument UUID userUUID,
-                                @Argument UUID courseUUID) {
+    public String addUserToCourse(@Argument UUID userUUID, @Argument UUID courseUUID) {
         courseService.addUserToCourse(userUUID, courseUUID, this.badgeService, this.questService);
         return "Added user to course.";
     }

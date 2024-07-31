@@ -11,14 +11,16 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class BadgeMapper {
 
-    private final ModelMapper modelMapper;
+    public UserBadge userBadgeEntityToDto(UserBadgeEntity userBadgeEntity, BadgeEntity badgeEntity) {
+        UserBadge userBadge = new UserBadge();
+        userBadge.setUserBadgeUUID(userBadgeEntity.getUserBadgeUUID());
+        userBadge.setUserUUID(userBadgeEntity.getUserUUID());
+        userBadge.setBadgeUUID(userBadgeEntity.getBadgeUUID());
+        userBadge.setAchieved(userBadgeEntity.isAchieved());
 
-    public UserBadge userBadgeEntityToDto(UserBadgeEntity userBadgeEntity) {
-        return modelMapper.map(userBadgeEntity, UserBadge.class);
-    }
-
-    public UserBadgeEntity dtoToUserBadgeEntity(UserBadge userBadge) {
-        return modelMapper.map(userBadge, UserBadgeEntity.class);
+        userBadge.setDescription(badgeEntity.getDescription());
+        userBadge.setPassingPercentage(badgeEntity.getPassingPercentage());
+        return userBadge;
     }
 
 }

@@ -45,10 +45,14 @@ public class QuestService {
         }
 
         int userLevel = userQuestChainEntity.getUserLevel();
-        Quest quest = questMapper.questEntityToDto(questChainEntity.getQuests().get(userLevel));
-        quest.setFinished(false);
-        quest.setLevel(userLevel);
-        return quest;
+
+        if (userLevel < questChainEntity.getQuests().size()) {
+            Quest quest = questMapper.questEntityToDto(questChainEntity.getQuests().get(userLevel));
+            quest.setFinished(false);
+            quest.setLevel(userLevel);
+            return quest;
+        }
+        return new Quest(UUID.randomUUID(), null, null, true, "You finished all quests for this course!", userLevel);
 
     }
 
@@ -99,7 +103,7 @@ public class QuestService {
 
         QuestEntity quest = new QuestEntity();
         quest.setFlashCardSetUUID(flashCardSetUUID);
-        quest.setDescription("Finish Flashcardset " + name + " with at least " + passingPercentage + "% correct answers to unlock the next quest!");
+        quest.setDescription("Finish flashcardset " + name + " with at least " + passingPercentage + "% correct answers to unlock the next quest!");
 
         QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
         questChainEntity.addQuest(quest);

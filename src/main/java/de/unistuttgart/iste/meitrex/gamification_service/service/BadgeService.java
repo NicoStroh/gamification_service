@@ -36,14 +36,17 @@ public class BadgeService {
     public List<UserBadge> getUserBadgesByCourseUUID(UUID courseUUID, UUID userUUID) {
 
         List<BadgeEntity> badgeEntities = badgeRepository.findByCourseUUID(courseUUID);
-        List<UserBadgeEntity> userBadgeEntities = new LinkedList<UserBadgeEntity>();
+        List<UserBadge> userBadges = new LinkedList<UserBadge>();
 
         for (BadgeEntity badgeEntity : badgeEntities) {
-            userBadgeEntities.add(userBadgeRepository.findByUserUUIDAndBadgeUUID(userUUID, badgeEntity.getBadgeUUID()));
+            UserBadgeEntity userBadgeEntity = userBadgeRepository.findByUserUUIDAndBadgeUUID(userUUID, badgeEntity.getBadgeUUID());
+            List<UserBadgeEntity> all = userBadgeRepository.findAll();
+            if (userBadgeEntity != null) {
+                userBadges.add(badgeMapper.userBadgeEntityToDto(userBadgeEntity, badgeEntity));
+            }
         }
-        return userBadgeEntities.stream()
-                .map(badgeMapper::userBadgeEntityToDto)
-                .toList();
+        return userBadges;
+
     }
 
     public List<BadgeEntity> getBadgesByQuizUUID(UUID quizUUID) {
@@ -55,53 +58,41 @@ public class BadgeService {
     }
 
 
-    public List<UserBadge> markBadgesAsAchievedIfPassedQuiz(UUID userUUID, UUID quizUUID, int correctAnswers, int totalAnswers) {
-
-        List<UserBadge> userBadges = new LinkedList<UserBadge>();
+    public void markBadgesAsAchievedIfPassedQuiz(UUID userUUID, UUID quizUUID, int correctAnswers, int totalAnswers) {
 
         int percentage = (correctAnswers * 100) / totalAnswers;
         List<BadgeEntity> quizBadges = this.getBadgesByQuizUUID(quizUUID);
         for (BadgeEntity quizBadge : quizBadges) {
             if (percentage > quizBadge.getPassingPercentage()) {
-                userBadges.add(markBadgeAsAchieved(userUUID, quizBadge.getBadgeUUID()));
+                markBadgeAsAchieved(userUUID, quizBadge.getBadgeUUID());
             }
         }
 
-        return userBadges;
     }
 
-    public List<UserBadge> markBadgesAsAchievedIfPassedFlashCardSet(UUID userUUID, UUID flashCardSetUUID, int correctAnswers, int totalAnswers) {
-
-        List<UserBadge> userBadges = new LinkedList<UserBadge>();
+    public void markBadgesAsAchievedIfPassedFlashCardSet(UUID userUUID, UUID flashCardSetUUID, int correctAnswers, int totalAnswers) {
 
         int percentage = (correctAnswers * 100) / totalAnswers;
         List<BadgeEntity> flashCardSetBadges = this.getBadgesByFlashCardSetUUID(flashCardSetUUID);
         for (BadgeEntity flashCardSetBadge : flashCardSetBadges) {
             if (percentage > flashCardSetBadge.getPassingPercentage()) {
-                userBadges.add(markBadgeAsAchieved(userUUID, flashCardSetBadge.getBadgeUUID()));
+                markBadgeAsAchieved(userUUID, flashCardSetBadge.getBadgeUUID());
             }
         }
 
-        return userBadges;
     }
 
-    public UserBadge assignBadgeToUser(UUID userUUID, BadgeEntity badge) {
+    public void assignBadgeToUser(UUID userUUID, BadgeEntity badge) {
         UserBadgeEntity userBadgeEntity = new UserBadgeEntity();
         userBadgeEntity.setUserUUID(userUUID);
         userBadgeEntity.setBadgeUUID(badge.getBadgeUUID());
         userBadgeEntity.setAchieved(false);
-
-        UserBadge userBadge = badgeMapper.userBadgeEntityToDto(userBadgeRepository.save(userBadgeEntity));
-        userBadge.setDescription(badge.getDescription());
-        userBadge.setPassingPercentage(badge.getPassingPercentage());
-
-        return userBadge;
+        userBadgeRepository.save(userBadgeEntity);
     }
 
-    public UserBadge markBadgeAsAchieved(UUID userUUID, UUID badgeUUID) {
+    public void markBadgeAsAchieved(UUID userUUID, UUID badgeUUID) {
         UserBadgeEntity userBadge = userBadgeRepository.findByUserUUIDAndBadgeUUID(userUUID, badgeUUID);
         userBadge.setAchieved(true);
-        return badgeMapper.userBadgeEntityToDto(userBadgeRepository.save(userBadge));
     }
 
     public void createBadgesForQuiz(UUID quizUUID,
