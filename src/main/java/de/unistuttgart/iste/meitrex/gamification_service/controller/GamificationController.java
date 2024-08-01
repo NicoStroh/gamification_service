@@ -31,74 +31,6 @@ public class GamificationController {
 
     private PlayerTypeTest test;
 
-    @QueryMapping
-    public PlayerTypeTestQuestion[] test() {
-        this.test = new PlayerTypeTest();
-        return this.test.getQuestions();
-    }
-
-    @QueryMapping
-    public boolean userHasTakenTest(@Argument final UUID userUUID) {
-
-        Optional<PlayerTypeEntity> entity = playerTypeService.getPlayerTypeByUserUUID(userUUID);
-        if (entity.isEmpty()) {
-            // User is not present in playertype_database
-            playerTypeService.createUser(userUUID);
-            return false;
-        }
-        return entity.get().isUserHasTakenTest();
-
-    }
-
-    @QueryMapping
-    public PlayerTypeEntity.DominantPlayerType usersDominantPlayerType(@Argument UUID userUUID) {
-        Optional<PlayerTypeEntity> playerType = playerTypeService.getPlayerTypeByUserUUID(userUUID);
-        if (playerType.isPresent() && playerType.get().getDominantPlayerType() != null) {
-            return playerType.get().getDominantPlayerType();
-        } else {
-            return PlayerTypeEntity.DominantPlayerType.None;
-        }
-    }
-
-    @QueryMapping
-    public List<UserBadge> getCoursesUserBadges(@Argument UUID courseUUID, @Argument UUID userUUID) {
-        return badgeService.getUserBadgesByCourseUUID(courseUUID, userUUID);
-    }
-
-    @QueryMapping
-    public Quest getCurrentUserQuest(@Argument UUID userUUID, @Argument UUID courseUUID) {
-        return questService.getCurrentUserQuest(userUUID, courseUUID);
-    }
-
-    @QueryMapping
-    public UserQuestChain getUserQuestChain(@Argument UUID userUUID, @Argument UUID courseUUID) {
-        return questService.getUserQuestChain(userUUID, courseUUID);
-    }
-
-
-    @MutationMapping
-    public String submitAnswer(@Argument final int questionId, @Argument final boolean answer) {
-
-        if (this.test != null) {
-            this.test.setAnswer(questionId, answer);
-            return "Answer submitted successfully!";
-        }
-        return "No test selected!";
-
-    }
-
-    @MutationMapping
-    public PlayerTypeEntity evaluateTest(@Argument final UUID userUUID) {
-
-        if (this.test != null && !this.test.justCreated) {
-            PlayerTypeEntity playerTypeEntity = this.test.evaluateTest(userUUID);
-            return playerTypeService.saveTestResult(playerTypeEntity);
-        }
-        return new PlayerTypeEntity(userUUID, false);
-
-    }
-
-
     @MutationMapping
     public String addCourse(@Argument UUID courseUUID, @Argument UUID lecturerUUID) {
         courseService.addCourse(courseUUID, lecturerUUID, this.badgeService, this.questService);
@@ -109,6 +41,57 @@ public class GamificationController {
     public String addUserToCourse(@Argument UUID userUUID, @Argument UUID courseUUID) {
         courseService.addUserToCourse(userUUID, courseUUID, this.badgeService, this.questService);
         return "Added user to course.";
+    }
+
+    @MutationMapping
+    public String createFlashCardSet(@Argument UUID flashCardSetUUID,
+                                     @Argument String name,
+                                     @Argument UUID courseUUID) {
+        badgeService.createBadgesForFlashCardSet(flashCardSetUUID, name, courseUUID, this.courseService);
+        questService.createQuestForFlashCardSet(flashCardSetUUID, name, courseUUID);
+        return "Created Flashcardset successully.";
+    }
+
+    @MutationMapping
+    public String createQuiz(@Argument UUID quizUUID,
+                             @Argument String name,
+                             @Argument UUID courseUUID) {
+        badgeService.createBadgesForQuiz(quizUUID, name, courseUUID, this.courseService);
+        questService.createQuestForQuiz(quizUUID, name, courseUUID);
+        return "Created quiz successully.";
+    }
+
+    @MutationMapping
+    public String deleteBadgesAndQuestsOfCourse(@Argument UUID courseUUID) {
+        courseService.deleteCourse(courseUUID);
+        badgeService.deleteBadgesAndUserBadgesOfCourse(courseUUID);
+        questService.deleteQuestChainAndUserQuestChainsOfCourse(courseUUID);
+        return "Course deleted.";
+    }
+
+    @MutationMapping
+    public String deleteBadgesAndQuestOfFlashCardSet(@Argument UUID flashcardSetUUID, @Argument UUID courseUUID) {
+        badgeService.deleteBadgesAndUserBadgesOfFCS(flashcardSetUUID);
+        questService.deleteQuestOfFCS(courseUUID, flashcardSetUUID);
+        return "FlashcardSet deleted.";
+    }
+
+    @MutationMapping
+    public String deleteBadgesAndQuestOfQuiz(@Argument UUID quizUUID, @Argument UUID courseUUID) {
+        badgeService.deleteBadgesAndUserBadgesOfQuiz(quizUUID);
+        questService.deleteQuestOfQuiz(courseUUID, quizUUID);
+        return "Quiz deleted.";
+    }
+
+    @MutationMapping
+    public PlayerTypeEntity evaluateTest(@Argument UUID userUUID) {
+
+        if (this.test != null && !this.test.justCreated) {
+            PlayerTypeEntity playerTypeEntity = this.test.evaluateTest(userUUID);
+            return playerTypeService.saveTestResult(playerTypeEntity);
+        }
+        return new PlayerTypeEntity(userUUID, false);
+
     }
 
     @MutationMapping
@@ -133,22 +116,67 @@ public class GamificationController {
         return "Finished FlashCardSet!";
     }
 
-    @MutationMapping
-    public String createQuiz(@Argument UUID quizUUID,
-                             @Argument String name,
-                             @Argument UUID courseUUID) {
-        badgeService.createBadgesForQuiz(quizUUID, name, courseUUID, this.courseService);
-        questService.createQuestForQuiz(quizUUID, name, courseUUID);
-        return "Created quiz successully.";
+    @QueryMapping
+    public List<UserBadge> getCoursesUserBadges(@Argument UUID courseUUID, @Argument UUID userUUID) {
+        return badgeService.getUserBadgesByCourseUUID(courseUUID, userUUID);
+    }
+
+    @QueryMapping
+    public Quest getCurrentUserQuest(@Argument UUID userUUID, @Argument UUID courseUUID) {
+        return questService.getCurrentUserQuest(userUUID, courseUUID);
+    }
+
+    @QueryMapping
+    public UserQuestChain getUserQuestChain(@Argument UUID userUUID, @Argument UUID courseUUID) {
+        return questService.getUserQuestChain(userUUID, courseUUID);
     }
 
     @MutationMapping
-    public String createFlashCardSet(@Argument UUID flashCardSetUUID,
-                                     @Argument String name,
-                                     @Argument UUID courseUUID) {
-        badgeService.createBadgesForFlashCardSet(flashCardSetUUID, name, courseUUID, this.courseService);
-        questService.createQuestForFlashCardSet(flashCardSetUUID, name, courseUUID);
-        return "Created Flashcardset successully.";
+    public String removeUserFromCourse(@Argument UUID userUUID, @Argument UUID courseUUID) {
+        courseService.removeUserFromCourse(userUUID, courseUUID);
+        badgeService.deleteUserBadgesOfCourse(userUUID, courseUUID);
+        questService.deleteUserQuestChain(userUUID, courseUUID);
+        return "Removed user from course.";
+    }
+
+    @MutationMapping
+    public String submitAnswer(@Argument int questionId, @Argument boolean answer) {
+
+        if (this.test != null) {
+            this.test.setAnswer(questionId, answer);
+            return "Answer submitted successfully!";
+        }
+        return "No test selected!";
+
+    }
+
+    @QueryMapping
+    public PlayerTypeTestQuestion[] test() {
+        this.test = new PlayerTypeTest();
+        return this.test.getQuestions();
+    }
+
+    @QueryMapping
+    public boolean userHasTakenTest(@Argument UUID userUUID) {
+
+        Optional<PlayerTypeEntity> entity = playerTypeService.getPlayerTypeByUserUUID(userUUID);
+        if (entity.isEmpty()) {
+            // User is not present in playertype_database
+            playerTypeService.createUser(userUUID);
+            return false;
+        }
+        return entity.get().isUserHasTakenTest();
+
+    }
+
+    @QueryMapping
+    public PlayerTypeEntity.DominantPlayerType usersDominantPlayerType(@Argument UUID userUUID) {
+        Optional<PlayerTypeEntity> playerType = playerTypeService.getPlayerTypeByUserUUID(userUUID);
+        if (playerType.isPresent() && playerType.get().getDominantPlayerType() != null) {
+            return playerType.get().getDominantPlayerType();
+        } else {
+            return PlayerTypeEntity.DominantPlayerType.None;
+        }
     }
 
 }

@@ -30,6 +30,17 @@ public class BadgeService {
     private static final int goldPassingPercentage = 90;
 
     /**
+     * Retrieves the complete list of badges of the course
+     *
+     * @param courseUUID   the id of the course
+     *
+     * @return a List of BadgeEntitys, which contains all Badges of this course
+     */
+    public List<BadgeEntity> getBadgesByCourseUUID(UUID courseUUID) {
+        return badgeRepository.findByCourseUUID(courseUUID);
+    }
+
+    /**
      * Retrieves the complete list of userBadges for the course and the user
      *
      * @param courseUUID   the id of the course
@@ -72,6 +83,86 @@ public class BadgeService {
      */
     public List<BadgeEntity> getBadgesByFlashCardSetUUID(UUID flashCardSetUUID) {
         return badgeRepository.findByFlashCardSetUUID(flashCardSetUUID);
+    }
+
+    /**
+     * Removes all badges from the badgeRepository of the course and all corresponding userBadges
+     *
+     * @param courseUUID   the id of the deleted course
+     */
+    public void deleteBadgesAndUserBadgesOfCourse(UUID courseUUID) {
+        List<BadgeEntity> courseBadges = this.deleteBadgesOfCourse(courseUUID);
+        this.deleteUserBadges(courseBadges);
+    }
+
+    /**
+     * Removes all badges from the badgeRepository of the quiz and all corresponding userBadges
+     *
+     * @param quizUUID   the id of the deleted quiz
+     */
+    public void deleteBadgesAndUserBadgesOfQuiz(UUID quizUUID) {
+        List<BadgeEntity> quizBadges = this.deleteBadgesOfQuiz(quizUUID);
+        this.deleteUserBadges(quizBadges);
+    }
+
+    /**
+     * Removes all badges from the badgeRepository of the fcs and all corresponding userBadges
+     *
+     * @param flashcardSetUUID   the id of the deleted fcs
+     */
+    public void deleteBadgesAndUserBadgesOfFCS(UUID flashcardSetUUID) {
+        List<BadgeEntity> fcsBadges = this.deleteBadgesOfFCS(flashcardSetUUID);
+        this.deleteUserBadges(fcsBadges);
+    }
+
+    /**
+     * Removes all badges from the badgeRepository of the course
+     *
+     * @param courseUUID   the id of the deleted course
+     *
+     * @return a List of BadgeEntitys, which contains all Badges of this course
+     */
+    public List<BadgeEntity> deleteBadgesOfCourse(UUID courseUUID) {
+        List<BadgeEntity> courseBadges = badgeRepository.findByCourseUUID(courseUUID);
+        badgeRepository.deleteAll(courseBadges);
+        return courseBadges;
+    }
+
+    /**
+     * Removes all badges from the badgeRepository of the quiz
+     *
+     * @param quizUUID   the id of the deleted course
+     *
+     * @return a List of BadgeEntitys, which contains all Badges of this quiz
+     */
+    public List<BadgeEntity> deleteBadgesOfQuiz(UUID quizUUID) {
+        List<BadgeEntity> quizBadges = badgeRepository.findByQuizUUID(quizUUID);
+        badgeRepository.deleteAll(quizBadges);
+        return quizBadges;
+    }
+
+    /**
+     * Removes all badges from the badgeRepository of the fcs
+     *
+     * @param flashcardSetUUID   the id of the deleted fcs
+     *
+     * @return a List of BadgeEntitys, which contains all Badges of this fcs
+     */
+    public List<BadgeEntity> deleteBadgesOfFCS(UUID flashcardSetUUID) {
+        List<BadgeEntity> fcsBadges = badgeRepository.findByFlashCardSetUUID(flashcardSetUUID);
+        badgeRepository.deleteAll(fcsBadges);
+        return fcsBadges;
+    }
+
+    /**
+     * Removes all userBadges from the userBadgeRepository that refer to the given badges
+     *
+     * @param badgeEntities   the deleted badges
+     */
+    public void deleteUserBadges(List<BadgeEntity> badgeEntities) {
+        for (BadgeEntity badgeEntity : badgeEntities) {
+            userBadgeRepository.deleteAllByBadgeUUID(badgeEntity.getBadgeUUID());
+        }
     }
 
     /**
@@ -128,6 +219,20 @@ public class BadgeService {
         userBadgeEntity.setBadgeUUID(badgeUUID);
         userBadgeEntity.setAchieved(false);
         userBadgeRepository.save(userBadgeEntity);
+    }
+
+    /**
+     * Deletes all the userBadges of this course
+     *
+     * @param userUUID               the id of the user who left the course
+     * @param courseUUID             the id of the course
+     */
+    public void deleteUserBadgesOfCourse(UUID userUUID, UUID courseUUID) {
+        List<BadgeEntity> badgeEntities = badgeRepository.findByCourseUUID(courseUUID);
+
+        for (BadgeEntity badgeEntity : badgeEntities) {
+            userBadgeRepository.deleteByUserUUIDAndBadgeUUID(userUUID, badgeEntity.getBadgeUUID());
+        }
     }
 
     /**

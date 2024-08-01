@@ -29,4 +29,8 @@ public class UserQuestChainEntity {
         userLevel++;
     }
 
+    public void deleteQuest() {
+        userLevel--;
+    }
+
 }

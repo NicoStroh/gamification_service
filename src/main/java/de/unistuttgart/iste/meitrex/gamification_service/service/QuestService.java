@@ -37,6 +37,55 @@ public class QuestService {
     }
 
     /**
+     * Removes the questChain of the course and all userQuestChains of the courses users
+     *
+     * @param courseUUID     the id of the deleted course
+     */
+    public void deleteQuestChainAndUserQuestChainsOfCourse(UUID courseUUID) {
+        QuestChainEntity courseQuestChain = questChainRepository.findByCourseUUID(courseUUID);
+        questChainRepository.delete(courseQuestChain);
+
+        List<UserQuestChainEntity> userQuestChainEntities = userQuestChainRepository.findByQuestChainUUID(courseQuestChain.getQuestChainUUID());
+        userQuestChainRepository.deleteAll(userQuestChainEntities);
+    }
+
+    /**
+     * Removes the quest that refers to the quiz
+     *
+     * @param courseUUID     the id of the course
+     * @param quizUUID       the id of the deleted quiz
+     */
+    public void deleteQuestOfQuiz(UUID courseUUID, UUID quizUUID) {
+        QuestChainEntity courseQuestChain = questChainRepository.findByCourseUUID(courseUUID);
+        courseQuestChain.removeQuestOfQuiz(quizUUID);
+        questChainRepository.save(courseQuestChain);
+
+        List<UserQuestChainEntity> userQuestChainEntities = userQuestChainRepository.findByQuestChainUUID(courseQuestChain.getQuestChainUUID());
+        for (UserQuestChainEntity userQuestChainEntity : userQuestChainEntities) {
+            userQuestChainEntity.deleteQuest();
+            userQuestChainRepository.save(userQuestChainEntity);
+        }
+    }
+
+    /**
+     * Removes the quest that refers to the fcs
+     *
+     * @param courseUUID             the id of the course
+     * @param flashCardSetUUID       the id of the deleted fcs
+     */
+    public void deleteQuestOfFCS(UUID courseUUID, UUID flashCardSetUUID) {
+        QuestChainEntity courseQuestChain = questChainRepository.findByCourseUUID(courseUUID);
+        courseQuestChain.removeQuestOfFCS(flashCardSetUUID);
+        questChainRepository.save(courseQuestChain);
+
+        List<UserQuestChainEntity> userQuestChainEntities = userQuestChainRepository.findByQuestChainUUID(courseQuestChain.getQuestChainUUID());
+        for (UserQuestChainEntity userQuestChainEntity : userQuestChainEntities) {
+            userQuestChainEntity.deleteQuest();
+            userQuestChainRepository.save(userQuestChainEntity);
+        }
+    }
+
+    /**
      * Retrieves the quest for a user and the course depending on the level of the user at this questchain
      *
      * @param userUUID     the id of the user
@@ -92,6 +141,20 @@ public class QuestService {
 
         return questMapper.userQuestChainEntityToDto(userQuestChainEntity, questChainEntity.getQuests());
 
+    }
+
+    /**
+     * Deletes the userQuestChain for the user at the course
+     *
+     * @param userUUID     the id of the user
+     * @param courseUUID   the id of the course
+     */
+    public void deleteUserQuestChain(UUID userUUID, UUID courseUUID) {
+        QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
+        if (questChainEntity == null) {
+            return;
+        }
+        userQuestChainRepository.deleteByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), userUUID);
     }
 
     /**

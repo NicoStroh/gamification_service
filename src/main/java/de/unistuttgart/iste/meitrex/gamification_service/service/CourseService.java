@@ -28,10 +28,19 @@ public class CourseService {
      * @param questService   the service for quests, to assign the courses quest chain to its users
      */
     public void addCourse(UUID courseUUID, UUID lecturerUUID, BadgeService badgeService, QuestService questService) {
-        CourseEntity courseEntity = new CourseEntity(courseUUID, new HashSet<UUID>(), new HashSet<UUID>());
+        CourseEntity courseEntity = new CourseEntity(courseUUID, new HashSet<UUID>());
         courseRepository.save(courseEntity);
         questService.addCourse(courseUUID);
         addUserToCourse(lecturerUUID, courseUUID, badgeService, questService);
+    }
+
+    /**
+     * Removes the course from the courseRepository
+     *
+     * @param courseUUID     the id of the course which shall be deleted
+     */
+    public void deleteCourse(UUID courseUUID) {
+        courseRepository.deleteById(courseUUID);
     }
 
     /**
@@ -50,15 +59,27 @@ public class CourseService {
         if (courseEntity.isPresent()) {
             CourseEntity course = courseEntity.get();
 
-            Set<UUID> badges = courseEntity.get().getBadgeUUIDs();
-            for (UUID badge : badges) {
-                badgeService.assignBadgeToUser(userUUID, badge);
+            List<BadgeEntity> badges = badgeService.getBadgesByCourseUUID(courseUUID);
+            for (BadgeEntity badge : badges) {
+                badgeService.assignBadgeToUser(userUUID, badge.getBadgeUUID());
             }
 
             course.addUser(userUUID);
             courseRepository.save(course);
         }
 
+    }
+
+    /**
+     * Removed a user from the course
+     *
+     * @param userUUID       the id of the user, who left the course
+     * @param courseUUID     the id of the course
+     */
+    public void removeUserFromCourse(UUID userUUID, UUID courseUUID) {
+        CourseEntity courseEntity = courseRepository.findById(courseUUID).orElseThrow(() -> new RuntimeException("Course not found"));
+        courseEntity.removeUser(userUUID);
+        courseRepository.save(courseEntity);
     }
 
     /**
@@ -71,7 +92,6 @@ public class CourseService {
     public void addBadgeForCourseAndUsers(UUID courseUUID, UUID badgeUUID, BadgeService badgeService) {
 
         CourseEntity courseEntity = courseRepository.findById(courseUUID).orElseThrow(() -> new RuntimeException("Course not found"));
-        courseEntity.addBadge(badgeUUID);
 
         for (UUID userUUID : courseEntity.getUserUUIDs()) {
             badgeService.assignBadgeToUser(userUUID, badgeUUID);

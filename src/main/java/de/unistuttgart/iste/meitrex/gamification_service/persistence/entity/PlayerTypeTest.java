@@ -218,8 +218,8 @@ public class PlayerTypeTest {
      *
      *                 Question 4:
      *                 - Is a user profile important for you?
-     *                 - Yes -> A, S
-     *                 - No -> E
+     *                 - Yes -> S
+     *                 - No ->
      *
      *                 Question 5:
      *                 - Do you like to display badges or achievements in your user profile?

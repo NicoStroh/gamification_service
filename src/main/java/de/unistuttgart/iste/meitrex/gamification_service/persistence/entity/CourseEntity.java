@@ -21,15 +21,14 @@ public class CourseEntity {
     @ElementCollection
     private Set<UUID> userUUIDs;
 
-    @ElementCollection
-    private Set<UUID> badgeUUIDs;
-
     public void addUser(UUID userUUID) {
         this.userUUIDs.add(userUUID);
     }
 
-    public void addBadge(UUID badgeUUID) {
-        this.badgeUUIDs.add(badgeUUID);
+    public void removeUser(UUID userUUID) {
+        if (this.userUUIDs != null) {
+            this.userUUIDs.removeIf(userUUID::equals);
+        }
     }
 
 }

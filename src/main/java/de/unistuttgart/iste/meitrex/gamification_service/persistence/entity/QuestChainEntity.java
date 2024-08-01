@@ -32,11 +32,18 @@ public class QuestChainEntity {
         this.quests.add(quest);
     }
 
-    public int length() {
-        if (this.quests == null) {
-            return 0;
+    public void removeQuestOfQuiz(UUID quizUUID) {
+        if (this.quests != null) {
+            this.quests.removeIf(quest -> quizUUID.equals(quest.getQuizUUID()));
         }
-        return this.quests.size();
     }
+
+    public void removeQuestOfFCS(UUID flashCardSetUUID) {
+        if (this.quests != null) {
+            this.quests.removeIf(quest -> flashCardSetUUID.equals(quest.getFlashCardSetUUID()));
+        }
+    }
+
+
 
 }
