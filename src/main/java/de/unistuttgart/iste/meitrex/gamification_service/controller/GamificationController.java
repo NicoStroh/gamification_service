@@ -33,13 +33,19 @@ public class GamificationController {
 
     @MutationMapping
     public String addCourse(@Argument UUID courseUUID, @Argument UUID lecturerUUID) {
-        courseService.addCourse(courseUUID, lecturerUUID, this.badgeService, this.questService);
+        courseService.addCourse(courseUUID);
+        courseService.addUserToCourse(lecturerUUID, courseUUID);
+
+        questService.addCourse(courseUUID);
+        questService.assignQuestChainToUser(lecturerUUID, courseUUID);
         return "Added course.";
     }
 
     @MutationMapping
     public String addUserToCourse(@Argument UUID userUUID, @Argument UUID courseUUID) {
-        courseService.addUserToCourse(userUUID, courseUUID, this.badgeService, this.questService);
+        courseService.addUserToCourse(userUUID, courseUUID);
+        badgeService.assignCoursesBadgesToUser(courseUUID, userUUID);
+        questService.assignQuestChainToUser(userUUID, courseUUID);
         return "Added user to course.";
     }
 
@@ -47,18 +53,18 @@ public class GamificationController {
     public String createFlashCardSet(@Argument UUID flashCardSetUUID,
                                      @Argument String name,
                                      @Argument UUID courseUUID) {
-        badgeService.createBadgesForFlashCardSet(flashCardSetUUID, name, courseUUID, this.courseService);
+        badgeService.createBadgesForFlashCardSet(flashCardSetUUID, name, courseUUID, courseService.getCoursesUsers(courseUUID));
         questService.createQuestForFlashCardSet(flashCardSetUUID, name, courseUUID);
-        return "Created Flashcardset successully.";
+        return "Created Flashcardset successfully.";
     }
 
     @MutationMapping
     public String createQuiz(@Argument UUID quizUUID,
                              @Argument String name,
                              @Argument UUID courseUUID) {
-        badgeService.createBadgesForQuiz(quizUUID, name, courseUUID, this.courseService);
+        badgeService.createBadgesForQuiz(quizUUID, name, courseUUID, courseService.getCoursesUsers(courseUUID));
         questService.createQuestForQuiz(quizUUID, name, courseUUID);
-        return "Created quiz successully.";
+        return "Created quiz successfully.";
     }
 
     @MutationMapping
