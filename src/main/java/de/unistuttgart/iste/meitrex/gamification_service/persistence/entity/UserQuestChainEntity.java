@@ -30,6 +30,9 @@ public class UserQuestChainEntity {
     }
 
     public void deleteQuest() {
+        if (userLevel <= 0) {
+            return;
+        }
         userLevel--;
     }
 
