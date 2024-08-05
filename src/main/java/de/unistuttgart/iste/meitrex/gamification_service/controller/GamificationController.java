@@ -90,6 +90,24 @@ public class GamificationController {
     }
 
     @MutationMapping
+    public String editFlashcardSetName(@Argument UUID flashcardSetUUID,
+                                       @Argument UUID courseUUID,
+                                       @Argument String name) {
+        badgeService.changeFlashCardSetName(flashcardSetUUID, name);
+        questService.changeFlashcardSetName(flashcardSetUUID, courseUUID, name);
+        return "Changed flashcardset name!";
+    }
+
+    @MutationMapping
+    public String editQuizName(@Argument UUID quizUUID,
+                               @Argument UUID courseUUID,
+                               @Argument String name) {
+        badgeService.changeQuizName(quizUUID, name);
+        questService.changeQuizName(quizUUID, courseUUID, name);
+        return "Changed quiz name!";
+    }
+
+    @MutationMapping
     public PlayerTypeEntity evaluateTest(@Argument UUID userUUID) {
 
         if (this.test != null && !this.test.justCreated) {

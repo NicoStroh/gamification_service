@@ -182,6 +182,34 @@ public class BadgeService {
     }
 
     /**
+     * Change the name of the flahscardset in its Badges
+     *
+     * @param flashcardSetUUID   the id of fcs
+     * @param name               the new name of the fcs
+     */
+    public void changeFlashCardSetName(UUID flashcardSetUUID, String name) {
+        List<BadgeEntity> fcsBadges = badgeRepository.findByFlashCardSetUUID(flashcardSetUUID);
+        for (BadgeEntity fcsBadge : fcsBadges) {
+            fcsBadge.setDescription("At least " + fcsBadge.getPassingPercentage() + "% of your answers for the flashcardSet " + name + " are correct.");
+            badgeRepository.save(fcsBadge);
+        }
+    }
+
+    /**
+     * Change the name of the quiz in its Badges
+     *
+     * @param quizUUID   the id of quiz
+     * @param name       the new name of the quiz
+     */
+    public void changeQuizName(UUID quizUUID, String name) {
+        List<BadgeEntity> quizBadges = badgeRepository.findByQuizUUID(quizUUID);
+        for (BadgeEntity quizBadge : quizBadges) {
+            quizBadge.setDescription("At least " + quizBadge.getPassingPercentage() + "% of your answers for the quiz " + name + " are correct.");
+            badgeRepository.save(quizBadge);
+        }
+    }
+
+    /**
      * Marks the UserBadge of the user as achieved, if he got more answers correct than the passingPercentage of the
      * Badges, that refer to the quiz
      *

@@ -1,5 +1,6 @@
 package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity;
 
+import de.unistuttgart.iste.meitrex.gamification_service.service.QuestService;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -32,16 +33,74 @@ public class QuestChainEntity {
         this.quests.add(quest);
     }
 
-    public void removeQuestOfQuiz(UUID quizUUID) {
+    public void changeNameOfQuiz(UUID quizUUID, String newName) {
         if (this.quests != null) {
-            this.quests.removeIf(quest -> quizUUID.equals(quest.getQuizUUID()));
+            for (QuestEntity quest : this.quests) {
+                if (quizUUID.equals(quest.getQuizUUID())) {
+                    quest.setDescription("Finish quiz " + newName + " with at least " + QuestService.passingPercentage + "% correct answers to unlock the next quest!");
+                    break;
+                }
+            }
         }
     }
 
-    public void removeQuestOfFCS(UUID flashCardSetUUID) {
+    public void changeNameOfFlashcardSet(UUID flashcardSetUUID, String newName) {
         if (this.quests != null) {
-            this.quests.removeIf(quest -> flashCardSetUUID.equals(quest.getFlashCardSetUUID()));
+            for (QuestEntity quest : this.quests) {
+                if (flashcardSetUUID.equals(quest.getFlashCardSetUUID())) {
+                    quest.setDescription("Finish flashcardSet " + newName + " with at least " + QuestService.passingPercentage + "% correct answers to unlock the next quest!");
+                    break;
+                }
+            }
         }
+    }
+
+    public int findIndexOfQuizQuest(UUID quizUUID) {
+        if (this.quests != null) {
+            int i = 0;
+            for (QuestEntity quest : this.quests) {
+                if (quizUUID.equals(quest.getQuizUUID())) {
+                    return i;
+                }
+                i++;
+            }
+        }
+        return -1;
+    }
+
+    public int findIndexOfFlashcardSetQuest(UUID flashcardSetUUID) {
+        if (this.quests != null) {
+            int i = 0;
+            for (QuestEntity quest : this.quests) {
+                if (flashcardSetUUID.equals(quest.getFlashCardSetUUID())) {
+                    return i;
+                }
+                i++;
+            }
+        }
+        return -1;
+    }
+
+    public int removeQuestOfQuiz(UUID quizUUID) {
+        if (this.quests != null) {
+            int indexOfQuizQuest = this.findIndexOfQuizQuest(quizUUID);
+            if (0 <= indexOfQuizQuest && indexOfQuizQuest < this.quests.size()) {
+                this.quests.remove(indexOfQuizQuest);
+            }
+            return indexOfQuizQuest;
+        }
+        return -1;
+    }
+
+    public int removeQuestOfFCS(UUID flashCardSetUUID) {
+        if (this.quests != null) {
+            int indexOfFCSQuest = this.findIndexOfFlashcardSetQuest(flashCardSetUUID);
+            if (0 <= indexOfFCSQuest && indexOfFCSQuest < this.quests.size()) {
+                this.quests.remove(indexOfFCSQuest);
+            }
+            return indexOfFCSQuest;
+        }
+        return -1;
     }
 
 

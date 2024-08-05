@@ -87,6 +87,10 @@ type Mutation {
   deleteBadgesAndQuestOfFlashCardSet(flashcardSetUUID: UUID!, courseUUID: UUID!): String!
   deleteBadgesAndQuestOfQuiz(quizUUID: UUID!, courseUUID: UUID!): String!
 
+  # Changes the description of the badges / quest for the quiz / flashcardSet
+  editFlashcardSetName(flashcardSetUUID: UUID!, courseUUID: UUID!, name: String!): String!
+  editQuizName(quizUUID: UUID!, courseUUID: UUID!, name: String!): String!
+
   # Test evaluation
   evaluateTest(userUUID: UUID!): ShortBartleTestResultEntity!
 

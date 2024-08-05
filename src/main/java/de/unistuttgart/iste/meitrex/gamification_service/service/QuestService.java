@@ -23,7 +23,7 @@ public class QuestService {
 
     private final QuestMapper questMapper;
 
-    private final static int passingPercentage = 80;
+    public final static int passingPercentage = 80;
 
     /**
      * Creates a new empty QuestChainEntity for the course.
@@ -57,13 +57,15 @@ public class QuestService {
      */
     public void deleteQuestOfQuiz(UUID courseUUID, UUID quizUUID) {
         QuestChainEntity courseQuestChain = questChainRepository.findByCourseUUID(courseUUID);
-        courseQuestChain.removeQuestOfQuiz(quizUUID);
+        int indexOfQuizQuest = courseQuestChain.removeQuestOfQuiz(quizUUID);
         questChainRepository.save(courseQuestChain);
 
         List<UserQuestChainEntity> userQuestChainEntities = userQuestChainRepository.findByQuestChainUUID(courseQuestChain.getQuestChainUUID());
         for (UserQuestChainEntity userQuestChainEntity : userQuestChainEntities) {
-            userQuestChainEntity.deleteQuest();
-            userQuestChainRepository.save(userQuestChainEntity);
+            if (0 <= indexOfQuizQuest && indexOfQuizQuest < userQuestChainEntity.getUserLevel()) {
+                userQuestChainEntity.decreaseUserLevel();
+                userQuestChainRepository.save(userQuestChainEntity);
+            }
         }
     }
 
@@ -75,13 +77,15 @@ public class QuestService {
      */
     public void deleteQuestOfFCS(UUID courseUUID, UUID flashCardSetUUID) {
         QuestChainEntity courseQuestChain = questChainRepository.findByCourseUUID(courseUUID);
-        courseQuestChain.removeQuestOfFCS(flashCardSetUUID);
+        int indexOfFCSQuest = courseQuestChain.removeQuestOfFCS(flashCardSetUUID);
         questChainRepository.save(courseQuestChain);
 
         List<UserQuestChainEntity> userQuestChainEntities = userQuestChainRepository.findByQuestChainUUID(courseQuestChain.getQuestChainUUID());
         for (UserQuestChainEntity userQuestChainEntity : userQuestChainEntities) {
-            userQuestChainEntity.deleteQuest();
-            userQuestChainRepository.save(userQuestChainEntity);
+            if (0 <= indexOfFCSQuest && indexOfFCSQuest < userQuestChainEntity.getUserLevel()) {
+                userQuestChainEntity.decreaseUserLevel();
+                userQuestChainRepository.save(userQuestChainEntity);
+            }
         }
     }
 
@@ -213,6 +217,32 @@ public class QuestService {
         questChainEntity.addQuest(quest);
         questChainRepository.save(questChainEntity);
 
+    }
+
+    /**
+     * Changes the description of the quest for the quiz with the new name
+     *
+     * @param quizUUID     the id of the edited quiz
+     * @param courseUUID   the id of the course, which contains the quiz
+     * @param name         the new name of the quiz
+     */
+    public void changeQuizName(UUID quizUUID, UUID courseUUID, String name) {
+        QuestChainEntity questChain = questChainRepository.findByCourseUUID(courseUUID);
+        questChain.changeNameOfQuiz(quizUUID, name);
+        questChainRepository.save(questChain);
+    }
+
+    /**
+     * Changes the description of the quest for the flashcardSet with the new name
+     *
+     * @param flashcardSetUUID     the id of the edited flashcardSet
+     * @param courseUUID           the id of the course, which contains the flashcardSet
+     * @param name                 the new name of the flashcardSet
+     */
+    public void changeFlashcardSetName(UUID flashcardSetUUID, UUID courseUUID, String name) {
+        QuestChainEntity questChain = questChainRepository.findByCourseUUID(courseUUID);
+        questChain.changeNameOfFlashcardSet(flashcardSetUUID, name);
+        questChainRepository.save(questChain);
     }
 
     /**
