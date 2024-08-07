@@ -15,8 +15,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class QuestMapper {
 
-    private final ModelMapper modelMapper;
-
     public Quest questEntityToDto(QuestEntity questEntity) {
         Quest quest = new Quest();
         quest.setQuestUUID(questEntity.getQuestUUID());

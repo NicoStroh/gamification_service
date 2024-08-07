@@ -37,7 +37,8 @@ public class QuestChainEntity {
         if (this.quests != null) {
             for (QuestEntity quest : this.quests) {
                 if (quizUUID.equals(quest.getQuizUUID())) {
-                    quest.setDescription("Finish quiz " + newName + " with at least " + QuestService.passingPercentage + "% correct answers to unlock the next quest!");
+                    quest.setDescription(QuestService.descriptionPart1 + "quiz" + newName + QuestService.descriptionPart2 +
+                            QuestService.passingPercentage + QuestService.descriptionPart3);
                     break;
                 }
             }
@@ -48,7 +49,8 @@ public class QuestChainEntity {
         if (this.quests != null) {
             for (QuestEntity quest : this.quests) {
                 if (flashcardSetUUID.equals(quest.getFlashCardSetUUID())) {
-                    quest.setDescription("Finish flashcardSet " + newName + " with at least " + QuestService.passingPercentage + "% correct answers to unlock the next quest!");
+                    quest.setDescription(QuestService.descriptionPart1 + "flashcardSet" + newName + QuestService.descriptionPart2 +
+                            QuestService.passingPercentage + QuestService.descriptionPart3);
                     break;
                 }
             }

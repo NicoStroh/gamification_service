@@ -181,11 +181,49 @@ public class PlayerTypeTest {
             killerPercentage = 100;
         }
 
+        int roundedAchiever = (int) Math.round(achieverPercentage);
+        int roundedExplorer = (int) Math.round(explorerPercentage);
+        int roundedSocializer = (int) Math.round(socializerPercentage);
+        int roundedKiller = (int) Math.round(killerPercentage);
+
+
+        int sum = roundedAchiever + roundedExplorer + roundedSocializer + roundedKiller;
+
+        // If sum is not 200, distribute rest
+        if (sum != 200) {
+            int difference = 200 - sum;
+
+            // Less than 200, distribute rest to smallest value
+            if (difference > 0) {
+                if (roundedAchiever <= roundedExplorer && roundedAchiever <= roundedSocializer && roundedAchiever <= roundedKiller) {
+                    roundedAchiever += difference;
+                } else if (roundedExplorer <= roundedAchiever && roundedExplorer <= roundedSocializer && roundedExplorer <= roundedKiller) {
+                    roundedExplorer += difference;
+                } else if (roundedSocializer <= roundedAchiever && roundedSocializer <= roundedExplorer && roundedSocializer <= roundedKiller) {
+                    roundedSocializer += difference;
+                } else {
+                    roundedKiller += difference;
+                }
+            } // More than 200, decrease the highest value
+            else {
+                if (roundedAchiever >= roundedExplorer && roundedAchiever >= roundedSocializer && roundedAchiever >= roundedKiller) {
+                    roundedAchiever += difference;
+                } else if (roundedExplorer >= roundedAchiever && roundedExplorer >= roundedSocializer && roundedExplorer >= roundedKiller) {
+                    roundedExplorer += difference;
+                } else if (roundedSocializer >= roundedAchiever && roundedSocializer >= roundedExplorer && roundedSocializer >= roundedKiller) {
+                    roundedSocializer += difference;
+                } else {
+                    roundedKiller += difference;
+                }
+            }
+
+        }
+
         return new PlayerTypeEntity(userUUID,
-                (int) Math.round(achieverPercentage),
-                (int) Math.round(explorerPercentage),
-                (int) Math.round(socializerPercentage),
-                (int) Math.round(killerPercentage));
+                roundedAchiever,
+                roundedExplorer,
+                roundedSocializer,
+                roundedKiller);
 
     }
 

@@ -25,8 +25,8 @@ import java.util.UUID;
 public class GamificationController {
 
     private final PlayerTypeService playerTypeService;
-    private final BadgeService badgeService;
     private final CourseService courseService;
+    private final BadgeService badgeService;
     private final QuestService questService;
 
     private PlayerTypeTest test;

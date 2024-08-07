@@ -25,6 +25,11 @@ public class QuestService {
 
     public final static int passingPercentage = 80;
 
+    public final static String descriptionPart1 = "Finish ";
+    public final static String descriptionPart2 = " with at least ";
+    public final static String descriptionPart3 = "% correct answers to unlock the next quest!";
+
+
     /**
      * Creates a new empty QuestChainEntity for the course.
      *
@@ -33,6 +38,7 @@ public class QuestService {
     public void addCourse(UUID courseUUID) {
         QuestChainEntity questChainEntity = new QuestChainEntity();
         questChainEntity.setCourseUUID(courseUUID);
+        questChainEntity.setQuests(new LinkedList<QuestEntity>());
         questChainRepository.save(questChainEntity);
     }
 
@@ -192,7 +198,7 @@ public class QuestService {
 
         QuestEntity quest = new QuestEntity();
         quest.setQuizUUID(quizUUID);
-        quest.setDescription("Finish quiz " + name + " with at least " + passingPercentage + "% correct answers to unlock the next quest!");
+        quest.setDescription(descriptionPart1 + "quiz" + name + descriptionPart2 + passingPercentage + descriptionPart3);
 
         QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
         questChainEntity.addQuest(quest);
@@ -211,7 +217,7 @@ public class QuestService {
 
         QuestEntity quest = new QuestEntity();
         quest.setFlashCardSetUUID(flashCardSetUUID);
-        quest.setDescription("Finish flashcardset " + name + " with at least " + passingPercentage + "% correct answers to unlock the next quest!");
+        quest.setDescription(descriptionPart1 + "flashcardset " + name + descriptionPart2 + passingPercentage + descriptionPart3);
 
         QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
         questChainEntity.addQuest(quest);

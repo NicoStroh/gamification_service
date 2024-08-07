@@ -55,7 +55,7 @@ public class PlayerTypeEntity {
 
     private DominantPlayerType dominantPlayerType;
 
-    public PlayerTypeEntity.DominantPlayerType dominantPlayerType() {
+    private PlayerTypeEntity.DominantPlayerType dominantPlayerType() {
 
         if (killerPercentage >= socializerPercentage) {
 
