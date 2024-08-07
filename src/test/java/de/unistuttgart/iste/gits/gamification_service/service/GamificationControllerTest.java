@@ -17,6 +17,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -30,6 +31,26 @@ import org.testcontainers.containers.PostgreSQLContainer;
 @SpringBootTest(classes = GamificationApplication.class)
 @Transactional
 class GamificationControllerTest {
+
+    // Required to run tests for the repositories
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:13")
+            .withDatabaseName("testdb")
+            .withUsername("root")
+            .withPassword("root");
+
+    // Required to run tests for the repositories
+    @BeforeAll
+    static void startContainer() {
+        postgres.start();
+    }
+
+    // Required to run tests for the repositories
+    @DynamicPropertySource
+    static void configureProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", postgres::getJdbcUrl);
+        registry.add("spring.datasource.username", postgres::getUsername);
+        registry.add("spring.datasource.password", postgres::getPassword);
+    }
 
     @Autowired
     private BadgeRepository badgeRepository;
@@ -53,40 +74,19 @@ class GamificationControllerTest {
     private GamificationController gamificationController;
 
 
-    // Required to run tests for the repositories
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:13")
-            .withDatabaseName("testdb")
-            .withUsername("root")
-            .withPassword("root");
-
-    // Required to run tests for the repositories
-    @BeforeAll
-    static void startContainer() {
-        postgres.start();
-    }
-
-    // Required to run tests for the repositories
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-    }
-
-    // Populate all the repositories with Entity Objects
     @BeforeEach
-    void populate() {
-        TestUtils.populateRepositories(playerTypeRepository, courseRepository, badgeRepository, questChainRepository);
-
+    void setGamificationController() {
         PlayerTypeService playerTypeService = new PlayerTypeService(playerTypeRepository);
         CourseService courseService = new CourseService(courseRepository);
         BadgeService badgeService = new BadgeService(badgeRepository, userBadgeRepository, new BadgeMapper());
         QuestService questService = new QuestService(questChainRepository, userQuestChainRepository, new QuestMapper());
-        gamificationController = new GamificationController(playerTypeService, courseService, badgeService, questService);
+        this.gamificationController = new GamificationController(playerTypeService, courseService, badgeService, questService);
     }
 
+
     @Test
-    void populateTest() {
+    void testEvaluationTest() {
+        TestUtils.populatePlayerTypeRepository(playerTypeRepository);
 
         List<PlayerTypeEntity> playerTypeEntityList = playerTypeRepository.findAll();
         assertEquals(1024, playerTypeEntityList.size());
@@ -108,42 +108,33 @@ class GamificationControllerTest {
             assertTrue(100 >= playerTypeEntity.getKillerPercentage());
         }
 
-        List<CourseEntity> courseEntityList = courseRepository.findAll();
-        assertEquals(2, courseEntityList.size());
-        assertEquals(4, courseEntityList.get(0).getUserUUIDs().size());
-        assertEquals(4, courseEntityList.get(1).getUserUUIDs().size());
-
-        List<BadgeEntity> badgeEntityList = badgeRepository.findAll();
-        assertEquals(12, badgeEntityList.size());
-
-        List<QuestChainEntity> questChainEntityList = questChainRepository.findAll();
-        assertEquals(1, questChainEntityList.size());
-        QuestChainEntity questChainEntity = questChainEntityList.getFirst();
-        assertEquals(courseEntityList.get(1).getCourseUUID(), questChainEntity.getCourseUUID());
-        assertEquals(4, questChainEntity.getQuests().size());
-
     }
 
     @Test
     void addCourseTest() {
-        String expectedResponse = "Added course.";
 
         UUID courseUUID = UUID.randomUUID();
         UUID lecturerUUID = UUID.randomUUID();
-        String response = gamificationController.addCourse(courseUUID, lecturerUUID);
+        assertEquals("Added course.", gamificationController.addCourse(courseUUID, lecturerUUID));
 
-        assertEquals(expectedResponse, response);
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        assertEquals(1, courseRepository.findAll().size());
+        assertTrue(courseEntity.isPresent());
+        assertEquals(1, courseEntity.get().getUserUUIDs().size());
 
-        assertEquals(3, courseRepository.findAll().size());
-        assertTrue(courseRepository.findById(courseUUID).isPresent());
-        assertEquals(1, courseRepository.findById(courseUUID).get().getUserUUIDs().size());
+        assertEquals(0, badgeRepository.findAll().size());
+        assertEquals(0, userBadgeRepository.findAll().size());
 
         QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
-        assertEquals(2, questChainRepository.findAll().size());
+        assertEquals(1, questChainRepository.findAll().size());
+        assertNotNull(questChainEntity);
         assertTrue(questChainEntity.getQuests().isEmpty());
 
         UserQuestChainEntity userQuestChainEntity = userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), lecturerUUID);
+        assertEquals(1, userQuestChainRepository.findAll().size());
+        assertNotNull(userQuestChainEntity);
         assertEquals(0, userQuestChainEntity.getUserLevel());
+
     }
 
     /*
