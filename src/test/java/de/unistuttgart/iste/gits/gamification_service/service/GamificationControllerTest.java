@@ -143,7 +143,7 @@ class GamificationControllerTest {
         assertTrue(questChainEntity.getQuests().isEmpty());
 
         UserQuestChainEntity userQuestChainEntity = userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), lecturerUUID);
-        assertEquals(0, userQuestChainEntity.getUserLevel());
+        assertEquals(1, userQuestChainEntity.getUserLevel());
     }
 
     /*
