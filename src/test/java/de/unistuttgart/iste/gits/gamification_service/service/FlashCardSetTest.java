@@ -54,9 +54,6 @@ class FlashCardSetTest {
     private BadgeRepository badgeRepository;
 
     @Autowired
-    private CourseRepository courseRepository;
-
-    @Autowired
     private QuestChainRepository questChainRepository;
 
     @Autowired
