@@ -26,6 +26,7 @@ public class PlayerTypeEntity {
 
         this.userUUID = userUUID;
         this.userHasTakenTest = userHasTakenTest;
+        this.dominantPlayerType = DominantPlayerType.None;
 
     }
 

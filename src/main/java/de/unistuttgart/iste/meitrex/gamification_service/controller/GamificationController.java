@@ -166,12 +166,12 @@ public class GamificationController {
     @MutationMapping
     public String submitAnswer(@Argument int questionId, @Argument boolean answer) {
 
-        if (this.test != null && questionId < this.test.length()) {
+        if (this.test != null && 0 <= questionId && questionId < this.test.length()) {
             this.test.setAnswer(questionId, answer);
             return "Answer submitted successfully!";
         } else if (this.test == null) {
             return "No test selected!";
-        } else if (questionId >= this.test.length()) {
+        } else if (0 >= questionId || questionId >= this.test.length()) {
             return "Id out of bounds!";
         }
         return "Unknown error occurred";
