@@ -86,6 +86,13 @@ public class PlayerTypeTest {
         justCreated = false;
     }
 
+    public int length() {
+        if (this.questions == null) {
+            return 0;
+        }
+        return this.questions.length;
+    }
+
     private double calculateAchieverPercentage() {
         return (double) (100 * (IA(this.questions[0].getSelectedOption())
                 + IA(! this.questions[1].getSelectedOption())
