@@ -1,7 +1,6 @@
 package de.unistuttgart.iste.meitrex.gamification_service.controller;
 
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.PlayerTypeEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.PlayerTypeTest;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.PlayerTypeTestQuestion;
 import de.unistuttgart.iste.meitrex.gamification_service.service.BadgeService;
 import de.unistuttgart.iste.meitrex.gamification_service.service.CourseService;
@@ -29,15 +28,10 @@ public class GamificationController {
     private final BadgeService badgeService;
     private final QuestService questService;
 
-    private PlayerTypeTest test;
-
     @MutationMapping
     public String addCourse(@Argument UUID courseUUID, @Argument UUID lecturerUUID) {
-        courseService.addCourse(courseUUID);
-        courseService.addUserToCourse(lecturerUUID, courseUUID);
-
-        questService.addCourse(courseUUID);
-        questService.assignQuestChainToUser(lecturerUUID, courseUUID);
+        courseService.addCourse(courseUUID, lecturerUUID);
+        questService.addCourse(courseUUID, lecturerUUID);
         return "Added course.";
     }
 
@@ -109,13 +103,7 @@ public class GamificationController {
 
     @MutationMapping
     public PlayerTypeEntity evaluateTest(@Argument UUID userUUID) {
-
-        if (this.test != null && !this.test.justCreated) {
-            PlayerTypeEntity playerTypeEntity = this.test.evaluateTest(userUUID);
-            return playerTypeService.saveTestResult(playerTypeEntity);
-        }
-        return new PlayerTypeEntity(userUUID, false);
-
+        return playerTypeService.evaluateTest(userUUID);
     }
 
     @MutationMapping
@@ -165,46 +153,22 @@ public class GamificationController {
 
     @MutationMapping
     public String submitAnswer(@Argument int questionId, @Argument boolean answer) {
-
-        if (this.test != null && 0 <= questionId && questionId < this.test.length()) {
-            this.test.setAnswer(questionId, answer);
-            return "Answer submitted successfully!";
-        } else if (this.test == null) {
-            return "No test selected!";
-        } else if (0 >= questionId || questionId >= this.test.length()) {
-            return "Id out of bounds!";
-        }
-        return "Unknown error occurred";
-
+        return playerTypeService.submitAnswer(questionId, answer);
     }
 
     @QueryMapping
     public PlayerTypeTestQuestion[] test() {
-        this.test = new PlayerTypeTest();
-        return this.test.getQuestions();
+        return playerTypeService.test();
     }
 
     @QueryMapping
     public boolean userHasTakenTest(@Argument UUID userUUID) {
-
-        Optional<PlayerTypeEntity> entity = playerTypeService.getPlayerTypeByUserUUID(userUUID);
-        if (entity.isEmpty()) {
-            // User is not present in playertype_database
-            playerTypeService.createUser(userUUID);
-            return false;
-        }
-        return entity.get().isUserHasTakenTest();
-
+        return playerTypeService.userHasTakenTest(userUUID);
     }
 
     @QueryMapping
     public PlayerTypeEntity.DominantPlayerType usersDominantPlayerType(@Argument UUID userUUID) {
-        Optional<PlayerTypeEntity> playerType = playerTypeService.getPlayerTypeByUserUUID(userUUID);
-        if (playerType.isPresent() && playerType.get().getDominantPlayerType() != null) {
-            return playerType.get().getDominantPlayerType();
-        } else {
-            return PlayerTypeEntity.DominantPlayerType.None;
-        }
+        return playerTypeService.usersDominantPlayerType(userUUID);
     }
 
 }

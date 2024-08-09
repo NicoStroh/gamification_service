@@ -31,15 +31,18 @@ public class QuestService {
 
 
     /**
-     * Creates a new empty QuestChainEntity for the course.
+     * Creates a new empty QuestChainEntity for the course and assigns it to the creator of the course.
      *
-     * @param courseUUID     the id of the new course that was just created
+     * @param courseUUID       the id of the new course that was just created
+     * @param lecturerUUID     the id of the creator of the course
      */
-    public void addCourse(UUID courseUUID) {
+    public void addCourse(UUID courseUUID, UUID lecturerUUID) {
         QuestChainEntity questChainEntity = new QuestChainEntity();
         questChainEntity.setCourseUUID(courseUUID);
         questChainEntity.setQuests(new LinkedList<QuestEntity>());
         questChainRepository.save(questChainEntity);
+
+        assignQuestChainToUser(lecturerUUID, courseUUID);
     }
 
     /**

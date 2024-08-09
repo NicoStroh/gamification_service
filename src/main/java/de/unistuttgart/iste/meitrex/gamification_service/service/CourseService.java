@@ -20,13 +20,16 @@ public class CourseService {
     private final CourseRepository courseRepository;
 
     /**
-     * Creates a new course saves it in the repository.
+     * Creates a new course and saves it in the repository, adds the creator of the course to it.
      *
-     * @param courseUUID     the id of the created course
+     * @param courseUUID       the id of the created course
+     * @param lecturerUUID     the id of the creator of the course
      */
-    public void addCourse(UUID courseUUID) {
+    public void addCourse(UUID courseUUID, UUID lecturerUUID) {
         CourseEntity courseEntity = new CourseEntity(courseUUID, new HashSet<UUID>());
         courseRepository.save(courseEntity);
+
+        addUserToCourse(lecturerUUID, courseUUID);
     }
 
     /**

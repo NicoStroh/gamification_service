@@ -84,7 +84,6 @@ class PlayerTypeServiceTest {
         assertEquals("Id out of bounds!", gamificationController.submitAnswer(-1, true));
 
         assertEquals("Answer submitted successfully!", gamificationController.submitAnswer(0, true));
-
     }
 
     @Test
