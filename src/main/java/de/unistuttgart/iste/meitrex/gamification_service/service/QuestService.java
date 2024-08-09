@@ -201,7 +201,7 @@ public class QuestService {
 
         QuestEntity quest = new QuestEntity();
         quest.setQuizUUID(quizUUID);
-        quest.setDescription(descriptionPart1 + "quiz" + name + descriptionPart2 + passingPercentage + descriptionPart3);
+        quest.setDescription(descriptionPart1 + "quiz " + name + descriptionPart2 + passingPercentage + descriptionPart3);
 
         QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
         questChainEntity.addQuest(quest);
@@ -220,7 +220,7 @@ public class QuestService {
 
         QuestEntity quest = new QuestEntity();
         quest.setFlashCardSetUUID(flashCardSetUUID);
-        quest.setDescription(descriptionPart1 + "flashcardset " + name + descriptionPart2 + passingPercentage + descriptionPart3);
+        quest.setDescription(descriptionPart1 + "flashcardSet " + name + descriptionPart2 + passingPercentage + descriptionPart3);
 
         QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
         questChainEntity.addQuest(quest);
