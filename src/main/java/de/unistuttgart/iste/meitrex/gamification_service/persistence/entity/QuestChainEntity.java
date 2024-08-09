@@ -37,7 +37,7 @@ public class QuestChainEntity {
         if (this.quests != null) {
             for (QuestEntity quest : this.quests) {
                 if (quizUUID.equals(quest.getQuizUUID())) {
-                    quest.setDescription(QuestService.descriptionPart1 + "quiz" + newName + QuestService.descriptionPart2 +
+                    quest.setDescription(QuestService.descriptionPart1 + "quiz " + newName + QuestService.descriptionPart2 +
                             QuestService.passingPercentage + QuestService.descriptionPart3);
                     break;
                 }
@@ -45,11 +45,11 @@ public class QuestChainEntity {
         }
     }
 
-    public void changeNameOfFlashcardSet(UUID flashcardSetUUID, String newName) {
+    public void changeNameOfFlashCardSet(UUID flashCardSetUUID, String newName) {
         if (this.quests != null) {
             for (QuestEntity quest : this.quests) {
-                if (flashcardSetUUID.equals(quest.getFlashCardSetUUID())) {
-                    quest.setDescription(QuestService.descriptionPart1 + "flashcardSet" + newName + QuestService.descriptionPart2 +
+                if (flashCardSetUUID.equals(quest.getFlashCardSetUUID())) {
+                    quest.setDescription(QuestService.descriptionPart1 + "flashCardSet " + newName + QuestService.descriptionPart2 +
                             QuestService.passingPercentage + QuestService.descriptionPart3);
                     break;
                 }
@@ -70,11 +70,11 @@ public class QuestChainEntity {
         return -1;
     }
 
-    public int findIndexOfFlashcardSetQuest(UUID flashcardSetUUID) {
+    public int findIndexOfFlashcardSetQuest(UUID flashCardSetUUID) {
         if (this.quests != null) {
             int i = 0;
             for (QuestEntity quest : this.quests) {
-                if (flashcardSetUUID.equals(quest.getFlashCardSetUUID())) {
+                if (flashCardSetUUID.equals(quest.getFlashCardSetUUID())) {
                     return i;
                 }
                 i++;

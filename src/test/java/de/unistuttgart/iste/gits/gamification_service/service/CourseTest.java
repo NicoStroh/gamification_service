@@ -75,7 +75,7 @@ class CourseTest {
     private UUID user1UUID;
     private UUID user2UUID;
     private UUID quizUUID;
-    private UUID flashcardSetUUID;
+    private UUID flashCardSetUUID;
 
     void createTestCourse() {
         this.courseUUID = UUID.randomUUID();
@@ -83,7 +83,7 @@ class CourseTest {
         this.user1UUID = UUID.randomUUID();
         this.user2UUID = UUID.randomUUID();
         this.quizUUID = UUID.randomUUID();
-        this.flashcardSetUUID = UUID.randomUUID();
+        this.flashCardSetUUID = UUID.randomUUID();
 
         TestUtils.createTestCourse(gamificationController,
                 courseUUID,
@@ -91,8 +91,9 @@ class CourseTest {
                 user1UUID,
                 user2UUID,
                 quizUUID,
-                flashcardSetUUID);
+                flashCardSetUUID);
     }
+
 
     @Test
     void addCourseTest() {
@@ -236,7 +237,7 @@ class CourseTest {
         List<UserBadge> user1UserBadges = gamificationController.getCoursesUserBadges(courseUUID, user1UUID);
 
         gamificationController.finishQuiz(user2UUID, courseUUID, quizUUID, 5, 5);
-        gamificationController.finishFlashCardSet(user2UUID, courseUUID, flashcardSetUUID, 5, 5);
+        gamificationController.finishFlashCardSet(user2UUID, courseUUID, flashCardSetUUID, 5, 5);
         List<UserBadge> user2UserBadges = gamificationController.getCoursesUserBadges(courseUUID, user2UUID);
 
         assertEquals(6, lecturersUserBadges.size());
@@ -249,7 +250,7 @@ class CourseTest {
             assertTrue(badge.getDescription().equals(BadgeService.descriptionPart1 + badge.getPassingPercentage()
                             + BadgeService.descriptionPart2 + "quiz Quiz 1" + BadgeService.descriptionPart3) ||
                        badge.getDescription().equals(BadgeService.descriptionPart1 + badge.getPassingPercentage()
-                               + BadgeService.descriptionPart2 + "flashcardSet FCS 1" + BadgeService.descriptionPart3)
+                               + BadgeService.descriptionPart2 + "flashCardSet FCS 1" + BadgeService.descriptionPart3)
                     );
             assertFalse(badge.getAchieved());
         }
@@ -260,7 +261,7 @@ class CourseTest {
             assertTrue(badge.getDescription().equals(BadgeService.descriptionPart1 + badge.getPassingPercentage()
                     + BadgeService.descriptionPart2 + "quiz Quiz 1" + BadgeService.descriptionPart3) ||
                     badge.getDescription().equals(BadgeService.descriptionPart1 + badge.getPassingPercentage()
-                            + BadgeService.descriptionPart2 + "flashcardSet FCS 1" + BadgeService.descriptionPart3)
+                            + BadgeService.descriptionPart2 + "flashCardSet FCS 1" + BadgeService.descriptionPart3)
             );
             assertFalse(badge.getAchieved());
         }
@@ -271,7 +272,7 @@ class CourseTest {
             assertTrue(badge.getDescription().equals(BadgeService.descriptionPart1 + badge.getPassingPercentage()
                     + BadgeService.descriptionPart2 + "quiz Quiz 1" + BadgeService.descriptionPart3) ||
                     badge.getDescription().equals(BadgeService.descriptionPart1 + badge.getPassingPercentage()
-                            + BadgeService.descriptionPart2 + "flashcardSet FCS 1" + BadgeService.descriptionPart3)
+                            + BadgeService.descriptionPart2 + "flashCardSet FCS 1" + BadgeService.descriptionPart3)
             );
             assertTrue(badge.getAchieved());
         }
@@ -284,18 +285,18 @@ class CourseTest {
         gamificationController.finishQuiz(lecturerUUID, courseUUID, quizUUID, 5, 5);
         Quest lecturerQuest = gamificationController.getCurrentUserQuest(lecturerUUID, courseUUID);
 
-        gamificationController.finishFlashCardSet(user1UUID, courseUUID, flashcardSetUUID, 5, 5);
+        gamificationController.finishFlashCardSet(user1UUID, courseUUID, flashCardSetUUID, 5, 5);
         Quest user1Quest = gamificationController.getCurrentUserQuest(user1UUID, courseUUID);
 
         gamificationController.finishQuiz(user2UUID, courseUUID, quizUUID, 5, 5);
-        gamificationController.finishFlashCardSet(user2UUID, courseUUID, flashcardSetUUID, 5, 5);
+        gamificationController.finishFlashCardSet(user2UUID, courseUUID, flashCardSetUUID, 5, 5);
         Quest user2Quest = gamificationController.getCurrentUserQuest(user2UUID, courseUUID);
 
         assertFalse(lecturerQuest.getFinished());
         assertNull(lecturerQuest.getQuizUUID());
-        assertEquals(flashcardSetUUID, lecturerQuest.getFlashCardSetUUID());
+        assertEquals(flashCardSetUUID, lecturerQuest.getFlashCardSetUUID());
         assertEquals(1, lecturerQuest.getLevel());
-        assertEquals(QuestService.descriptionPart1 + "flashcardSet FCS 1" +
+        assertEquals(QuestService.descriptionPart1 + "flashCardSet FCS 1" +
                 QuestService.descriptionPart2 + 80 + QuestService.descriptionPart3, lecturerQuest.getDescription());
 
         assertFalse(user1Quest.getFinished());
@@ -320,11 +321,11 @@ class CourseTest {
         gamificationController.finishQuiz(lecturerUUID, courseUUID, quizUUID, 5, 5);
         UserQuestChain lecturerQuestChain = gamificationController.getUserQuestChain(lecturerUUID, courseUUID);
 
-        gamificationController.finishFlashCardSet(user1UUID, courseUUID, flashcardSetUUID, 5, 5);
+        gamificationController.finishFlashCardSet(user1UUID, courseUUID, flashCardSetUUID, 5, 5);
         UserQuestChain user1QuestChain = gamificationController.getUserQuestChain(user1UUID, courseUUID);
 
         gamificationController.finishQuiz(user2UUID, courseUUID, quizUUID, 5, 5);
-        gamificationController.finishFlashCardSet(user2UUID, courseUUID, flashcardSetUUID, 5, 5);
+        gamificationController.finishFlashCardSet(user2UUID, courseUUID, flashCardSetUUID, 5, 5);
         UserQuestChain user2QuestChain = gamificationController.getUserQuestChain(user2UUID, courseUUID);
 
         assertTrue(questChainRepository.findById(lecturerQuestChain.getQuestChainUUID()).isPresent());

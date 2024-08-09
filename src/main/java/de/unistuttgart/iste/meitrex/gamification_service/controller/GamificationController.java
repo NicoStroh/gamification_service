@@ -15,7 +15,6 @@ import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -49,7 +48,7 @@ public class GamificationController {
                                      @Argument UUID courseUUID) {
         badgeService.createBadgesForFlashCardSet(flashCardSetUUID, name, courseUUID, courseService.getCoursesUsers(courseUUID));
         questService.createQuestForFlashCardSet(flashCardSetUUID, name, courseUUID);
-        return "Created Flashcardset successfully.";
+        return "Created flashCardSet successfully.";
     }
 
     @MutationMapping
@@ -70,10 +69,10 @@ public class GamificationController {
     }
 
     @MutationMapping
-    public String deleteBadgesAndQuestOfFlashCardSet(@Argument UUID flashcardSetUUID, @Argument UUID courseUUID) {
-        badgeService.deleteBadgesAndUserBadgesOfFCS(flashcardSetUUID);
-        questService.deleteQuestOfFCS(courseUUID, flashcardSetUUID);
-        return "FlashcardSet deleted.";
+    public String deleteBadgesAndQuestOfFlashCardSet(@Argument UUID flashCardSetUUID, @Argument UUID courseUUID) {
+        badgeService.deleteBadgesAndUserBadgesOfFCS(flashCardSetUUID);
+        questService.deleteQuestOfFCS(courseUUID, flashCardSetUUID);
+        return "FlashCardSet deleted.";
     }
 
     @MutationMapping
@@ -84,12 +83,12 @@ public class GamificationController {
     }
 
     @MutationMapping
-    public String editFlashcardSetName(@Argument UUID flashcardSetUUID,
+    public String editFlashCardSetName(@Argument UUID flashCardSetUUID,
                                        @Argument UUID courseUUID,
                                        @Argument String name) {
-        badgeService.changeFlashCardSetName(flashcardSetUUID, name);
-        questService.changeFlashcardSetName(flashcardSetUUID, courseUUID, name);
-        return "Changed flashcardset name!";
+        badgeService.changeFlashCardSetName(flashCardSetUUID, name);
+        questService.changeFlashCardSetName(flashCardSetUUID, courseUUID, name);
+        return "Changed flashCardSet name!";
     }
 
     @MutationMapping
@@ -125,7 +124,7 @@ public class GamificationController {
                                      @Argument int totalAnswers) {
         badgeService.markBadgesAsAchievedIfPassedFlashCardSet(userUUID, flashCardSetUUID, correctAnswers, totalAnswers);
         questService.markQuestAsFinishedIfPassedFlashCardSet(userUUID, courseUUID, flashCardSetUUID, correctAnswers, totalAnswers);
-        return "Finished FlashCardSet!";
+        return "Finished flashCardSet!";
     }
 
     @QueryMapping

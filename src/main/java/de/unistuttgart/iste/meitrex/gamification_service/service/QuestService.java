@@ -220,7 +220,7 @@ public class QuestService {
 
         QuestEntity quest = new QuestEntity();
         quest.setFlashCardSetUUID(flashCardSetUUID);
-        quest.setDescription(descriptionPart1 + "flashcardSet " + name + descriptionPart2 + passingPercentage + descriptionPart3);
+        quest.setDescription(descriptionPart1 + "flashCardSet " + name + descriptionPart2 + passingPercentage + descriptionPart3);
 
         QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
         questChainEntity.addQuest(quest);
@@ -242,15 +242,15 @@ public class QuestService {
     }
 
     /**
-     * Changes the description of the quest for the flashcardSet with the new name
+     * Changes the description of the quest for the flashCardSet with the new name
      *
-     * @param flashcardSetUUID     the id of the edited flashcardSet
-     * @param courseUUID           the id of the course, which contains the flashcardSet
-     * @param name                 the new name of the flashcardSet
+     * @param flashCardSetUUID     the id of the edited flashCardSet
+     * @param courseUUID           the id of the course, which contains the flashCardSet
+     * @param name                 the new name of the flashCardSet
      */
-    public void changeFlashcardSetName(UUID flashcardSetUUID, UUID courseUUID, String name) {
+    public void changeFlashCardSetName(UUID flashCardSetUUID, UUID courseUUID, String name) {
         QuestChainEntity questChain = questChainRepository.findByCourseUUID(courseUUID);
-        questChain.changeNameOfFlashcardSet(flashcardSetUUID, name);
+        questChain.changeNameOfFlashCardSet(flashCardSetUUID, name);
         questChainRepository.save(questChain);
     }
 
@@ -302,13 +302,13 @@ public class QuestService {
 
     /**
      * Marks the current quest of the user at this course as finished, if he got more than 80% of the answers correct
-     * and the current quest points to the finished flashcardset
+     * and the current quest points to the finished flashCardSet
      *
      * @param userUUID             the id of the user
-     * @param courseUUID           the id of the course, in which the flashcardset is
-     * @param flashCardSetUUID     the id of the flashcardset
-     * @param correctAnswers       the number of correct answers, the user got for this flashcardset
-     * @param totalAnswers         the total number of questions in this flashcardset
+     * @param courseUUID           the id of the course, in which the flashCardSet is
+     * @param flashCardSetUUID     the id of the flashCardSet
+     * @param correctAnswers       the number of correct answers, the user got for this flashCardSet
+     * @param totalAnswers         the total number of questions in this flashCardSet
      */
     public void markQuestAsFinishedIfPassedFlashCardSet(UUID userUUID, UUID courseUUID, UUID flashCardSetUUID, int correctAnswers, int totalAnswers) {
 

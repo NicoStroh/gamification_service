@@ -83,12 +83,12 @@ type Mutation {
 
   # Deletes gamification elements of the course
   deleteBadgesAndQuestsOfCourse(courseUUID: UUID!): String!
-  # Deletes gamification elements for quiz / flashcardset
-  deleteBadgesAndQuestOfFlashCardSet(flashcardSetUUID: UUID!, courseUUID: UUID!): String!
+  # Deletes gamification elements for quiz / flashCardset
+  deleteBadgesAndQuestOfFlashCardSet(flashCardSetUUID: UUID!, courseUUID: UUID!): String!
   deleteBadgesAndQuestOfQuiz(quizUUID: UUID!, courseUUID: UUID!): String!
 
-  # Changes the description of the badges / quest for the quiz / flashcardSet
-  editFlashcardSetName(flashcardSetUUID: UUID!, courseUUID: UUID!, name: String!): String!
+  # Changes the description of the badges / quest for the quiz / flashCardSet
+  editFlashCardSetName(flashCardSetUUID: UUID!, courseUUID: UUID!, name: String!): String!
   editQuizName(quizUUID: UUID!, courseUUID: UUID!, name: String!): String!
 
   # Test evaluation

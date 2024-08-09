@@ -6,6 +6,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.controller.Gamification
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.*;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.*;
 import de.unistuttgart.iste.meitrex.gamification_service.service.*;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -65,34 +65,52 @@ class FlashCardSetTest {
     @Autowired
     private GamificationController gamificationController;
 
+    private UUID courseUUID;
+    private UUID lecturerUUID;
+    private UUID user1UUID;
+    private UUID user2UUID;
+    private UUID quizUUID;
+    private UUID flashCardSetUUID;
+
+    @BeforeEach
+    void createTestCourse() {
+        this.courseUUID = UUID.randomUUID();
+        this.lecturerUUID = UUID.randomUUID();
+        this.user1UUID = UUID.randomUUID();
+        this.user2UUID = UUID.randomUUID();
+        this.quizUUID = UUID.randomUUID();
+        this.flashCardSetUUID = UUID.randomUUID();
+
+        TestUtils.createTestCourse(gamificationController,
+                courseUUID,
+                lecturerUUID,
+                user1UUID,
+                user2UUID,
+                quizUUID,
+                flashCardSetUUID);
+    }
+
 
     @Test
     void createFlashCardSetTest() {
-
-        UUID courseUUID = UUID.randomUUID();
-        UUID lecturerUUID = UUID.randomUUID();
-        UUID user1 = UUID.randomUUID();
-        UUID user2 = UUID.randomUUID();
-        TestUtils.createTestCourse(gamificationController, courseUUID, lecturerUUID, user1, user2,
-                UUID.randomUUID(), UUID.randomUUID());
-
-        UUID flashCardSetUUID = UUID.randomUUID();
+        UUID flashCardSet = UUID.randomUUID();
         String name = "FCS 2";
-        assertEquals("Created Flashcardset successfully.",
-                gamificationController.createFlashCardSet(flashCardSetUUID, name, courseUUID));
+        assertEquals("Created flashCardSet successfully.",
+                gamificationController.createFlashCardSet(flashCardSet, name, courseUUID));
 
         assertEquals(9, badgeRepository.findAll().size());
-        List<BadgeEntity> fcsBadges = badgeRepository.findByFlashCardSetUUID(flashCardSetUUID);
-        List<UserBadgeEntity> fcsUserBadges = new LinkedList<>();
+        List<BadgeEntity> fcsBadges = badgeRepository.findByFlashCardSetUUID(flashCardSet);
         assertEquals(3, fcsBadges.size());
+
+        List<UserBadgeEntity> fcsUserBadges = new LinkedList<>();
         for (BadgeEntity badge : fcsBadges) {
             int passingPercentage = badge.getPassingPercentage();
             assertEquals(courseUUID, badge.getCourseUUID());
             assertTrue(50 == passingPercentage || 70 == passingPercentage || 90 == passingPercentage);
-            assertEquals(flashCardSetUUID, badge.getFlashCardSetUUID());
+            assertEquals(flashCardSet, badge.getFlashCardSetUUID());
             assertNull(badge.getQuizUUID());
             assertEquals(BadgeService.descriptionPart1 + passingPercentage + BadgeService.descriptionPart2 +
-                    "flashcardSet " + name + BadgeService.descriptionPart3, badge.getDescription());
+                    "flashCardSet " + name + BadgeService.descriptionPart3, badge.getDescription());
 
             fcsUserBadges.addAll(userBadgeRepository.findByBadgeUUID(badge.getBadgeUUID()));
         }
@@ -103,8 +121,8 @@ class FlashCardSetTest {
             assertNotNull(userBadge.getUserBadgeUUID());
             assertTrue(badgeRepository.findById(userBadge.getBadgeUUID()).isPresent());
             assertTrue(lecturerUUID.equals(userBadge.getUserUUID())
-                    || user1.equals(userBadge.getUserUUID())
-                    || user2.equals(userBadge.getUserUUID()));
+                    || user1UUID.equals(userBadge.getUserUUID())
+                    || user2UUID.equals(userBadge.getUserUUID()));
             assertFalse(userBadge.isAchieved());
         }
 
@@ -113,46 +131,81 @@ class FlashCardSetTest {
         assertNotNull(questChainEntity);
         assertEquals(3, questChainEntity.getQuests().size());
 
-        UserQuestChainEntity userQuestChainEntity1 = userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), lecturerUUID);
-        UserQuestChainEntity userQuestChainEntity2 = userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), user1);
-        UserQuestChainEntity userQuestChainEntity3 = userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), user2);
+    }
+
+    @Test
+    void deleteBadgesAndQuestOfFlashCardSetTest() {
+        gamificationController.finishFlashCardSet(user1UUID, courseUUID, flashCardSetUUID, 5, 5);
+        gamificationController.finishQuiz(user2UUID, courseUUID, quizUUID, 5, 5);
+
+        QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
+        UserQuestChainEntity user1QuestChainEntity =
+                userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), user1UUID);
+        UserQuestChainEntity user2QuestChainEntity =
+                userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), user2UUID);
+        assertEquals(0, user1QuestChainEntity.getUserLevel());
+        assertEquals(1, user2QuestChainEntity.getUserLevel());
+
+        assertEquals("FlashCardSet deleted.", gamificationController.deleteBadgesAndQuestOfFlashCardSet(flashCardSetUUID, courseUUID));
+
+        List<BadgeEntity> allBadges = badgeRepository.findAll();
+        assertEquals(3, allBadges.size());
+        for(BadgeEntity badge : allBadges) {
+            assertNotEquals(flashCardSetUUID, badge.getFlashCardSetUUID());
+        }
+
+        List<UserBadgeEntity> allUserBadges = userBadgeRepository.findAll();
+        assertEquals(9, allUserBadges.size());
+
+        questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
+        assertNotNull(questChainEntity);
+        assertEquals(1, questChainEntity.getQuests().size());
+        for (QuestEntity quest : questChainEntity.getQuests()) {
+            assertNotEquals(flashCardSetUUID, quest.getFlashCardSetUUID());
+        }
+
+        UserQuestChainEntity lecturerQuestChainEntity =
+                userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), lecturerUUID);
+        user1QuestChainEntity =
+                userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), user1UUID);
+        user2QuestChainEntity =
+                userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), user2UUID);
         assertEquals(3, userQuestChainRepository.findAll().size());
-        assertNotNull(userQuestChainEntity1);
-        assertNotNull(userQuestChainEntity2);
-        assertNotNull(userQuestChainEntity3);
-        assertEquals(0, userQuestChainEntity1.getUserLevel());
-        assertEquals(0, userQuestChainEntity2.getUserLevel());
-        assertEquals(0, userQuestChainEntity3.getUserLevel());
+        assertEquals(0, lecturerQuestChainEntity.getUserLevel());
+        assertEquals(0, user1QuestChainEntity.getUserLevel());
+        assertEquals(1, user2QuestChainEntity.getUserLevel());
 
     }
 
+    @Test
+    void editFlashCardSetNameTest() {
+        String newName = "New Name";
+        assertEquals("Changed flashCardSet name!", gamificationController.editFlashCardSetName(flashCardSetUUID, courseUUID, newName));
+
+        List<BadgeEntity> fcsBadges = badgeRepository.findByFlashCardSetUUID(quizUUID);
+        for (BadgeEntity badge : fcsBadges) {
+            int passingPercentage = badge.getPassingPercentage();
+            assertEquals(BadgeService.descriptionPart1 + passingPercentage + BadgeService.descriptionPart2 +
+                    "flashCardSet " + newName + BadgeService.descriptionPart3, badge.getDescription());
+        }
+
+        QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
+        int index = questChainEntity.findIndexOfFlashcardSetQuest(flashCardSetUUID);
+        QuestEntity quest = questChainEntity.getQuests().get(index);
+        assertEquals(QuestService.descriptionPart1 + "flashCardSet " + newName +
+                QuestService.descriptionPart2 + 80 + QuestService.descriptionPart3, quest.getDescription());
+    }
 
     /*
     @Test
-    void deleteBadgesAndQuestOfFlashCardSetTest(@Argument UUID flashcardSetUUID, @Argument UUID courseUUID) {
-        badgeService.deleteBadgesAndUserBadgesOfFCS(flashcardSetUUID);
-        questService.deleteQuestOfFCS(courseUUID, flashcardSetUUID);
-        return "FlashcardSet deleted.";
-    }
-
-    @Test
-    void editFlashcardSetNameTest(@Argument UUID flashcardSetUUID,
-                                       @Argument UUID courseUUID,
-                                       @Argument String name) {
-        badgeService.changeFlashCardSetName(flashcardSetUUID, name);
-        questService.changeFlashcardSetName(flashcardSetUUID, courseUUID, name);
-        return "Changed flashcardset name!";
-    }
-
-    @Test
     void finishFlashCardSetTest(@Argument UUID userUUID,
-                                     @Argument UUID courseUUID,
-                                     @Argument UUID flashCardSetUUID,
-                                     @Argument int correctAnswers,
-                                     @Argument int totalAnswers) {
-        badgeService.markBadgesAsAchievedIfPassedFlashCardSet(userUUID, flashCardSetUUID, correctAnswers, totalAnswers);
-        questService.markQuestAsFinishedIfPassedFlashCardSet(userUUID, courseUUID, flashCardSetUUID, correctAnswers, totalAnswers);
-        return "Finished FlashCardSet!";
+                        @Argument UUID courseUUID,
+                        @Argument UUID quizUUID,
+                        @Argument int correctAnswers,
+                        @Argument int totalAnswers) {
+        badgeService.markBadgesAsAchievedIfPassedQuiz(userUUID, quizUUID, correctAnswers, totalAnswers);
+        questService.markQuestAsFinishedIfPassedQuiz(userUUID, courseUUID, quizUUID, correctAnswers, totalAnswers);
+        return "Finished quiz!";
     }
     */
 

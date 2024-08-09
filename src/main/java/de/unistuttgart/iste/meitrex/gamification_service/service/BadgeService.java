@@ -1,7 +1,6 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service;
 
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.BadgeEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.CourseEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserBadgeEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.mapper.BadgeMapper;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.BadgeRepository;
@@ -10,7 +9,6 @@ import de.unistuttgart.iste.meitrex.generated.dto.UserBadge;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -80,11 +78,11 @@ public class BadgeService {
     }
 
     /**
-     * Retrieves the complete list of badges that refer to the flashcardset
+     * Retrieves the complete list of badges that refer to the flashCardSet
      *
-     * @param flashCardSetUUID   the id of the flashcardset
+     * @param flashCardSetUUID   the id of the flashCardSet
      *
-     * @return a List of BadgeEntity, which contains all Badges that refer to the flashcardset
+     * @return a List of BadgeEntity, which contains all Badges that refer to the flashCardSet
      */
     public List<BadgeEntity> getBadgesByFlashCardSetUUID(UUID flashCardSetUUID) {
         return badgeRepository.findByFlashCardSetUUID(flashCardSetUUID);
@@ -128,10 +126,10 @@ public class BadgeService {
     /**
      * Removes all badges from the badgeRepository of the fcs and all corresponding userBadges
      *
-     * @param flashcardSetUUID   the id of the deleted fcs
+     * @param flashCardSetUUID   the id of the deleted fcs
      */
-    public void deleteBadgesAndUserBadgesOfFCS(UUID flashcardSetUUID) {
-        List<BadgeEntity> fcsBadges = this.deleteBadgesOfFCS(flashcardSetUUID);
+    public void deleteBadgesAndUserBadgesOfFCS(UUID flashCardSetUUID) {
+        List<BadgeEntity> fcsBadges = this.deleteBadgesOfFCS(flashCardSetUUID);
         this.deleteUserBadges(fcsBadges);
     }
 
@@ -164,12 +162,12 @@ public class BadgeService {
     /**
      * Removes all badges from the badgeRepository of the fcs
      *
-     * @param flashcardSetUUID   the id of the deleted fcs
+     * @param flashCardSetUUID   the id of the deleted fcs
      *
      * @return a List of BadgeEntitys, which contains all Badges of this fcs
      */
-    public List<BadgeEntity> deleteBadgesOfFCS(UUID flashcardSetUUID) {
-        List<BadgeEntity> fcsBadges = badgeRepository.findByFlashCardSetUUID(flashcardSetUUID);
+    public List<BadgeEntity> deleteBadgesOfFCS(UUID flashCardSetUUID) {
+        List<BadgeEntity> fcsBadges = badgeRepository.findByFlashCardSetUUID(flashCardSetUUID);
         badgeRepository.deleteAll(fcsBadges);
         return fcsBadges;
     }
@@ -186,15 +184,15 @@ public class BadgeService {
     }
 
     /**
-     * Change the name of the flahscardset in its Badges
+     * Change the name of the flashCardSet in its Badges
      *
-     * @param flashcardSetUUID   the id of fcs
+     * @param flashCardSetUUID   the id of fcs
      * @param name               the new name of the fcs
      */
-    public void changeFlashCardSetName(UUID flashcardSetUUID, String name) {
-        List<BadgeEntity> fcsBadges = badgeRepository.findByFlashCardSetUUID(flashcardSetUUID);
+    public void changeFlashCardSetName(UUID flashCardSetUUID, String name) {
+        List<BadgeEntity> fcsBadges = badgeRepository.findByFlashCardSetUUID(flashCardSetUUID);
         for (BadgeEntity fcsBadge : fcsBadges) {
-            fcsBadge.setDescription(descriptionPart1 + fcsBadge.getPassingPercentage() + descriptionPart2 + "flashcardSet " + name + descriptionPart3);
+            fcsBadge.setDescription(descriptionPart1 + fcsBadge.getPassingPercentage() + descriptionPart2 + "flashCardSet " + name + descriptionPart3);
             badgeRepository.save(fcsBadge);
         }
     }
@@ -236,12 +234,12 @@ public class BadgeService {
 
     /**
      * Marks the UserBadge of the user as achieved, if he got more answers correct than the passingPercentage of the
-     * Badges, that refer to the flashcardset
+     * Badges, that refer to the flashCardSet
      *
      * @param userUUID             the id of the user
-     * @param flashCardSetUUID     the id of the flashcardset
-     * @param correctAnswers       the number of correct answers, the user got for this flashcardset
-     * @param totalAnswers         the total number of questions in this flashcardset
+     * @param flashCardSetUUID     the id of the flashCardSet
+     * @param correctAnswers       the number of correct answers, the user got for this flashCardSet
+     * @param totalAnswers         the total number of questions in this flashCardSet
      */
     public void markBadgesAsAchievedIfPassedFlashCardSet(UUID userUUID, UUID flashCardSetUUID, int correctAnswers, int totalAnswers) {
 
@@ -296,11 +294,11 @@ public class BadgeService {
     }
 
     /**
-     * Creates 3 Badges for the new created flashcardset, which suggests the user to complete the flashcardset with 50,
+     * Creates 3 Badges for the new created flashCardSet, which suggests the user to complete the flashCardSet with 50,
      * 70 and 90% correct answers
      *
-     * @param flashCardSetUUID     the id of the created flashcardset
-     * @param name                 the name of the flashcardset
+     * @param flashCardSetUUID     the id of the created flashCardSet
+     * @param name                 the name of the flashCardSet
      * @param courseUUID           the id of the course
      * @param coursesUsers         the UUIDs of the members of the course
      */
@@ -321,10 +319,10 @@ public class BadgeService {
     }
 
     /**
-     * Creates a Badge for the new flashcardset and assigns it to all the users of the course
+     * Creates a Badge for the new flashCardSet and assigns it to all the users of the course
      *
-     * @param flashCardSetUUID     the id of the created flashcardset
-     * @param name                 the name of the flashcardset
+     * @param flashCardSetUUID     the id of the created flashCardSet
+     * @param name                 the name of the flashCardSet
      * @param passingPercentage    the required percentage to get this badge
      * @param courseUUID           the id of the course
      * @param coursesUsers         the UUIDs of the members of the course
@@ -332,7 +330,7 @@ public class BadgeService {
     public BadgeEntity createBadgeForFlashCardSet(UUID flashCardSetUUID, String name, int passingPercentage, UUID courseUUID, Set<UUID> coursesUsers) {
 
         BadgeEntity badgeEntity = new BadgeEntity();
-        badgeEntity.setDescription(descriptionPart1 + passingPercentage + descriptionPart2 + "flashcardSet " + name + descriptionPart3);
+        badgeEntity.setDescription(descriptionPart1 + passingPercentage + descriptionPart2 + "flashCardSet " + name + descriptionPart3);
         badgeEntity.setPassingPercentage(passingPercentage);
         badgeEntity.setFlashCardSetUUID(flashCardSetUUID);
         badgeEntity.setCourseUUID(courseUUID);
