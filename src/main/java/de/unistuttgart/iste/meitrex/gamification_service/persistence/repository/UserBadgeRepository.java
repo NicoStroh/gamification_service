@@ -12,6 +12,7 @@ import java.util.UUID;
 public interface UserBadgeRepository extends JpaRepository<UserBadgeEntity, UUID> {
 
     List<UserBadgeEntity> findByBadgeUUID(UUID badgeUUID);
+    List<UserBadgeEntity> findByUserUUID(UUID userUUID);
     UserBadgeEntity findByUserUUIDAndBadgeUUID(UUID userUUID, UUID badgeUUID);
     void deleteAllByBadgeUUID(UUID badgeUUID);
     void deleteAllByUserUUID(UUID userUUID);
