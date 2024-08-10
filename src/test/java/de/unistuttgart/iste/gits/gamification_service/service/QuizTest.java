@@ -5,7 +5,8 @@ import de.unistuttgart.iste.meitrex.gamification_service.GamificationApplication
 import de.unistuttgart.iste.meitrex.gamification_service.controller.GamificationController;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.*;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.*;
-import de.unistuttgart.iste.meitrex.gamification_service.service.*;
+import de.unistuttgart.iste.meitrex.gamification_service.service.BadgeService;
+import de.unistuttgart.iste.meitrex.gamification_service.service.QuestService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,24 +24,42 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 
+/**
+ * Unit tests for the Quiz functionalities in the GamificationService.
+ * <p>
+ * This test class contains unit tests to verify the functionality of the Quiz-related operations
+ * within the GamificationController. It includes tests for creating quizzes, deleting quiz-related badges
+ * and quests, editing quiz names, and finishing quizzes.
+ */
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = GamificationApplication.class)
 @Transactional
 class QuizTest {
 
-    // Required to run tests for the repositories
+    // Required to run tests for the repositories using Testcontainers
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:13")
             .withDatabaseName("testdb")
             .withUsername("root")
             .withPassword("root");
 
-    // Required to run tests for the repositories
+    /**
+     * Starts the PostgreSQL container before all tests are executed.
+     * <p>
+     * This method is responsible for initializing the PostgreSQL container which is required
+     * to run the repository tests.
+     */
     @BeforeAll
     static void startContainer() {
         postgres.start();
     }
 
-    // Required to run tests for the repositories
+    /**
+     * Configures the database properties for the tests.
+     * <p>
+     * This method sets the necessary database connection properties dynamically using the PostgreSQL container.
+     *
+     * @param registry the registry to add the dynamic properties to
+     */
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.datasource.url", postgres::getJdbcUrl);
@@ -70,6 +89,12 @@ class QuizTest {
     private UUID quizUUID;
     private UUID flashCardSetUUID;
 
+    /**
+     * Sets up a test course before each test.
+     * <p>
+     * This method initializes the necessary UUIDs and creates a test course with 3 users, 1 quiz,
+     * and 1 flashCardSet using the {@code TestUtils.createTestCourse} method.
+     */
     @BeforeEach
     void createTestCourse() {
         this.courseUUID = UUID.randomUUID();
@@ -88,7 +113,22 @@ class QuizTest {
                 flashCardSetUUID);
     }
 
-
+    /**
+     * Tests the creation of a new quiz.
+     * <p>
+     * This test verifies the creation of a quiz within a course and checks that the appropriate badges
+     * are created and associated with the quiz. It also checks that the badges are properly linked to the users
+     * of the course, and that the quest chain is updated accordingly.
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>A new quiz is created successfully.</li>
+     *   <li>Three badges are associated with the new quiz.</li>
+     *   <li>Each badge has the correct description and properties.</li>
+     *   <li>Each user has the appropriate user badges initialized but not achieved.</li>
+     *   <li>The quest chain is updated to include a new quest related to the quiz.</li>
+     * </ul>
+     */
     @Test
     void createQuizTest() {
         UUID quiz = UUID.randomUUID();
@@ -128,9 +168,25 @@ class QuizTest {
         assertEquals(1, questChainRepository.findAll().size());
         assertNotNull(questChainEntity);
         assertEquals(3, questChainEntity.getQuests().size());
+        assertTrue(questChainEntity.getQuests().stream().anyMatch(
+                questEntity -> { return quiz.equals(questEntity.getQuizUUID());}));
 
     }
 
+    /**
+     * Tests the deletion of badges and quests associated with a quiz.
+     * <p>
+     * This test verifies that when a quiz is deleted, the corresponding badges, userBadges and quests are also removed
+     * from the database. It checks that badges and quests related to other entities (e.g., flashcard sets) are not affected.
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>The quiz is deleted successfully.</li>
+     *   <li>All badges associated with the quiz are removed.</li>
+     *   <li>Other badges and quests remain unaffected.</li>
+     *   <li>The users' quest chain progress is reset accordingly.</li>
+     * </ul>
+     */
     @Test
     void deleteBadgesAndQuestOfQuizTest() {
         gamificationController.finishFlashCardSet(user1UUID, courseUUID, flashCardSetUUID, 5, 5);
@@ -167,6 +223,19 @@ class QuizTest {
 
     }
 
+    /**
+     * Tests the renaming of a quiz.
+     * <p>
+     * This test verifies that when a quiz is renamed, the descriptions of the associated badges and quests
+     * are updated accordingly. The test checks that all related entities reflect the new quiz name.
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>The quiz name is changed successfully.</li>
+     *   <li>All badges associated with the quiz have their descriptions updated.</li>
+     *   <li>The quest associated with the quiz in the quest chain also has its description updated.</li>
+     * </ul>
+     */
     @Test
     void editQuizNameTest() {
         String newName = "New Name";
@@ -188,6 +257,20 @@ class QuizTest {
                 QuestService.descriptionPart3, quest.getDescription());
     }
 
+    /**
+     * Tests the completion of a quiz by different users.
+     * <p>
+     * This test verifies that when users complete a quiz, their progress is updated correctly in the
+     * badges and quest chain entities. The test checks that the correct badges are marked as achieved
+     * based on the users' quiz performance.
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>Users complete the quiz successfully.</li>
+     *   <li>Badges are marked as achieved or not based on the user's performance.</li>
+     *   <li>The quest chain reflects the user's progress, updating their levels accordingly.</li>
+     * </ul>
+     */
     @Test
     void finishQuizTest() {
         assertEquals("Finished quiz!",

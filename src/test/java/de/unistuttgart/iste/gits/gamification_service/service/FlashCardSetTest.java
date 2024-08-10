@@ -23,6 +23,13 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 
+/**
+ * Unit tests for the FlashCardSet functionalities in the GamificationService.
+ * <p>
+ * This test class contains unit tests to verify the functionality of the flashCardSet-related operations
+ * within the GamificationController. It includes tests for creating flashCardSets, deleting flashCardSet-related badges
+ * and quests, editing flashCardSet names, and finishing flashCardSets.
+ */
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = GamificationApplication.class)
 @Transactional
@@ -34,13 +41,24 @@ class FlashCardSetTest {
             .withUsername("root")
             .withPassword("root");
 
-    // Required to run tests for the repositories
+    /**
+     * Starts the PostgreSQL container before all tests are executed.
+     * <p>
+     * This method is responsible for initializing the PostgreSQL container which is required
+     * to run the repository tests.
+     */
     @BeforeAll
     static void startContainer() {
         postgres.start();
     }
 
-    // Required to run tests for the repositories
+    /**
+     * Configures the database properties for the tests.
+     * <p>
+     * This method sets the necessary database connection properties dynamically using the PostgreSQL container.
+     *
+     * @param registry the registry to add the dynamic properties to
+     */
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.datasource.url", postgres::getJdbcUrl);
@@ -70,6 +88,12 @@ class FlashCardSetTest {
     private UUID quizUUID;
     private UUID flashCardSetUUID;
 
+    /**
+     * Sets up a test course before each test.
+     * <p>
+     * This method initializes the necessary UUIDs and creates a test course with 3 users, 1 quiz,
+     * and 1 flashCardSet using the {@code TestUtils.createTestCourse} method.
+     */
     @BeforeEach
     void createTestCourse() {
         this.courseUUID = UUID.randomUUID();
@@ -88,7 +112,22 @@ class FlashCardSetTest {
                 flashCardSetUUID);
     }
 
-
+    /**
+     * Tests the creation of a new flashCardSet.
+     * <p>
+     * This test verifies the creation of a flashCardSet within a course and checks that the appropriate badges
+     * are created and associated with the flashCardSet. It also checks that the badges are properly linked to the users
+     * of the course, and that the quest chain is updated accordingly.
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>A new flashCardSet is created successfully.</li>
+     *   <li>Three badges are associated with the new flashCardSet.</li>
+     *   <li>Each badge has the correct description and properties.</li>
+     *   <li>Each user has the appropriate user badges initialized but not achieved.</li>
+     *   <li>The quest chain is updated to include a new quest related to the flashCardSet.</li>
+     * </ul>
+     */
     @Test
     void createFlashCardSetTest() {
         UUID flashCardSet = UUID.randomUUID();
@@ -128,9 +167,26 @@ class FlashCardSetTest {
         assertEquals(1, questChainRepository.findAll().size());
         assertNotNull(questChainEntity);
         assertEquals(3, questChainEntity.getQuests().size());
+        assertTrue(questChainEntity.getQuests().stream().anyMatch(
+                questEntity -> { return flashCardSet.equals(questEntity.getFlashCardSetUUID());}));
+
 
     }
 
+    /**
+     * Tests the deletion of badges and quests associated with a flashCardSet.
+     * <p>
+     * This test verifies that when a flashCardSet is deleted, the corresponding badges, userBadges and quests are also removed
+     * from the database. It checks that badges and quests related to other entities (e.g., quizzes) are not affected.
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>The flashCardSet is deleted successfully.</li>
+     *   <li>All badges associated with the flashCardSet are removed.</li>
+     *   <li>Other badges and quests remain unaffected.</li>
+     *   <li>The users' quest chain progress is not reset, because their currentQuest does not point to the flashCardSet.</li>
+     * </ul>
+     */
     @Test
     void deleteBadgesAndQuestOfFlashCardSetTest() {
         gamificationController.finishFlashCardSet(user1UUID, courseUUID, flashCardSetUUID, 5, 5);
@@ -167,6 +223,19 @@ class FlashCardSetTest {
 
     }
 
+    /**
+     * Tests the renaming of a flashCardSet.
+     * <p>
+     * This test verifies that when a flashCardSet is renamed, the descriptions of the associated badges and quests
+     * are updated accordingly. The test checks that all related entities reflect the new flashCardSet name.
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>The flashCardSet name is changed successfully.</li>
+     *   <li>All badges associated with the flashCardSet have their descriptions updated.</li>
+     *   <li>The quest associated with the flashCardSet in the quest chain also has its description updated.</li>
+     * </ul>
+     */
     @Test
     void editFlashCardSetNameTest() {
         String newName = "New Name";
@@ -187,6 +256,21 @@ class FlashCardSetTest {
                 QuestService.descriptionPart2 + 80 + QuestService.descriptionPart3, quest.getDescription());
     }
 
+    /**
+     * Tests the completion of a flashCardSet by different users.
+     * <p>
+     * This test verifies that when users complete a flashCardSet, their progress is updated correctly in the
+     * badges and quest chain entities. The test checks that the correct badges are marked as achieved
+     * based on the users' flashCardSet performance.
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>Users complete the flashCardSet successfully.</li>
+     *   <li>Badges are marked as achieved or not based on the user's performance.</li>
+     *   <li>The quest chain reflects the user's progress, not updating their levels accordingly,
+     *   as their current quest is not completing the flashCardSet.</li>
+     * </ul>
+     */
     @Test
     void finishFlashCardSetTest() {
         assertEquals("Finished flashCardSet!",
