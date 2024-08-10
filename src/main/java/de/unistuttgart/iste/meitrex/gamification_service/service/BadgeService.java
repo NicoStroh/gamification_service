@@ -49,7 +49,8 @@ public class BadgeService {
      * @param courseUUID   the id of the course
      * @param userUUID     the id of the user
      *
-     * @return a List of UserBadges, which contains all UserBadges of this course, that refer to the user
+     * @return a List of UserBadges, which contains all UserBadges of this course, that refer to the user.
+     * The list is sorted, so that not achieved userBadges are first.
      */
     public List<UserBadge> getUserBadgesByCourseUUID(UUID courseUUID, UUID userUUID) {
 
@@ -62,6 +63,7 @@ public class BadgeService {
                 userBadges.add(badgeMapper.userBadgeEntityToDto(userBadgeEntity, badgeEntity));
             }
         }
+        userBadges.sort((badge1, badge2) -> Boolean.compare(badge1.getAchieved(), badge2.getAchieved()));
         return userBadges;
 
     }
