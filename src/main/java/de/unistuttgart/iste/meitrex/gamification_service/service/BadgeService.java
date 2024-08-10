@@ -222,10 +222,15 @@ public class BadgeService {
      */
     public void markBadgesAsAchievedIfPassedQuiz(UUID userUUID, UUID quizUUID, int correctAnswers, int totalAnswers) {
 
+        if (correctAnswers > totalAnswers
+                || correctAnswers < 0) {
+            return;
+        }
+
         int percentage = (correctAnswers * 100) / totalAnswers;
         List<BadgeEntity> quizBadges = this.getBadgesByQuizUUID(quizUUID);
         for (BadgeEntity quizBadge : quizBadges) {
-            if (percentage > quizBadge.getPassingPercentage()) {
+            if (percentage >= quizBadge.getPassingPercentage()) {
                 markBadgeAsAchieved(userUUID, quizBadge.getBadgeUUID());
             }
         }
@@ -243,10 +248,15 @@ public class BadgeService {
      */
     public void markBadgesAsAchievedIfPassedFlashCardSet(UUID userUUID, UUID flashCardSetUUID, int correctAnswers, int totalAnswers) {
 
+        if (correctAnswers > totalAnswers
+        || correctAnswers < 0) {
+            return;
+        }
+
         int percentage = (correctAnswers * 100) / totalAnswers;
         List<BadgeEntity> flashCardSetBadges = this.getBadgesByFlashCardSetUUID(flashCardSetUUID);
         for (BadgeEntity flashCardSetBadge : flashCardSetBadges) {
-            if (percentage > flashCardSetBadge.getPassingPercentage()) {
+            if (percentage >= flashCardSetBadge.getPassingPercentage()) {
                 markBadgeAsAchieved(userUUID, flashCardSetBadge.getBadgeUUID());
             }
         }

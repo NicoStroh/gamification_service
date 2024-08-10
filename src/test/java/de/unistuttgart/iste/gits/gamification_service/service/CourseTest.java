@@ -204,6 +204,7 @@ class CourseTest {
         assertEquals(6, allUserBadges.size());
         for (UserBadgeEntity userBadge : allUserBadges) {
             assertTrue(badgeRepository.findById(userBadge.getBadgeUUID()).isPresent());
+            assertEquals(user, userBadge.getUserUUID());
             assertFalse(userBadge.isAchieved());
         }
 
@@ -286,8 +287,8 @@ class CourseTest {
                 QuestService.descriptionPart2 + 80 + QuestService.descriptionPart3, lecturerQuest.getDescription());
 
         assertFalse(user1Quest.getFinished());
-        assertNull(user1Quest.getFlashCardSetUUID());
         assertEquals(quizUUID, user1Quest.getQuizUUID());
+        assertNull(user1Quest.getFlashCardSetUUID());
         assertEquals(0, user1Quest.getLevel());
         assertEquals(QuestService.descriptionPart1 + "quiz Quiz 1" +
                 QuestService.descriptionPart2 + 80 + QuestService.descriptionPart3, user1Quest.getDescription());

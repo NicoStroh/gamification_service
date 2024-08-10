@@ -285,6 +285,11 @@ public class QuestService {
      */
     public void markQuestAsFinishedIfPassedQuiz(UUID userUUID, UUID courseUUID, UUID quizUUID, int correctAnswers, int totalAnswers) {
 
+        if (correctAnswers > totalAnswers
+            || correctAnswers < 0) {
+            return;
+        }
+
         UserQuestChainEntity userQuestChainEntity = findByUserUUIDAndCourseUUID(userUUID, courseUUID);
         if (userQuestChainEntity == null) {
             return;
@@ -292,7 +297,7 @@ public class QuestService {
 
         Quest currentUserQuest = getCurrentUserQuest(userUUID, courseUUID);
         int percentage = (correctAnswers * 100) / totalAnswers;
-        if (quizUUID.equals(currentUserQuest.getQuizUUID()) && percentage > passingPercentage) {
+        if (quizUUID.equals(currentUserQuest.getQuizUUID()) && percentage >= passingPercentage) {
             userQuestChainEntity.finishQuest();
         }
 
@@ -312,6 +317,11 @@ public class QuestService {
      */
     public void markQuestAsFinishedIfPassedFlashCardSet(UUID userUUID, UUID courseUUID, UUID flashCardSetUUID, int correctAnswers, int totalAnswers) {
 
+        if (correctAnswers > totalAnswers
+            || correctAnswers < 0) {
+            return;
+        }
+
         UserQuestChainEntity userQuestChainEntity = findByUserUUIDAndCourseUUID(userUUID, courseUUID);
         if (userQuestChainEntity == null) {
             return;
@@ -319,7 +329,7 @@ public class QuestService {
 
         Quest currentUserQuest = getCurrentUserQuest(userUUID, courseUUID);
         int percentage = (correctAnswers * 100) / totalAnswers;
-        if (flashCardSetUUID.equals(currentUserQuest.getFlashCardSetUUID()) && percentage > passingPercentage) {
+        if (flashCardSetUUID.equals(currentUserQuest.getFlashCardSetUUID()) && percentage >= passingPercentage) {
             userQuestChainEntity.finishQuest();
         }
 

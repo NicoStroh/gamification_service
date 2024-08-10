@@ -14,9 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -138,14 +136,6 @@ class QuizTest {
         gamificationController.finishFlashCardSet(user1UUID, courseUUID, flashCardSetUUID, 5, 5);
         gamificationController.finishQuiz(user2UUID, courseUUID, quizUUID, 5, 5);
 
-        QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
-        UserQuestChainEntity user1QuestChainEntity =
-                userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), user1UUID);
-        UserQuestChainEntity user2QuestChainEntity =
-                userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), user2UUID);
-        assertEquals(0, user1QuestChainEntity.getUserLevel());
-        assertEquals(1, user2QuestChainEntity.getUserLevel());
-
         assertEquals("Quiz deleted.", gamificationController.deleteBadgesAndQuestOfQuiz(quizUUID, courseUUID));
 
         List<BadgeEntity> allBadges = badgeRepository.findAll();
@@ -157,7 +147,7 @@ class QuizTest {
         List<UserBadgeEntity> allUserBadges = userBadgeRepository.findAll();
         assertEquals(9, allUserBadges.size());
 
-        questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
+        QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
         assertNotNull(questChainEntity);
         assertEquals(1, questChainEntity.getQuests().size());
         for (QuestEntity quest : questChainEntity.getQuests()) {
@@ -166,9 +156,9 @@ class QuizTest {
 
         UserQuestChainEntity lecturerQuestChainEntity =
                 userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), lecturerUUID);
-        user1QuestChainEntity =
+        UserQuestChainEntity user1QuestChainEntity =
                 userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), user1UUID);
-        user2QuestChainEntity =
+        UserQuestChainEntity user2QuestChainEntity =
                 userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), user2UUID);
         assertEquals(3, userQuestChainRepository.findAll().size());
         assertEquals(0, lecturerQuestChainEntity.getUserLevel());
@@ -183,6 +173,7 @@ class QuizTest {
         assertEquals("Changed quiz name!", gamificationController.editQuizName(quizUUID, courseUUID, newName));
 
         List<BadgeEntity> quizBadges = badgeRepository.findByQuizUUID(quizUUID);
+        assertEquals(3, quizBadges.size());
         for (BadgeEntity badge : quizBadges) {
             int passingPercentage = badge.getPassingPercentage();
             assertEquals(BadgeService.descriptionPart1 + passingPercentage + BadgeService.descriptionPart2 +
@@ -193,20 +184,81 @@ class QuizTest {
         int index = questChainEntity.findIndexOfQuizQuest(quizUUID);
         QuestEntity quest = questChainEntity.getQuests().get(index);
         assertEquals(QuestService.descriptionPart1 + "quiz " + newName +
-                QuestService.descriptionPart2 + 80 + QuestService.descriptionPart3, quest.getDescription());
+                QuestService.descriptionPart2 + QuestService.passingPercentage +
+                QuestService.descriptionPart3, quest.getDescription());
     }
 
-    /*
     @Test
-    void finishQuizTest(@Argument UUID userUUID,
-                        @Argument UUID courseUUID,
-                        @Argument UUID quizUUID,
-                        @Argument int correctAnswers,
-                        @Argument int totalAnswers) {
-        badgeService.markBadgesAsAchievedIfPassedQuiz(userUUID, quizUUID, correctAnswers, totalAnswers);
-        questService.markQuestAsFinishedIfPassedQuiz(userUUID, courseUUID, quizUUID, correctAnswers, totalAnswers);
-        return "Finished quiz!";
+    void finishQuizTest() {
+        assertEquals("Finished quiz!",
+                gamificationController.finishQuiz(lecturerUUID, courseUUID, quizUUID, 8, 10));
+        assertEquals("Finished quiz!",
+                gamificationController.finishQuiz(user1UUID, courseUUID, quizUUID, 5, 10));
+        assertEquals("Finished quiz!",
+                gamificationController.finishQuiz(lecturerUUID, courseUUID, quizUUID, 11, -1));
+
+        List<BadgeEntity> quizBadges = badgeRepository.findByQuizUUID(quizUUID);
+        assertEquals(3, quizBadges.size());
+        List<UserBadgeEntity> lecturerFCSBadges = new ArrayList<UserBadgeEntity>();
+        List<UserBadgeEntity> user1FCSBadges = new ArrayList<UserBadgeEntity>();
+        List<UserBadgeEntity> user2FCSBadges = new ArrayList<UserBadgeEntity>();
+        for (BadgeEntity badge : quizBadges) {
+            lecturerFCSBadges.add(userBadgeRepository.findByUserUUIDAndBadgeUUID(lecturerUUID, badge.getBadgeUUID()));
+            user1FCSBadges.add(userBadgeRepository.findByUserUUIDAndBadgeUUID(user1UUID, badge.getBadgeUUID()));
+            user2FCSBadges.add(userBadgeRepository.findByUserUUIDAndBadgeUUID(user2UUID, badge.getBadgeUUID()));
+        }
+        assertEquals(3, lecturerFCSBadges.size());
+        assertEquals(3, user1FCSBadges.size());
+        assertEquals(3, user2FCSBadges.size());
+
+        for (UserBadgeEntity userBadge : lecturerFCSBadges) {
+            Optional<BadgeEntity> optionalBadge = badgeRepository.findById(userBadge.getBadgeUUID());
+            assertTrue(optionalBadge.isPresent());
+            BadgeEntity badge = optionalBadge.get();
+            assertTrue(50 == badge.getPassingPercentage()
+                    || 70 == badge.getPassingPercentage()
+                    || 90 == badge.getPassingPercentage());
+            switch (badge.getPassingPercentage()) {
+                case 50, 70:
+                    assertTrue(userBadge.isAchieved());
+                    break;
+                case 90:
+                    assertFalse(userBadge.isAchieved());
+                    break;
+            }
+        }
+
+        for (UserBadgeEntity userBadge : user1FCSBadges) {
+            Optional<BadgeEntity> optionalBadge = badgeRepository.findById(userBadge.getBadgeUUID());
+            assertTrue(optionalBadge.isPresent());
+            BadgeEntity badge = optionalBadge.get();
+            assertTrue(50 == badge.getPassingPercentage()
+                    || 70 == badge.getPassingPercentage()
+                    || 90 == badge.getPassingPercentage());
+            switch (badge.getPassingPercentage()) {
+                case 50:
+                    assertTrue(userBadge.isAchieved());
+                    break;
+                case 70, 90:
+                    assertFalse(userBadge.isAchieved());
+                    break;
+            }
+        }
+
+        for (UserBadgeEntity userBadge : user2FCSBadges) {
+            assertFalse(userBadge.isAchieved());
+        }
+
+        QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
+        UserQuestChainEntity lecturerQuestChainEntity =
+                userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), lecturerUUID);
+        UserQuestChainEntity user1QuestChainEntity =
+                userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), user1UUID);
+        UserQuestChainEntity user2QuestChainEntity =
+                userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), user2UUID);
+        assertEquals(1, lecturerQuestChainEntity.getUserLevel());
+        assertEquals(0, user1QuestChainEntity.getUserLevel());
+        assertEquals(0, user2QuestChainEntity.getUserLevel());
     }
-    */
 
 }
