@@ -28,9 +28,17 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 
+/**
+ * Unit tests for the course functionalities in the GamificationService.
+ * <p>
+ * This test class contains unit tests to verify the functionality of the course-related operations
+ * within the GamificationController. It includes tests for adding a course, adding a user to a course,
+ * removing a user from a course, deleting a course, retrieving the courses userBadges of a course member,
+ * their current quest, or their total questChain.
+ */
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = GamificationApplication.class)
-@Transactional
+@Transactional // Each test method runs in a transaction that is rolled back after the test completes
 class CourseTest {
 
     // Required to run tests for the repositories
@@ -39,13 +47,24 @@ class CourseTest {
             .withUsername("root")
             .withPassword("root");
 
-    // Required to run tests for the repositories
+    /**
+     * Starts the PostgreSQL container before all tests are executed.
+     * <p>
+     * This method is responsible for initializing the PostgreSQL container which is required
+     * to run the repository tests.
+     */
     @BeforeAll
     static void startContainer() {
         postgres.start();
     }
 
-    // Required to run tests for the repositories
+    /**
+     * Configures the database properties for the tests.
+     * <p>
+     * This method sets the necessary database connection properties dynamically using the PostgreSQL container.
+     *
+     * @param registry the registry to add the dynamic properties to
+     */
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.datasource.url", postgres::getJdbcUrl);
@@ -78,6 +97,12 @@ class CourseTest {
     private UUID quizUUID;
     private UUID flashCardSetUUID;
 
+    /**
+     * Sets up a test course before each test.
+     * <p>
+     * This method initializes the necessary UUIDs and creates a test course with 3 users, 1 quiz,
+     * and 1 flashCardSet using the {@code TestUtils.createTestCourse} method.
+     */
     @BeforeEach
     void createTestCourse() {
         this.courseUUID = UUID.randomUUID();
@@ -96,7 +121,19 @@ class CourseTest {
                 flashCardSetUUID);
     }
 
-
+    /**
+     * Tests the setup of a test course {@code createTestCourse} and verifies that all related entities
+     * (course, badges, quests, etc.) are correctly created and associated.
+     * <p>
+     * This test ensures that:
+     * <ul>
+     *   <li>The course exists and contains the correct users (lecturer, user1, user2).</li>
+     *   <li>All badges related to the course and its components (quiz, flashcard set) are correctly created.</li>
+     *   <li>All user badges are associated with the correct users and marked as not achieved.</li>
+     *   <li>The quest chain and quests are properly linked to the course and the content.</li>
+     *   <li>Each user has their own quest chain with the correct initial settings.</li>
+     * </ul>
+     */
     @Test
     void createTestCourseTest() {
         assertEquals(1, courseRepository.count());
@@ -134,15 +171,19 @@ class CourseTest {
         QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
         assertNotNull(questChainEntity);
         assertEquals(courseUUID, questChainEntity.getCourseUUID());
-        assertEquals(2, questChainEntity.getQuests().size());
-        for (QuestEntity questEntity : questChainEntity.getQuests()) {
-            assertTrue(quizUUID.equals(questEntity.getQuizUUID())
-            || flashCardSetUUID.equals(questEntity.getFlashCardSetUUID()));
-            assertTrue(questEntity.getDescription().equals(QuestService.descriptionPart1 + "quiz Quiz 1" +
-                    QuestService.descriptionPart2 + 80 + QuestService.descriptionPart3)
-            || questEntity.getDescription().equals(QuestService.descriptionPart1 + "flashCardSet FCS 1" +
-                    QuestService.descriptionPart2 + 80 + QuestService.descriptionPart3));
-        }
+        assertEquals(2, questChainEntity.size());
+
+        QuestEntity firstQuest = questChainEntity.getQuest(0);
+        assertEquals(quizUUID, firstQuest.getQuizUUID());
+        assertNull(firstQuest.getFlashCardSetUUID());
+        assertEquals(QuestService.descriptionPart1 + "quiz Quiz 1" + QuestService.descriptionPart2
+                + QuestService.passingPercentage + QuestService.descriptionPart3, firstQuest.getDescription());
+
+        QuestEntity secondQuest = questChainEntity.getQuest(1);
+        assertEquals(flashCardSetUUID, secondQuest.getFlashCardSetUUID());
+        assertNull(secondQuest.getQuizUUID());
+        assertEquals(QuestService.descriptionPart1 + "flashCardSet FCS 1" + QuestService.descriptionPart2
+                + QuestService.passingPercentage + QuestService.descriptionPart3, secondQuest.getDescription());
 
         assertEquals(3, userQuestChainRepository.count());
         for (UserQuestChainEntity userQuestChainEntity : userQuestChainRepository.findAll()) {
@@ -154,6 +195,18 @@ class CourseTest {
         }
     }
 
+    /**
+     * Tests the addition of a new course and verifies that the course, along with its quest chain
+     * and the questChains for the users, is correctly created.
+     * <p>
+     * This test ensures that:
+     * <ul>
+     *   <li>A new course is successfully added to the repository.</li>
+     *   <li>The course is associated with the correct lecturer.</li>
+     *   <li>An empty quest chain is created for the course.</li>
+     *   <li>The lecturer has a corresponding user quest chain with initial settings.</li>
+     * </ul>
+     */
     @Test
     void addCourseTest() {
 
@@ -171,7 +224,7 @@ class CourseTest {
         assertEquals(2, questChainRepository.findAll().size());
         assertNotNull(questChainEntity);
         assertEquals(course, questChainEntity.getCourseUUID());
-        assertTrue(questChainEntity.getQuests().isEmpty());
+        assertEquals(0, questChainEntity.size());
 
         UserQuestChainEntity userQuestChainEntity = userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), lecturer);
         assertEquals(4, userQuestChainRepository.findAll().size());
@@ -182,6 +235,18 @@ class CourseTest {
 
     }
 
+    /**
+     * Tests the addition of a new user to an existing course and verifies that the user and their
+     * associated entities (badges, quest chain) are created correctly.
+     * <p>
+     * This test ensures that:
+     * <ul>
+     *   <li>A new user is successfully added to an existing course.</li>
+     *   <li>The course is updated to include the new user.</li>
+     *   <li>The new user has a quest chain associated with the course.</li>
+     *   <li>The new user is assigned the correct badges for the course, all marked as not achieved.</li>
+     * </ul>
+     */
     @Test
     void addUserToCourseTest() {
         UUID user = UUID.randomUUID();
@@ -210,6 +275,16 @@ class CourseTest {
 
     }
 
+    /**
+     * Tests the deletion of a course along with all associated badges, quests, and related user entities.
+     * <p>
+     * This test ensures that:
+     * <ul>
+     *   <li>The specified course is successfully deleted from the repository.</li>
+     *   <li>All badges, user badges, quest chains, and user quest chains associated with the course are also deleted.</li>
+     *   <li>No remaining entities related to the course exist in their respective repositories.</li>
+     * </ul>
+     */
     @Test
     void deleteBadgesAndQuestsOfCourseTest() {
         assertEquals("Course deleted.", gamificationController.deleteBadgesAndQuestsOfCourse(courseUUID));
@@ -221,6 +296,20 @@ class CourseTest {
         assertEquals(0, userQuestChainRepository.findAll().size());
     }
 
+    /**
+     * Tests the retrieval of a users badges for a course.
+     * <p>
+     * This test verifies that a user can successfully retrieve all badges associated with them.
+     * It checks that the correct number of badges is returned, each badge is associated with the
+     * correct user, and that none of the badges have been achieved yet.
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>The user retrieves exactly six badges.</li>
+     *   <li>All badges are associated with the correct user.</li>
+     *   <li>None of the badges have been marked as achieved yet.</li>
+     * </ul>
+     */
     @Test
     void getCoursesUserBadgesTest() {
         List<UserBadge> lecturersUserBadges = gamificationController.getCoursesUserBadges(courseUUID, lecturerUUID);
@@ -267,6 +356,24 @@ class CourseTest {
         }
     }
 
+    /**
+     * Tests the retrieval of the current quest for different users after completing various tasks.
+     * <p>
+     * This test verifies that the current quest for each user is correctly updated and retrieved
+     * after they complete quizzes and flashcard sets. It checks the state of the quest, including
+     * whether it is finished, the associated quiz or flashcard set UUIDs, the user's level, and
+     * the quest description.
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>The lecturer's current quest is not finished, is associated with the flashcard set,
+     *   and has a level of 1 with the correct description.</li>
+     *   <li>User1's current quest is not finished, is associated with the quiz,
+     *   and has a level of 0 with the correct description.</li>
+     *   <li>User2's current quest is finished, is not associated with any quiz or flashcard set,
+     *   and has a level of 2 with the completion message.</li>
+     * </ul>
+     */
     @Test
     void getCurrentUserQuestTest() {
         gamificationController.finishQuiz(lecturerUUID, courseUUID, quizUUID, 5, 5);
@@ -301,6 +408,20 @@ class CourseTest {
 
     }
 
+    /**
+     * Tests the retrieval of a users questChain.
+     * <p>
+     * This test ensures that a user can successfully retrieve their associated questChain.
+     * It verifies that the correct number of quests is returned and that each userQuestChain
+     * contains the expected number of quests.
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>The user retrieves exactly one quest chain.</li>
+     *   <li>The quest chain contains two quests.</li>
+     *   <li>The achieved quests have been marked as achieved.</li>
+     * </ul>
+     */
     @Test
     void getUserQuestChainTest() {
         gamificationController.finishQuiz(lecturerUUID, courseUUID, quizUUID, 5, 5);
@@ -335,6 +456,21 @@ class CourseTest {
         assertTrue(user2QuestChain.getFinished());
     }
 
+    /**
+     * Tests the removal of a user from a course and ensures that related data is correctly updated.
+     * <p>
+     * This test checks if a user can be successfully removed from a course and verifies that the course's
+     * user list is updated accordingly. It also ensures that any associated user badges and quest chains
+     * are removed from the database for that user.
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>The method returns a confirmation message indicating that the user was removed from the course.</li>
+     *   <li>The course still exists in the repository, but its user list no longer includes the removed user.</li>
+     *   <li>The total number of users in the course is reduced accordingly.</li>
+     *   <li>All badges and quest chains associated with the removed user are deleted from the repositories.</li>
+     * </ul>
+     */
     @Test
     void removeUserFromCourseTest() {
         assertEquals("Removed user from course.", gamificationController.removeUserFromCourse(lecturerUUID, courseUUID));

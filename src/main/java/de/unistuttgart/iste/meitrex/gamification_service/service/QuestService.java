@@ -121,8 +121,8 @@ public class QuestService {
 
         int userLevel = userQuestChainEntity.getUserLevel();
 
-        if (userLevel < questChainEntity.getQuests().size() && !questChainEntity.getQuests().isEmpty()) {
-            Quest quest = questMapper.questEntityToDto(questChainEntity.getQuests().get(userLevel));
+        if (0 < questChainEntity.size() && userLevel < questChainEntity.size()) {
+            Quest quest = questMapper.questEntityToDto(questChainEntity.getQuest(userLevel));
             quest.setFinished(false);
             quest.setLevel(userLevel);
             return quest;

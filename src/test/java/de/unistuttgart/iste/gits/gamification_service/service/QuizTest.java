@@ -33,7 +33,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
  */
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = GamificationApplication.class)
-@Transactional
+@Transactional // Each test method runs in a transaction that is rolled back after the test completes
 class QuizTest {
 
     // Required to run tests for the repositories using Testcontainers
@@ -167,7 +167,7 @@ class QuizTest {
         QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
         assertEquals(1, questChainRepository.findAll().size());
         assertNotNull(questChainEntity);
-        assertEquals(3, questChainEntity.getQuests().size());
+        assertEquals(3, questChainEntity.size());
         assertTrue(questChainEntity.getQuests().stream().anyMatch(
                 questEntity -> { return quiz.equals(questEntity.getQuizUUID());}));
 
@@ -205,7 +205,7 @@ class QuizTest {
 
         QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
         assertNotNull(questChainEntity);
-        assertEquals(1, questChainEntity.getQuests().size());
+        assertEquals(1, questChainEntity.size());
         for (QuestEntity quest : questChainEntity.getQuests()) {
             assertNotEquals(quizUUID, quest.getQuizUUID());
         }
@@ -251,7 +251,7 @@ class QuizTest {
 
         QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
         int index = questChainEntity.findIndexOfQuizQuest(quizUUID);
-        QuestEntity quest = questChainEntity.getQuests().get(index);
+        QuestEntity quest = questChainEntity.getQuest(index);
         assertEquals(QuestService.descriptionPart1 + "quiz " + newName +
                 QuestService.descriptionPart2 + QuestService.passingPercentage +
                 QuestService.descriptionPart3, quest.getDescription());

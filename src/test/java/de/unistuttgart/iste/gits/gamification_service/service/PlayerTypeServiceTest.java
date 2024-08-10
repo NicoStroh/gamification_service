@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = GamificationApplication.class)
-@Transactional
+@Transactional // Each test method runs in a transaction that is rolled back after the test completes
 class PlayerTypeServiceTest {
 
     // Required to run tests for the repositories using Testcontainers

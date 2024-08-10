@@ -32,7 +32,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
  */
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = GamificationApplication.class)
-@Transactional
+@Transactional // Each test method runs in a transaction that is rolled back after the test completes
 class FlashCardSetTest {
 
     // Required to run tests for the repositories
@@ -166,7 +166,7 @@ class FlashCardSetTest {
         QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
         assertEquals(1, questChainRepository.findAll().size());
         assertNotNull(questChainEntity);
-        assertEquals(3, questChainEntity.getQuests().size());
+        assertEquals(3, questChainEntity.size());
         assertTrue(questChainEntity.getQuests().stream().anyMatch(
                 questEntity -> { return flashCardSet.equals(questEntity.getFlashCardSetUUID());}));
 
@@ -205,7 +205,7 @@ class FlashCardSetTest {
 
         QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
         assertNotNull(questChainEntity);
-        assertEquals(1, questChainEntity.getQuests().size());
+        assertEquals(1, questChainEntity.size());
         for (QuestEntity quest : questChainEntity.getQuests()) {
             assertNotEquals(flashCardSetUUID, quest.getFlashCardSetUUID());
         }
@@ -251,7 +251,7 @@ class FlashCardSetTest {
 
         QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
         int index = questChainEntity.findIndexOfFlashcardSetQuest(flashCardSetUUID);
-        QuestEntity quest = questChainEntity.getQuests().get(index);
+        QuestEntity quest = questChainEntity.getQuest(index);
         assertEquals(QuestService.descriptionPart1 + "flashCardSet " + newName +
                 QuestService.descriptionPart2 + 80 + QuestService.descriptionPart3, quest.getDescription());
     }

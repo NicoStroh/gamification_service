@@ -26,6 +26,17 @@ public class QuestChainEntity {
 
     private UUID courseUUID;
 
+    public int size() {
+        if (this.quests == null) {
+            return 0;
+        }
+        return quests.size();
+    }
+
+    public QuestEntity getQuest(int index) {
+        return quests.get(index);
+    }
+
     public void addQuest(QuestEntity quest) {
         if (this.quests == null) {
             this.quests = new LinkedList<QuestEntity>();
