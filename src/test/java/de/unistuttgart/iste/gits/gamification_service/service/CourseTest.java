@@ -215,7 +215,7 @@ class CourseTest {
 
         UUID course = UUID.randomUUID();
         UUID lecturer = UUID.randomUUID();
-        assertEquals("Added course.", gamificationController.addCourse(course, lecturer));
+        assertEquals("Added course.", gamificationController.addCourse(course, lecturer, 1));
 
         Optional<CourseEntity> courseEntity = courseRepository.findById(course);
         assertEquals(2, courseRepository.findAll().size());

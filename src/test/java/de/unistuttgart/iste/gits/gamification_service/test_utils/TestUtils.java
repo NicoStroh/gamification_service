@@ -65,7 +65,7 @@ public class TestUtils {
                                         UUID user2,
                                         UUID quizUUID,
                                         UUID fcsUUID) {
-        gamificationController.addCourse(courseUUID, lecturerUUID);
+        gamificationController.addCourse(courseUUID, lecturerUUID, 1);
         gamificationController.addUserToCourse(user1, courseUUID);
         gamificationController.createQuiz(quizUUID, "Quiz 1", courseUUID, 0);
         gamificationController.createFlashCardSet(fcsUUID, "FCS 1", courseUUID, 0);

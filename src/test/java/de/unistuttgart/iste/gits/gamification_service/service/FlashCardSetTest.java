@@ -195,7 +195,7 @@ class FlashCardSetTest {
         gamificationController.finishFlashCardSet(user1UUID, courseUUID, flashCardSetUUID, 5, 5, 0);
         gamificationController.finishQuiz(user2UUID, courseUUID, quizUUID, 5, 5, 0);
 
-        assertEquals("FlashCardSet deleted.", gamificationController.deleteBadgesAndQuestOfFlashCardSet(flashCardSetUUID, courseUUID));
+        assertEquals("FlashCardSet deleted.", gamificationController.deleteBadgesAndQuestOfFlashCardSet(flashCardSetUUID, courseUUID, 0));
 
         List<BadgeEntity> allBadges = badgeRepository.findAll();
         assertEquals(3, allBadges.size());

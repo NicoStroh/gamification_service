@@ -13,5 +13,6 @@ import java.util.UUID;
 public interface BloomLevelRepository extends JpaRepository<BloomLevelEntity, UUID> {
 
     BloomLevelEntity findByUserUUIDAndCourseUUID(UUID userUUID, UUID courseUUID);
+    void deleteByUserUUIDAndCourseUUID(UUID userUUID, UUID courseUUID);
 
 }

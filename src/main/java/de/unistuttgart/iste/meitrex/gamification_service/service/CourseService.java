@@ -76,7 +76,7 @@ public class CourseService {
     }
 
     /**
-     * Removed a user from the course
+     * Removes a user from the course
      *
      * @param userUUID       the id of the user, who left the course
      * @param courseUUID     the id of the course

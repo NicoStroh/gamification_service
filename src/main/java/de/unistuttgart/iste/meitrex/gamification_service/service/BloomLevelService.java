@@ -2,6 +2,8 @@ package de.unistuttgart.iste.meitrex.gamification_service.service;
 
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.BloomLevelEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.CourseEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.QuestChainEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserQuestChainEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.BloomLevelRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.CourseRepository;
 import de.unistuttgart.iste.meitrex.generated.dto.BloomLevel;
@@ -10,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -24,11 +27,54 @@ public class BloomLevelService {
     private final BloomLevelRepository bloomLevelRepository;
 
     /**
-     * Adds a new section to the course, which increases the number of levels in the course.
+     * Adds a new course, with the number of levels in the course.
+     *
+     * @param courseUUID          the unique identifier of the course
+     * @param numberOfChapters     the number of chapters the course has
+     * @param lecturerUUID        the creator of the course
+     */
+    public void addCourse(UUID courseUUID, int numberOfChapters, UUID lecturerUUID) {
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        if (courseEntity.isPresent()) {
+            CourseEntity course = courseEntity.get();
+            for (int i = 0; i < numberOfChapters; i++) {
+                course.addLevel();
+            }
+            courseRepository.save(courseEntity.get());
+        }
+        addUserToCourse(lecturerUUID, courseUUID);
+    }
+
+    /**
+     * Adds a user to the course and saves their bloomLevel in the repository.
+     *
+     * @param userUUID       the id of the user, who joined the course
+     * @param courseUUID     the id of the course
+     */
+    public void addUserToCourse(UUID userUUID, UUID courseUUID) {
+        BloomLevelEntity bloomLevelEntity = new BloomLevelEntity();
+        bloomLevelEntity.setCourseUUID(courseUUID);
+        bloomLevelEntity.setUserUUID(userUUID);
+        bloomLevelEntity.setCollectedExp(0);
+        bloomLevelRepository.save(bloomLevelEntity);
+    }
+
+    /**
+     * Removes a user from the course and deletes their bloomLevel for the course from the repository.
+     *
+     * @param userUUID       the id of the user, who left the course
+     * @param courseUUID     the id of the course
+     */
+    public void removeUserFromCourse(UUID userUUID, UUID courseUUID) {
+        bloomLevelRepository.deleteByUserUUIDAndCourseUUID(userUUID, courseUUID);
+    }
+
+    /**
+     * Adds a new chapter to the course, which increases the number of levels in the course.
      *
      * @param courseUUID the unique identifier of the course
      */
-    public void addSection(UUID courseUUID) {
+    public void addChapter(UUID courseUUID) {
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
         if (courseEntity.isPresent()) {
             CourseEntity course = courseEntity.get();
@@ -63,6 +109,36 @@ public class BloomLevelService {
         if (courseEntity.isPresent()) {
             CourseEntity course = courseEntity.get();
             course.addFlashCardSet(level);
+            courseRepository.save(courseEntity.get());
+        }
+    }
+
+    /**
+     * Decreases the required exp for the chapter of the quiz.
+     *
+     * @param courseUUID     the id of the course
+     * @param level          the chapter of the deleted quiz
+     */
+    public void removeQuiz(UUID courseUUID, int level) {
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        if (courseEntity.isPresent()) {
+            CourseEntity course = courseEntity.get();
+            course.removeQuiz(level);
+            courseRepository.save(courseEntity.get());
+        }
+    }
+
+    /**
+     * Decreases the required exp for the chapter of the flashCardSet.
+     *
+     * @param courseUUID     the id of the course
+     * @param level          the chapter of the flashCardSet quiz
+     */
+    public void removeFlashCardSet(UUID courseUUID, int level) {
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        if (courseEntity.isPresent()) {
+            CourseEntity course = courseEntity.get();
+            course.removeFlashCardSet(level);
             courseRepository.save(courseEntity.get());
         }
     }

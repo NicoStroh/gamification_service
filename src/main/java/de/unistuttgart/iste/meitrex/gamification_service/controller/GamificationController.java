@@ -26,16 +26,16 @@ public class GamificationController {
     private final BloomLevelService bloomLevelService;
 
     @MutationMapping
-    public String addCourse(@Argument UUID courseUUID, @Argument UUID lecturerUUID) {
+    public String addCourse(@Argument UUID courseUUID, @Argument UUID lecturerUUID, @Argument int numberOfChapters) {
         courseService.addCourse(courseUUID, lecturerUUID);
         questService.addCourse(courseUUID, lecturerUUID);
-        bloomLevelService.addSection(courseUUID);
+        bloomLevelService.addCourse(courseUUID, numberOfChapters, lecturerUUID);
         return "Added course.";
     }
 
     @MutationMapping
-    public String addSection(@Argument UUID courseUUID) {
-        bloomLevelService.addSection(courseUUID);
+    public String addChapter(@Argument UUID courseUUID) {
+        bloomLevelService.addChapter(courseUUID);
         return "Added section to course.";
     }
 
@@ -44,6 +44,7 @@ public class GamificationController {
         courseService.addUserToCourse(userUUID, courseUUID);
         badgeService.assignCoursesBadgesToUser(courseUUID, userUUID);
         questService.assignQuestChainToUser(userUUID, courseUUID);
+        bloomLevelService.addUserToCourse(userUUID, courseUUID);
         return "Added user to course.";
     }
 
@@ -51,10 +52,10 @@ public class GamificationController {
     public String createFlashCardSet(@Argument UUID flashCardSetUUID,
                                      @Argument String name,
                                      @Argument UUID courseUUID,
-                                     @Argument int sectionNumber) {
+                                     @Argument int chapterNumber) {
         badgeService.createBadgesForFlashCardSet(flashCardSetUUID, name, courseUUID, courseService.getCoursesUsers(courseUUID));
         questService.createQuestForFlashCardSet(flashCardSetUUID, name, courseUUID);
-        bloomLevelService.addFlashCardSet(sectionNumber, courseUUID);
+        bloomLevelService.addFlashCardSet(chapterNumber, courseUUID);
         return "Created flashCardSet successfully.";
     }
 
@@ -62,10 +63,10 @@ public class GamificationController {
     public String createQuiz(@Argument UUID quizUUID,
                              @Argument String name,
                              @Argument UUID courseUUID,
-                             @Argument int sectionNumber) {
+                             @Argument int chapterNumber) {
         badgeService.createBadgesForQuiz(quizUUID, name, courseUUID, courseService.getCoursesUsers(courseUUID));
         questService.createQuestForQuiz(quizUUID, name, courseUUID);
-        bloomLevelService.addQuiz(sectionNumber, courseUUID);
+        bloomLevelService.addQuiz(chapterNumber, courseUUID);
         return "Created quiz successfully.";
     }
 
@@ -78,16 +79,18 @@ public class GamificationController {
     }
 
     @MutationMapping
-    public String deleteBadgesAndQuestOfFlashCardSet(@Argument UUID flashCardSetUUID, @Argument UUID courseUUID) {
+    public String deleteBadgesAndQuestOfFlashCardSet(@Argument UUID flashCardSetUUID, @Argument UUID courseUUID, @Argument int chapterNumber) {
         badgeService.deleteBadgesAndUserBadgesOfFCS(flashCardSetUUID);
         questService.deleteQuestOfFCS(courseUUID, flashCardSetUUID);
+        bloomLevelService.removeFlashCardSet(courseUUID, chapterNumber);
         return "FlashCardSet deleted.";
     }
 
     @MutationMapping
-    public String deleteBadgesAndQuestOfQuiz(@Argument UUID quizUUID, @Argument UUID courseUUID) {
+    public String deleteBadgesAndQuestOfQuiz(@Argument UUID quizUUID, @Argument UUID courseUUID, @Argument int chapterNumber) {
         badgeService.deleteBadgesAndUserBadgesOfQuiz(quizUUID);
         questService.deleteQuestOfQuiz(courseUUID, quizUUID);
+        bloomLevelService.removeQuiz(courseUUID, chapterNumber);
         return "Quiz deleted.";
     }
 
@@ -120,10 +123,10 @@ public class GamificationController {
                              @Argument UUID quizUUID,
                              @Argument int correctAnswers,
                              @Argument int totalAnswers,
-                             @Argument int sectionNumber) {
+                             @Argument int chapterNumber) {
         badgeService.markBadgesAsAchievedIfPassedQuiz(userUUID, quizUUID, correctAnswers, totalAnswers);
         questService.markQuestAsFinishedIfPassedQuiz(userUUID, courseUUID, quizUUID, correctAnswers, totalAnswers);
-        bloomLevelService.grantRewardToUserForFinishingQuiz(courseUUID, userUUID, sectionNumber, correctAnswers, totalAnswers);
+        bloomLevelService.grantRewardToUserForFinishingQuiz(courseUUID, userUUID, chapterNumber, correctAnswers, totalAnswers);
         return "Finished quiz!";
     }
 
@@ -133,10 +136,10 @@ public class GamificationController {
                                      @Argument UUID flashCardSetUUID,
                                      @Argument int correctAnswers,
                                      @Argument int totalAnswers,
-                                     @Argument int sectionNumber) {
+                                     @Argument int chapterNumber) {
         badgeService.markBadgesAsAchievedIfPassedFlashCardSet(userUUID, flashCardSetUUID, correctAnswers, totalAnswers);
         questService.markQuestAsFinishedIfPassedFlashCardSet(userUUID, courseUUID, flashCardSetUUID, correctAnswers, totalAnswers);
-        bloomLevelService.grantRewardToUserForFinishingFlashCardSet(courseUUID, userUUID, sectionNumber, correctAnswers, totalAnswers);
+        bloomLevelService.grantRewardToUserForFinishingFlashCardSet(courseUUID, userUUID, chapterNumber, correctAnswers, totalAnswers);
         return "Finished flashCardSet!";
     }
 
@@ -165,6 +168,7 @@ public class GamificationController {
         courseService.removeUserFromCourse(userUUID, courseUUID);
         badgeService.deleteUserBadgesOfCourse(userUUID, courseUUID);
         questService.deleteUserQuestChain(userUUID, courseUUID);
+        bloomLevelService.removeUserFromCourse(userUUID, courseUUID);
         return "Removed user from course.";
     }
 

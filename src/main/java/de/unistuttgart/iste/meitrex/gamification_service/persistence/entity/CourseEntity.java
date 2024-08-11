@@ -60,6 +60,21 @@ public class CourseEntity {
         this.requiredExpPerLevel.set(level, requiredExpPerLevel.get(level) + flashCardSetExp);
     }
 
+    public void removeQuiz(int level) {
+        if (this.requiredExpPerLevel == null || this.requiredExpPerLevel.size() < level) {
+            return;
+        }
+        this.requiredExpPerLevel.set(level, requiredExpPerLevel.get(level) - quizExp);
+    }
+
+    public void removeFlashCardSet(int level) {
+        if (this.requiredExpPerLevel == null || this.requiredExpPerLevel.size() < level) {
+            return;
+        }
+        this.requiredExpPerLevel.set(level, requiredExpPerLevel.get(level) - flashCardSetExp);
+    }
+
+
     public int calculateLevelForExp(int exp) {
         if (this.requiredExpPerLevel == null) {
             return 0;
