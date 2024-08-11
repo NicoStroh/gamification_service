@@ -26,16 +26,16 @@ public class GamificationController {
     private final BloomLevelService bloomLevelService;
 
     @MutationMapping
-    public String addCourse(@Argument UUID courseUUID, @Argument UUID lecturerUUID, @Argument int numberOfChapters) {
+    public String addCourse(@Argument UUID courseUUID, @Argument UUID lecturerUUID, @Argument List<UUID> chapters) {
         courseService.addCourse(courseUUID, lecturerUUID);
         questService.addCourse(courseUUID, lecturerUUID);
-        bloomLevelService.addCourse(courseUUID, numberOfChapters, lecturerUUID);
+        bloomLevelService.addCourse(courseUUID, chapters, lecturerUUID);
         return "Added course.";
     }
 
     @MutationMapping
-    public String addChapter(@Argument UUID courseUUID) {
-        bloomLevelService.addChapter(courseUUID);
+    public String addChapter(@Argument UUID courseUUID, @Argument UUID chapterUUID) {
+        bloomLevelService.addChapter(courseUUID, chapterUUID);
         return "Added section to course.";
     }
 
@@ -52,10 +52,10 @@ public class GamificationController {
     public String createFlashCardSet(@Argument UUID flashCardSetUUID,
                                      @Argument String name,
                                      @Argument UUID courseUUID,
-                                     @Argument int chapterNumber) {
+                                     @Argument UUID chapterUUID) {
         badgeService.createBadgesForFlashCardSet(flashCardSetUUID, name, courseUUID, courseService.getCoursesUsers(courseUUID));
         questService.createQuestForFlashCardSet(flashCardSetUUID, name, courseUUID);
-        bloomLevelService.addFlashCardSet(chapterNumber, courseUUID);
+        bloomLevelService.addFlashCardSet(chapterUUID, courseUUID);
         return "Created flashCardSet successfully.";
     }
 
@@ -63,10 +63,10 @@ public class GamificationController {
     public String createQuiz(@Argument UUID quizUUID,
                              @Argument String name,
                              @Argument UUID courseUUID,
-                             @Argument int chapterNumber) {
+                             @Argument UUID chapterUUID) {
         badgeService.createBadgesForQuiz(quizUUID, name, courseUUID, courseService.getCoursesUsers(courseUUID));
         questService.createQuestForQuiz(quizUUID, name, courseUUID);
-        bloomLevelService.addQuiz(chapterNumber, courseUUID);
+        bloomLevelService.addQuiz(chapterUUID, courseUUID);
         return "Created quiz successfully.";
     }
 
@@ -79,18 +79,22 @@ public class GamificationController {
     }
 
     @MutationMapping
-    public String deleteBadgesAndQuestOfFlashCardSet(@Argument UUID flashCardSetUUID, @Argument UUID courseUUID, @Argument int chapterNumber) {
+    public String deleteBadgesAndQuestOfFlashCardSet(@Argument UUID flashCardSetUUID,
+                                                     @Argument UUID courseUUID,
+                                                     @Argument UUID chapterUUID) {
         badgeService.deleteBadgesAndUserBadgesOfFCS(flashCardSetUUID);
         questService.deleteQuestOfFCS(courseUUID, flashCardSetUUID);
-        bloomLevelService.removeFlashCardSet(courseUUID, chapterNumber);
+        bloomLevelService.removeFlashCardSet(courseUUID, chapterUUID);
         return "FlashCardSet deleted.";
     }
 
     @MutationMapping
-    public String deleteBadgesAndQuestOfQuiz(@Argument UUID quizUUID, @Argument UUID courseUUID, @Argument int chapterNumber) {
+    public String deleteBadgesAndQuestOfQuiz(@Argument UUID quizUUID,
+                                             @Argument UUID courseUUID,
+                                             @Argument UUID chapterUUID) {
         badgeService.deleteBadgesAndUserBadgesOfQuiz(quizUUID);
         questService.deleteQuestOfQuiz(courseUUID, quizUUID);
-        bloomLevelService.removeQuiz(courseUUID, chapterNumber);
+        bloomLevelService.removeQuiz(courseUUID, chapterUUID);
         return "Quiz deleted.";
     }
 
@@ -123,10 +127,10 @@ public class GamificationController {
                              @Argument UUID quizUUID,
                              @Argument int correctAnswers,
                              @Argument int totalAnswers,
-                             @Argument int chapterNumber) {
+                             @Argument UUID chapterUUID) {
         badgeService.markBadgesAsAchievedIfPassedQuiz(userUUID, quizUUID, correctAnswers, totalAnswers);
         questService.markQuestAsFinishedIfPassedQuiz(userUUID, courseUUID, quizUUID, correctAnswers, totalAnswers);
-        bloomLevelService.grantRewardToUserForFinishingQuiz(courseUUID, userUUID, chapterNumber, correctAnswers, totalAnswers);
+        bloomLevelService.grantRewardToUserForFinishingQuiz(courseUUID, userUUID, chapterUUID, correctAnswers, totalAnswers);
         return "Finished quiz!";
     }
 
@@ -136,10 +140,10 @@ public class GamificationController {
                                      @Argument UUID flashCardSetUUID,
                                      @Argument int correctAnswers,
                                      @Argument int totalAnswers,
-                                     @Argument int chapterNumber) {
+                                     @Argument UUID chapterUUID) {
         badgeService.markBadgesAsAchievedIfPassedFlashCardSet(userUUID, flashCardSetUUID, correctAnswers, totalAnswers);
         questService.markQuestAsFinishedIfPassedFlashCardSet(userUUID, courseUUID, flashCardSetUUID, correctAnswers, totalAnswers);
-        bloomLevelService.grantRewardToUserForFinishingFlashCardSet(courseUUID, userUUID, chapterNumber, correctAnswers, totalAnswers);
+        bloomLevelService.grantRewardToUserForFinishingFlashCardSet(courseUUID, userUUID, chapterUUID, correctAnswers, totalAnswers);
         return "Finished flashCardSet!";
     }
 

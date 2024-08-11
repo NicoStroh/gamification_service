@@ -90,6 +90,7 @@ class FlashCardSetTest {
     private UUID user2UUID;
     private UUID quizUUID;
     private UUID flashCardSetUUID;
+    private UUID chapterUUID;
 
     /**
      * Sets up a test course before each test.
@@ -105,6 +106,7 @@ class FlashCardSetTest {
         this.user2UUID = UUID.randomUUID();
         this.quizUUID = UUID.randomUUID();
         this.flashCardSetUUID = UUID.randomUUID();
+        this.chapterUUID = UUID.randomUUID();
 
         TestUtils.createTestCourse(gamificationController,
                 courseUUID,
@@ -112,7 +114,8 @@ class FlashCardSetTest {
                 user1UUID,
                 user2UUID,
                 quizUUID,
-                flashCardSetUUID);
+                flashCardSetUUID,
+                chapterUUID);
     }
 
     /**
@@ -136,7 +139,7 @@ class FlashCardSetTest {
         UUID flashCardSet = UUID.randomUUID();
         String name = "FCS 2";
         assertEquals("Created flashCardSet successfully.",
-                gamificationController.createFlashCardSet(flashCardSet, name, courseUUID, 0));
+                gamificationController.createFlashCardSet(flashCardSet, name, courseUUID, chapterUUID));
 
         assertEquals(9, badgeRepository.findAll().size());
         List<BadgeEntity> fcsBadges = badgeRepository.findByFlashCardSetUUID(flashCardSet);
@@ -192,10 +195,10 @@ class FlashCardSetTest {
      */
     @Test
     void deleteBadgesAndQuestOfFlashCardSetTest() {
-        gamificationController.finishFlashCardSet(user1UUID, courseUUID, flashCardSetUUID, 5, 5, 0);
-        gamificationController.finishQuiz(user2UUID, courseUUID, quizUUID, 5, 5, 0);
+        gamificationController.finishFlashCardSet(user1UUID, courseUUID, flashCardSetUUID, 5, 5, chapterUUID);
+        gamificationController.finishQuiz(user2UUID, courseUUID, quizUUID, 5, 5, chapterUUID);
 
-        assertEquals("FlashCardSet deleted.", gamificationController.deleteBadgesAndQuestOfFlashCardSet(flashCardSetUUID, courseUUID, 0));
+        assertEquals("FlashCardSet deleted.", gamificationController.deleteBadgesAndQuestOfFlashCardSet(flashCardSetUUID, courseUUID, chapterUUID));
 
         List<BadgeEntity> allBadges = badgeRepository.findAll();
         assertEquals(3, allBadges.size());
@@ -277,11 +280,11 @@ class FlashCardSetTest {
     @Test
     void finishFlashCardSetTest() {
         assertEquals("Finished flashCardSet!",
-                gamificationController.finishFlashCardSet(lecturerUUID, courseUUID, flashCardSetUUID, 8, 10, 0));
+                gamificationController.finishFlashCardSet(lecturerUUID, courseUUID, flashCardSetUUID, 8, 10, chapterUUID));
         assertEquals("Finished flashCardSet!",
-                gamificationController.finishFlashCardSet(user1UUID, courseUUID, flashCardSetUUID, 5, 10, 0));
+                gamificationController.finishFlashCardSet(user1UUID, courseUUID, flashCardSetUUID, 5, 10, chapterUUID));
         assertEquals("Finished flashCardSet!",
-                gamificationController.finishFlashCardSet(lecturerUUID, courseUUID, flashCardSetUUID, 11, -1, 0));
+                gamificationController.finishFlashCardSet(lecturerUUID, courseUUID, flashCardSetUUID, 11, -1, chapterUUID));
 
         List<BadgeEntity> fcsBadges = badgeRepository.findByFlashCardSetUUID(flashCardSetUUID);
         assertEquals(3, fcsBadges.size());

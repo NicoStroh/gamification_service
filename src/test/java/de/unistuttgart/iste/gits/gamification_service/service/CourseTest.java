@@ -17,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -99,6 +100,7 @@ class CourseTest {
     private UUID user2UUID;
     private UUID quizUUID;
     private UUID flashCardSetUUID;
+    private UUID chapterUUID;
 
     /**
      * Sets up a test course before each test.
@@ -114,6 +116,7 @@ class CourseTest {
         this.user2UUID = UUID.randomUUID();
         this.quizUUID = UUID.randomUUID();
         this.flashCardSetUUID = UUID.randomUUID();
+        this.chapterUUID = UUID.randomUUID();
 
         TestUtils.createTestCourse(gamificationController,
                 courseUUID,
@@ -121,7 +124,8 @@ class CourseTest {
                 user1UUID,
                 user2UUID,
                 quizUUID,
-                flashCardSetUUID);
+                flashCardSetUUID,
+                chapterUUID);
     }
 
     /**
@@ -215,7 +219,8 @@ class CourseTest {
 
         UUID course = UUID.randomUUID();
         UUID lecturer = UUID.randomUUID();
-        assertEquals("Added course.", gamificationController.addCourse(course, lecturer, 1));
+        UUID chapter = UUID.randomUUID();
+        assertEquals("Added course.", gamificationController.addCourse(course, lecturer, new LinkedList<>(List.of(chapter))));
 
         Optional<CourseEntity> courseEntity = courseRepository.findById(course);
         assertEquals(2, courseRepository.findAll().size());
@@ -318,8 +323,8 @@ class CourseTest {
         List<UserBadge> lecturersUserBadges = gamificationController.getCoursesUserBadges(courseUUID, lecturerUUID);
         List<UserBadge> user1UserBadges = gamificationController.getCoursesUserBadges(courseUUID, user1UUID);
 
-        gamificationController.finishQuiz(user2UUID, courseUUID, quizUUID, 5, 5, 0);
-        gamificationController.finishFlashCardSet(user2UUID, courseUUID, flashCardSetUUID, 5, 5, 0);
+        gamificationController.finishQuiz(user2UUID, courseUUID, quizUUID, 5, 5, chapterUUID);
+        gamificationController.finishFlashCardSet(user2UUID, courseUUID, flashCardSetUUID, 5, 5, chapterUUID);
         List<UserBadge> user2UserBadges = gamificationController.getCoursesUserBadges(courseUUID, user2UUID);
 
         assertEquals(6, lecturersUserBadges.size());
@@ -379,14 +384,14 @@ class CourseTest {
      */
     @Test
     void getCurrentUserQuestTest() {
-        gamificationController.finishQuiz(lecturerUUID, courseUUID, quizUUID, 5, 5, 0);
+        gamificationController.finishQuiz(lecturerUUID, courseUUID, quizUUID, 5, 5, chapterUUID);
         Quest lecturerQuest = gamificationController.getCurrentUserQuest(lecturerUUID, courseUUID);
 
-        gamificationController.finishFlashCardSet(user1UUID, courseUUID, flashCardSetUUID, 5, 5, 0);
+        gamificationController.finishFlashCardSet(user1UUID, courseUUID, flashCardSetUUID, 5, 5, chapterUUID);
         Quest user1Quest = gamificationController.getCurrentUserQuest(user1UUID, courseUUID);
 
-        gamificationController.finishQuiz(user2UUID, courseUUID, quizUUID, 5, 5, 0);
-        gamificationController.finishFlashCardSet(user2UUID, courseUUID, flashCardSetUUID, 5, 5, 0);
+        gamificationController.finishQuiz(user2UUID, courseUUID, quizUUID, 5, 5, chapterUUID);
+        gamificationController.finishFlashCardSet(user2UUID, courseUUID, flashCardSetUUID, 5, 5, chapterUUID);
         Quest user2Quest = gamificationController.getCurrentUserQuest(user2UUID, courseUUID);
 
         assertFalse(lecturerQuest.getFinished());
@@ -427,14 +432,14 @@ class CourseTest {
      */
     @Test
     void getUserQuestChainTest() {
-        gamificationController.finishQuiz(lecturerUUID, courseUUID, quizUUID, 5, 5, 0);
+        gamificationController.finishQuiz(lecturerUUID, courseUUID, quizUUID, 5, 5, chapterUUID);
         UserQuestChain lecturerQuestChain = gamificationController.getUserQuestChain(lecturerUUID, courseUUID);
 
-        gamificationController.finishFlashCardSet(user1UUID, courseUUID, flashCardSetUUID, 5, 5, 0);
+        gamificationController.finishFlashCardSet(user1UUID, courseUUID, flashCardSetUUID, 5, 5, chapterUUID);
         UserQuestChain user1QuestChain = gamificationController.getUserQuestChain(user1UUID, courseUUID);
 
-        gamificationController.finishQuiz(user2UUID, courseUUID, quizUUID, 5, 5, 0);
-        gamificationController.finishFlashCardSet(user2UUID, courseUUID, flashCardSetUUID, 5, 5, 0);
+        gamificationController.finishQuiz(user2UUID, courseUUID, quizUUID, 5, 5, chapterUUID);
+        gamificationController.finishFlashCardSet(user2UUID, courseUUID, flashCardSetUUID, 5, 5, chapterUUID);
         UserQuestChain user2QuestChain = gamificationController.getUserQuestChain(user2UUID, courseUUID);
 
         assertTrue(questChainRepository.findById(lecturerQuestChain.getQuestChainUUID()).isPresent());

@@ -30,15 +30,15 @@ public class BloomLevelService {
      * Adds a new course, with the number of levels in the course.
      *
      * @param courseUUID          the unique identifier of the course
-     * @param numberOfChapters     the number of chapters the course has
+     * @param chapters            the UUIDs of the chapters the course has
      * @param lecturerUUID        the creator of the course
      */
-    public void addCourse(UUID courseUUID, int numberOfChapters, UUID lecturerUUID) {
+    public void addCourse(UUID courseUUID, List<UUID> chapters, UUID lecturerUUID) {
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
         if (courseEntity.isPresent()) {
             CourseEntity course = courseEntity.get();
-            for (int i = 0; i < numberOfChapters; i++) {
-                course.addLevel();
+            for (UUID chapter : chapters) {
+                course.addChapter(chapter);
             }
             courseRepository.save(courseEntity.get());
         }
@@ -70,15 +70,16 @@ public class BloomLevelService {
     }
 
     /**
-     * Adds a new chapter to the course, which increases the number of levels in the course.
+     * Adds a new chapter to the course.
      *
-     * @param courseUUID the unique identifier of the course
+     * @param courseUUID     the unique identifier of the course
+     * @param chapterUUID    the unique identifier of the course
      */
-    public void addChapter(UUID courseUUID) {
+    public void addChapter(UUID courseUUID, UUID chapterUUID) {
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
         if (courseEntity.isPresent()) {
             CourseEntity course = courseEntity.get();
-            course.addLevel();
+            course.addChapter(chapterUUID);
             courseRepository.save(courseEntity.get());
         }
     }
@@ -86,14 +87,14 @@ public class BloomLevelService {
     /**
      * Adds a quiz to a specific level in the course, which increases the required expPoints for the level.
      *
-     * @param level      the level to which the quiz will be added
-     * @param courseUUID the unique identifier of the course
+     * @param chapterUUID      the UUID of the chapter where the quiz will be added
+     * @param courseUUID       the unique identifier of the course
      */
-    public void addQuiz(int level, UUID courseUUID) {
+    public void addQuiz(UUID chapterUUID, UUID courseUUID) {
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
         if (courseEntity.isPresent()) {
             CourseEntity course = courseEntity.get();
-            course.addQuiz(level);
+            course.addQuiz(chapterUUID);
             courseRepository.save(courseEntity.get());
         }
     }
@@ -101,29 +102,43 @@ public class BloomLevelService {
     /**
      * Adds a flashCardSet to a specific level in the course, which increases the required expPoints for the level.
      *
-     * @param level      the level to which the flashCardSet will be added
-     * @param courseUUID the unique identifier of the course
+     * @param chapterUUID      the UUID of the chapter where the flashCardSet will be added
+     * @param courseUUID       the unique identifier of the course
      */
-    public void addFlashCardSet(int level, UUID courseUUID) {
+    public void addFlashCardSet(UUID chapterUUID, UUID courseUUID) {
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
         if (courseEntity.isPresent()) {
             CourseEntity course = courseEntity.get();
-            course.addFlashCardSet(level);
+            course.addFlashCardSet(chapterUUID);
             courseRepository.save(courseEntity.get());
         }
+    }
+
+    /**
+     * Retrieves the level of the chapter in the course.
+     *
+     * @param courseUUID     the id of the course
+     * @param chapterUUID    the id of the chapter
+     */
+    public int getLevelOfChapter(UUID chapterUUID, UUID courseUUID) {
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        if (courseEntity.isEmpty()) {
+            return 0;
+        }
+        return courseEntity.get().getChapters().indexOf(chapterUUID);
     }
 
     /**
      * Decreases the required exp for the chapter of the quiz.
      *
      * @param courseUUID     the id of the course
-     * @param level          the chapter of the deleted quiz
+     * @param chapterUUID    the UUID of the chapter of the deleted quiz
      */
-    public void removeQuiz(UUID courseUUID, int level) {
+    public void removeQuiz(UUID courseUUID, UUID chapterUUID) {
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
         if (courseEntity.isPresent()) {
             CourseEntity course = courseEntity.get();
-            course.removeQuiz(level);
+            course.removeQuiz(chapterUUID);
             courseRepository.save(courseEntity.get());
         }
     }
@@ -132,13 +147,13 @@ public class BloomLevelService {
      * Decreases the required exp for the chapter of the flashCardSet.
      *
      * @param courseUUID     the id of the course
-     * @param level          the chapter of the flashCardSet quiz
+     * @param chapterUUID    the UUID of the chapter of the deleted flashCardSet
      */
-    public void removeFlashCardSet(UUID courseUUID, int level) {
+    public void removeFlashCardSet(UUID courseUUID, UUID chapterUUID) {
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
         if (courseEntity.isPresent()) {
             CourseEntity course = courseEntity.get();
-            course.removeFlashCardSet(level);
+            course.removeFlashCardSet(chapterUUID);
             courseRepository.save(courseEntity.get());
         }
     }
@@ -148,19 +163,21 @@ public class BloomLevelService {
      *
      * @param courseUUID     the unique identifier of the course
      * @param userUUID       the unique identifier of the user
-     * @param level          the level of the quiz
+     * @param chapterUUID    the id of the chapter of the quiz
      * @param correctAnswers the number of correct answers given by the user
      * @param totalAnswers   the total number of questions in the quiz
      */
     public void grantRewardToUserForFinishingQuiz(UUID courseUUID,
                                                   UUID userUUID,
-                                                  int level,
+                                                  UUID chapterUUID,
                                                   int correctAnswers,
                                                   int totalAnswers) {
         BloomLevelEntity bloomLevel = bloomLevelRepository.findByUserUUIDAndCourseUUID(userUUID, courseUUID);
         if (bloomLevel == null) {
             return;
         }
+
+        int level = getLevelOfChapter(chapterUUID, courseUUID);
         bloomLevel.addExp(CourseEntity.rewardOfFinishedQuiz(level, correctAnswers, totalAnswers));
         bloomLevelRepository.save(bloomLevel);
     }
@@ -170,19 +187,21 @@ public class BloomLevelService {
      *
      * @param courseUUID     the unique identifier of the course
      * @param userUUID       the unique identifier of the user
-     * @param level          the level of the flashCardSet
+     * @param chapterUUID    the id of the chapter of the flashCardSet
      * @param correctAnswers the number of correct answers given by the user
      * @param totalAnswers   the total number of questions in the flashCardSet
      */
     public void grantRewardToUserForFinishingFlashCardSet(UUID courseUUID,
                                                           UUID userUUID,
-                                                          int level,
+                                                          UUID chapterUUID,
                                                           int correctAnswers,
                                                           int totalAnswers) {
         BloomLevelEntity bloomLevel = bloomLevelRepository.findByUserUUIDAndCourseUUID(userUUID, courseUUID);
         if (bloomLevel == null) {
             return;
         }
+
+        int level = getLevelOfChapter(chapterUUID, courseUUID);
         bloomLevel.addExp(CourseEntity.rewardOfFinishedFlashCardSet(level, correctAnswers, totalAnswers));
         bloomLevelRepository.save(bloomLevel);
     }

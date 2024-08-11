@@ -3,10 +3,7 @@ package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Entity(name = "Course")
 @Getter
@@ -23,10 +20,11 @@ public class CourseEntity {
     @ElementCollection
     private Set<UUID> userUUIDs;
 
-    private int numberOfLevels;
-
     @ElementCollection
     private List<Integer> requiredExpPerLevel;
+
+    @ElementCollection
+    private List<UUID> chapters;
 
     public void addUser(UUID userUUID) {
         this.userUUIDs.add(userUUID);
@@ -38,36 +36,51 @@ public class CourseEntity {
         }
     }
 
-    public void addLevel() {
-        numberOfLevels++;
+    public void addChapter(UUID chapterUUID) {
         if (this.requiredExpPerLevel == null) {
             this.requiredExpPerLevel = new ArrayList<>();
         }
-        requiredExpPerLevel.add(requiredExpOfLevel(numberOfLevels));
+        requiredExpPerLevel.add(requiredExpOfLevel(requiredExpPerLevel.size()));
+
+        if (this.chapters == null) {
+            this.chapters = new LinkedList<>();
+        }
+        this.chapters.add(chapterUUID);
     }
 
-    public void addQuiz(int level) {
+    public int getLevelOfChapter(UUID chapterUUID) {
+        if (this.chapters == null) {
+            return 0;
+        }
+        return this.chapters.indexOf(chapterUUID);
+    }
+
+    public void addQuiz(UUID chapter) {
+        int level = this.getLevelOfChapter(chapter);
         if (this.requiredExpPerLevel == null || this.requiredExpPerLevel.size() < level) {
             return;
         }
         this.requiredExpPerLevel.set(level, requiredExpPerLevel.get(level) + quizExp);
     }
 
-    public void addFlashCardSet(int level) {
+    public void addFlashCardSet(UUID chapter) {
+        int level = this.getLevelOfChapter(chapter);
         if (this.requiredExpPerLevel == null || this.requiredExpPerLevel.size() < level) {
             return;
         }
         this.requiredExpPerLevel.set(level, requiredExpPerLevel.get(level) + flashCardSetExp);
     }
 
-    public void removeQuiz(int level) {
+    public void removeQuiz(UUID chapter) {
+        int level = this.getLevelOfChapter(chapter);
         if (this.requiredExpPerLevel == null || this.requiredExpPerLevel.size() < level) {
             return;
         }
         this.requiredExpPerLevel.set(level, requiredExpPerLevel.get(level) - quizExp);
     }
 
-    public void removeFlashCardSet(int level) {
+    public void removeFlashCardSet(UUID chapter) {
+        int level = this.getLevelOfChapter(chapter);
         if (this.requiredExpPerLevel == null || this.requiredExpPerLevel.size() < level) {
             return;
         }

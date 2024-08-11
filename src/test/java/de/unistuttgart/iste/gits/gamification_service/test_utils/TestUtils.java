@@ -64,11 +64,12 @@ public class TestUtils {
                                         UUID user1,
                                         UUID user2,
                                         UUID quizUUID,
-                                        UUID fcsUUID) {
-        gamificationController.addCourse(courseUUID, lecturerUUID, 1);
+                                        UUID fcsUUID,
+                                        UUID chapterUUID) {
+        gamificationController.addCourse(courseUUID, lecturerUUID, new LinkedList<>(List.of(chapterUUID)));
         gamificationController.addUserToCourse(user1, courseUUID);
-        gamificationController.createQuiz(quizUUID, "Quiz 1", courseUUID, 0);
-        gamificationController.createFlashCardSet(fcsUUID, "FCS 1", courseUUID, 0);
+        gamificationController.createQuiz(quizUUID, "Quiz 1", courseUUID, chapterUUID);
+        gamificationController.createFlashCardSet(fcsUUID, "FCS 1", courseUUID, chapterUUID);
         gamificationController.addUserToCourse(user2, courseUUID);
     }
 

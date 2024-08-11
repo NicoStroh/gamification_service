@@ -80,9 +80,6 @@ class QuizTest {
     private UserQuestChainRepository userQuestChainRepository;
 
     @Autowired
-    private BloomLevelRepository bloomLevelRepository;
-
-    @Autowired
     private GamificationController gamificationController;
 
     private UUID courseUUID;
@@ -91,6 +88,7 @@ class QuizTest {
     private UUID user2UUID;
     private UUID quizUUID;
     private UUID flashCardSetUUID;
+    private UUID chapterUUID;
 
     /**
      * Sets up a test course before each test.
@@ -106,6 +104,7 @@ class QuizTest {
         this.user2UUID = UUID.randomUUID();
         this.quizUUID = UUID.randomUUID();
         this.flashCardSetUUID = UUID.randomUUID();
+        this.chapterUUID = UUID.randomUUID();
 
         TestUtils.createTestCourse(gamificationController,
                 courseUUID,
@@ -113,7 +112,8 @@ class QuizTest {
                 user1UUID,
                 user2UUID,
                 quizUUID,
-                flashCardSetUUID);
+                flashCardSetUUID,
+                chapterUUID);
     }
 
     /**
@@ -137,7 +137,7 @@ class QuizTest {
         UUID quiz = UUID.randomUUID();
         String name = "Quiz 2";
         assertEquals("Created quiz successfully.",
-                gamificationController.createQuiz(quiz, name, courseUUID, 0));
+                gamificationController.createQuiz(quiz, name, courseUUID, chapterUUID));
 
         assertEquals(9, badgeRepository.findAll().size());
         List<BadgeEntity> quizBadges = badgeRepository.findByQuizUUID(quiz);
@@ -192,10 +192,10 @@ class QuizTest {
      */
     @Test
     void deleteBadgesAndQuestOfQuizTest() {
-        gamificationController.finishFlashCardSet(user1UUID, courseUUID, flashCardSetUUID, 5, 5, 0);
-        gamificationController.finishQuiz(user2UUID, courseUUID, quizUUID, 5, 5, 0);
+        gamificationController.finishFlashCardSet(user1UUID, courseUUID, flashCardSetUUID, 5, 5, chapterUUID);
+        gamificationController.finishQuiz(user2UUID, courseUUID, quizUUID, 5, 5, chapterUUID);
 
-        assertEquals("Quiz deleted.", gamificationController.deleteBadgesAndQuestOfQuiz(quizUUID, courseUUID, 0));
+        assertEquals("Quiz deleted.", gamificationController.deleteBadgesAndQuestOfQuiz(quizUUID, courseUUID, chapterUUID));
 
         List<BadgeEntity> allBadges = badgeRepository.findAll();
         assertEquals(3, allBadges.size());
@@ -277,11 +277,11 @@ class QuizTest {
     @Test
     void finishQuizTest() {
         assertEquals("Finished quiz!",
-                gamificationController.finishQuiz(lecturerUUID, courseUUID, quizUUID, 8, 10, 0));
+                gamificationController.finishQuiz(lecturerUUID, courseUUID, quizUUID, 8, 10, chapterUUID));
         assertEquals("Finished quiz!",
-                gamificationController.finishQuiz(user1UUID, courseUUID, quizUUID, 5, 10, 0));
+                gamificationController.finishQuiz(user1UUID, courseUUID, quizUUID, 5, 10, chapterUUID));
         assertEquals("Finished quiz!",
-                gamificationController.finishQuiz(lecturerUUID, courseUUID, quizUUID, 11, -1, 0));
+                gamificationController.finishQuiz(lecturerUUID, courseUUID, quizUUID, 11, -1, chapterUUID));
 
         List<BadgeEntity> quizBadges = badgeRepository.findByQuizUUID(quizUUID);
         assertEquals(3, quizBadges.size());

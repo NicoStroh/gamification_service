@@ -82,21 +82,21 @@ type Query {
 
 type Mutation {
   # Add course to gamification database
-  addCourse(courseUUID: UUID!, lecturerUUID: UUID!, numberOfChapters: Int!): String!
+  addCourse(courseUUID: UUID!, lecturerUUID: UUID!, chapters: [UUID!]!): String!
   # Add a section and therefore a level for the course
-  addChapter(courseUUID: UUID!): String!
+  addChapter(courseUUID: UUID!, chapterUUID: UUID!): String!
   # Add user to course in gamification database
   addUserToCourse(userUUID: UUID!, courseUUID: UUID!): String!
 
   # Creates gamification elements (badges / quests) for quiz / flashcardset
-  createFlashCardSet(flashCardSetUUID: UUID!, name: String!, courseUUID: UUID!, chapterNumber: Int!): String!
-  createQuiz(quizUUID: UUID!, name: String!, courseUUID: UUID!, chapterNumber: Int!): String!
+  createFlashCardSet(flashCardSetUUID: UUID!, name: String!, courseUUID: UUID!, chapterUUID: UUID!): String!
+  createQuiz(quizUUID: UUID!, name: String!, courseUUID: UUID!, chapterUUID: UUID!): String!
 
   # Deletes gamification elements of the course
   deleteBadgesAndQuestsOfCourse(courseUUID: UUID!): String!
   # Deletes gamification elements for quiz / flashCardset
-  deleteBadgesAndQuestOfFlashCardSet(flashCardSetUUID: UUID!, courseUUID: UUID!, chapterNumber: Int!): String!
-  deleteBadgesAndQuestOfQuiz(quizUUID: UUID!, courseUUID: UUID!, chapterNumber: Int!): String!
+  deleteBadgesAndQuestOfFlashCardSet(flashCardSetUUID: UUID!, courseUUID: UUID!, chapterUUID: UUID!): String!
+  deleteBadgesAndQuestOfQuiz(quizUUID: UUID!, courseUUID: UUID!, chapterUUID: UUID!): String!
 
   # Changes the description of the badges / quest for the quiz / flashCardSet
   editFlashCardSetName(flashCardSetUUID: UUID!, courseUUID: UUID!, name: String!): String!
@@ -106,8 +106,8 @@ type Mutation {
   evaluateTest(userUUID: UUID!): ShortBartleTestResultEntity!
 
   # Submit result to gamification service to check if gamification element was achieved
-  finishFlashCardSet(userUUID: UUID!, courseUUID: UUID!, flashCardSetUUID: UUID!, correctAnswers: Int!, totalAnswers: Int!, chapterNumber: Int!): String!
-  finishQuiz(userUUID: UUID!, courseUUID: UUID!, quizUUID: UUID!, correctAnswers: Int!, totalAnswers: Int!, chapterNumber: Int!): String!
+  finishFlashCardSet(userUUID: UUID!, courseUUID: UUID!, flashCardSetUUID: UUID!, correctAnswers: Int!, totalAnswers: Int!, chapterUUID: UUID!): String!
+  finishQuiz(userUUID: UUID!, courseUUID: UUID!, quizUUID: UUID!, correctAnswers: Int!, totalAnswers: Int!, chapterUUID: UUID!): String!
 
   # Removes the user from the course in the gamification database
   removeUserFromCourse(userUUID: UUID!, courseUUID: UUID!): String!
