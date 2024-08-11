@@ -29,6 +29,7 @@ public class GamificationController {
     public String addCourse(@Argument UUID courseUUID, @Argument UUID lecturerUUID) {
         courseService.addCourse(courseUUID, lecturerUUID);
         questService.addCourse(courseUUID, lecturerUUID);
+        bloomLevelService.addSection(courseUUID);
         return "Added course.";
     }
 

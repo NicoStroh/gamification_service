@@ -79,6 +79,9 @@ class FlashCardSetTest {
     private UserQuestChainRepository userQuestChainRepository;
 
     @Autowired
+    private BloomLevelRepository bloomLevelRepository;
+
+    @Autowired
     private GamificationController gamificationController;
 
     private UUID courseUUID;

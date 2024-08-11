@@ -80,6 +80,9 @@ class QuizTest {
     private UserQuestChainRepository userQuestChainRepository;
 
     @Autowired
+    private BloomLevelRepository bloomLevelRepository;
+
+    @Autowired
     private GamificationController gamificationController;
 
     private UUID courseUUID;
