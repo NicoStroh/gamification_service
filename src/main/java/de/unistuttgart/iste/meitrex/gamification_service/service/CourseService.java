@@ -26,7 +26,7 @@ public class CourseService {
      * @param lecturerUUID     the id of the creator of the course
      */
     public void addCourse(UUID courseUUID, UUID lecturerUUID) {
-        CourseEntity courseEntity = new CourseEntity(courseUUID, new HashSet<UUID>());
+        CourseEntity courseEntity = new CourseEntity(courseUUID, new HashSet<UUID>(), 0, new ArrayList<>());
         courseRepository.save(courseEntity);
 
         addUserToCourse(lecturerUUID, courseUUID);
