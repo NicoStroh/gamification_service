@@ -68,6 +68,9 @@ class FlashCardSetTest {
     }
 
     @Autowired
+    private CourseRepository courseRepository;
+
+    @Autowired
     private BadgeRepository badgeRepository;
 
     @Autowired
@@ -133,6 +136,8 @@ class FlashCardSetTest {
      * Expected Outcome:
      * <ul>
      *   <li>A new flashCardSet is created successfully.</li>
+     *   <li>The flashCardSet is added to the content of the course.</li>
+     *   <li>The required exp for the level of the chapter increased by 30.</li>
      *   <li>Three badges are associated with the new flashCardSet.</li>
      *   <li>Each badge has the correct description and properties.</li>
      *   <li>Each user has the appropriate user badges initialized but not achieved.</li>
@@ -146,6 +151,13 @@ class FlashCardSetTest {
         assertEquals("Created flashCardSet successfully.",
                 gamificationController.createFlashCardSet(flashCardSet, name, courseUUID, chapterUUID,
                         70, List.of(SkillType.REMEMBER)));
+
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        assertTrue(courseEntity.isPresent());
+        assertEquals(3, courseEntity.get().getContent().size());
+        assertTrue(courseEntity.get().getContent().contains(flashCardSet));
+        assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
+        assertEquals(260, courseEntity.get().getRequiredExpOfLevel(0));
 
         assertEquals(9, badgeRepository.findAll().size());
         List<BadgeEntity> fcsBadges = badgeRepository.findByFlashCardSetUUID(flashCardSet);
@@ -194,6 +206,8 @@ class FlashCardSetTest {
      * Expected Outcome:
      * <ul>
      *   <li>The flashCardSet is deleted successfully.</li>
+     *   <li>The flashCardSet is removed from the content of the course.</li>
+     *   <li>The required exp for the level of the chapter decreased by 30.</li>
      *   <li>All badges associated with the flashCardSet are removed.</li>
      *   <li>Other badges and quests remain unaffected.</li>
      *   <li>The users' quest chain progress is not reset, because their currentQuest does not point to the flashCardSet.</li>
@@ -205,6 +219,13 @@ class FlashCardSetTest {
         gamificationController.finishQuiz(user2UUID, courseUUID, quizUUID, 5, 5, chapterUUID);
 
         assertEquals("FlashCardSet deleted.", gamificationController.deleteBadgesAndQuestOfFlashCardSet(flashCardSetUUID, courseUUID, chapterUUID));
+
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        assertTrue(courseEntity.isPresent());
+        assertEquals(1, courseEntity.get().getContent().size());
+        assertFalse(courseEntity.get().getContent().contains(flashCardSetUUID));
+        assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
+        assertEquals(200, courseEntity.get().getRequiredExpOfLevel(0));
 
         List<BadgeEntity> allBadges = badgeRepository.findAll();
         assertEquals(3, allBadges.size());
@@ -243,7 +264,7 @@ class FlashCardSetTest {
      * <p>
      * Expected Outcome:
      * <ul>
-     *   <li>The flashCardSet name is changed successfully.</li>
+     *   <li>The flashCardSet name and metadata is changed successfully.</li>
      *   <li>All badges associated with the flashCardSet have their descriptions updated.</li>
      *   <li>The quest associated with the flashCardSet in the quest chain also has its description updated.</li>
      * </ul>
@@ -267,6 +288,12 @@ class FlashCardSetTest {
         QuestEntity quest = questChainEntity.getQuest(index);
         assertEquals(QuestService.descriptionPart1 + "flashCardSet " + newName +
                 QuestService.descriptionPart2 + 80 + QuestService.descriptionPart3, quest.getDescription());
+
+        Optional<ContentMetaDataEntity> flashCardSetMetaData = contentMetaDataRepository.findById(flashCardSetUUID);
+
+        assertTrue(flashCardSetMetaData.isPresent());
+        assertEquals(SkillType.UNDERSTAND, flashCardSetMetaData.get().getSkillType());
+        assertEquals(55, flashCardSetMetaData.get().getSkillPoints());
     }
 
     /**

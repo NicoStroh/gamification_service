@@ -165,6 +165,9 @@ class CourseTest {
         assertTrue(courseEntity.get().getContent().contains(flashCardSetUUID));
         assertTrue(courseEntity.get().getContent().contains(quizUUID));
 
+        assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
+        assertEquals(230, courseEntity.get().getRequiredExpOfLevel(0));
+
         assertEquals(6, badgeRepository.count());
         for (BadgeEntity badgeEntity : badgeRepository.findAll()) {
             assertEquals(courseUUID, badgeEntity.getCourseUUID());
@@ -266,6 +269,7 @@ class CourseTest {
         assertTrue(courseEntity.isPresent());
         assertEquals(1, courseEntity.get().getUserUUIDs().size());
         assertTrue(courseEntity.get().getUserUUIDs().contains(lecturer));
+        assertEquals(150, courseEntity.get().getRequiredExpOfLevel(0));
 
         QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(course);
         assertEquals(2, questChainRepository.findAll().size());

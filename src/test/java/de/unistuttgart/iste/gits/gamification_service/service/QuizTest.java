@@ -69,6 +69,9 @@ class QuizTest {
     }
 
     @Autowired
+    private CourseRepository courseRepository;
+
+    @Autowired
     private BadgeRepository badgeRepository;
 
     @Autowired
@@ -134,6 +137,8 @@ class QuizTest {
      * Expected Outcome:
      * <ul>
      *   <li>A new quiz is created successfully.</li>
+     *   <li>The quiz is added to the content of the course.</li>
+     *   <li>The required exp for the level of the chapter increased by 50.</li>
      *   <li>Three badges are associated with the new quiz.</li>
      *   <li>Each badge has the correct description and properties.</li>
      *   <li>Each user has the appropriate user badges initialized but not achieved.</li>
@@ -146,6 +151,13 @@ class QuizTest {
         String name = "Quiz 2";
         assertEquals("Created quiz successfully.",
                 gamificationController.createQuiz(quiz, name, courseUUID, chapterUUID, 45, List.of(SkillType.REMEMBER)));
+
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        assertTrue(courseEntity.isPresent());
+        assertEquals(3, courseEntity.get().getContent().size());
+        assertTrue(courseEntity.get().getContent().contains(quiz));
+        assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
+        assertEquals(280, courseEntity.get().getRequiredExpOfLevel(0));
 
         assertEquals(9, badgeRepository.findAll().size());
         List<BadgeEntity> quizBadges = badgeRepository.findByQuizUUID(quiz);
@@ -193,6 +205,8 @@ class QuizTest {
      * Expected Outcome:
      * <ul>
      *   <li>The quiz is deleted successfully.</li>
+     *   <li>The quiz is removed from the content of the course.</li>
+     *   <li>The required exp for the level of the chapter decreased by 50.</li>
      *   <li>All badges associated with the quiz are removed.</li>
      *   <li>Other badges and quests remain unaffected.</li>
      *   <li>The users' quest chain progress is reset accordingly.</li>
@@ -204,6 +218,13 @@ class QuizTest {
         gamificationController.finishQuiz(user2UUID, courseUUID, quizUUID, 5, 5, chapterUUID);
 
         assertEquals("Quiz deleted.", gamificationController.deleteBadgesAndQuestOfQuiz(quizUUID, courseUUID, chapterUUID));
+
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        assertTrue(courseEntity.isPresent());
+        assertEquals(1, courseEntity.get().getContent().size());
+        assertFalse(courseEntity.get().getContent().contains(quizUUID));
+        assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
+        assertEquals(180, courseEntity.get().getRequiredExpOfLevel(0));
 
         List<BadgeEntity> allBadges = badgeRepository.findAll();
         assertEquals(3, allBadges.size());
@@ -242,7 +263,7 @@ class QuizTest {
      * <p>
      * Expected Outcome:
      * <ul>
-     *   <li>The quiz name is changed successfully.</li>
+     *   <li>The quiz name and metadata is changed successfully.</li>
      *   <li>All badges associated with the quiz have their descriptions updated.</li>
      *   <li>The quest associated with the quiz in the quest chain also has its description updated.</li>
      * </ul>
@@ -267,6 +288,13 @@ class QuizTest {
         assertEquals(QuestService.descriptionPart1 + "quiz " + newName +
                 QuestService.descriptionPart2 + QuestService.passingPercentage +
                 QuestService.descriptionPart3, quest.getDescription());
+
+
+        Optional<ContentMetaDataEntity> quizMetaData = contentMetaDataRepository.findById(quizUUID);
+
+        assertTrue(quizMetaData.isPresent());
+        assertEquals(SkillType.REMEMBER, quizMetaData.get().getSkillType());
+        assertEquals(37, quizMetaData.get().getSkillPoints());
     }
 
     /**
