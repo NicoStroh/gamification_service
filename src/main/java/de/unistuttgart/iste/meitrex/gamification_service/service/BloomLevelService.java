@@ -125,7 +125,7 @@ public class BloomLevelService {
         if (courseEntity.isEmpty()) {
             return 0;
         }
-        return courseEntity.get().getChapters().indexOf(chapterUUID);
+        return courseEntity.get().getLevelOfChapter(chapterUUID);
     }
 
     /**

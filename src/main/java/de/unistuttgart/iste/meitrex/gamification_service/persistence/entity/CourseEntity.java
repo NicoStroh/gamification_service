@@ -40,7 +40,7 @@ public class CourseEntity {
         if (this.requiredExpPerLevel == null) {
             this.requiredExpPerLevel = new ArrayList<>();
         }
-        requiredExpPerLevel.add(requiredExpOfLevel(requiredExpPerLevel.size()));
+        requiredExpPerLevel.add(requiredExpOfLevel(requiredExpPerLevel.size() + 1));
 
         if (this.chapters == null) {
             this.chapters = new LinkedList<>();
@@ -50,7 +50,7 @@ public class CourseEntity {
 
     public int getLevelOfChapter(UUID chapterUUID) {
         if (this.chapters == null) {
-            return 0;
+            return -1;
         }
         return this.chapters.indexOf(chapterUUID);
     }
@@ -96,14 +96,16 @@ public class CourseEntity {
         int currentLevel = 0;
         int accumulatedExp = 0;
 
-        for (int i = 0; i < requiredExpPerLevel.size(); i++) {
-            accumulatedExp += requiredExpPerLevel.get(i);
+        int i = 0;
+        for (Integer requiredExp : requiredExpPerLevel) {
+            accumulatedExp += requiredExp;
 
             if (exp < accumulatedExp) {
                 break;
             }
 
             currentLevel = i + 1;
+            i++;
         }
 
         return currentLevel;
@@ -116,8 +118,8 @@ public class CourseEntity {
 
         int accumulatedExp = 0;
 
-        for (Integer integer : requiredExpPerLevel) {
-            accumulatedExp += integer;
+        for (Integer requiredExp : requiredExpPerLevel) {
+            accumulatedExp += requiredExp;
 
             if (exp < accumulatedExp) {
                 return accumulatedExp - exp;
