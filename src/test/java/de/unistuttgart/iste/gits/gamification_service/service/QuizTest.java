@@ -81,7 +81,14 @@ class QuizTest {
     private UserQuestChainRepository userQuestChainRepository;
 
     @Autowired
+    private BloomLevelRepository bloomLevelRepository;
+
+    @Autowired
+    private ContentMetaDataRepository contentMetaDataRepository;
+
+    @Autowired
     private GamificationController gamificationController;
+
 
     private UUID courseUUID;
     private UUID lecturerUUID;
@@ -138,7 +145,7 @@ class QuizTest {
         UUID quiz = UUID.randomUUID();
         String name = "Quiz 2";
         assertEquals("Created quiz successfully.",
-                gamificationController.createQuiz(quiz, name, courseUUID, chapterUUID, 45, SkillType.REMEMBER));
+                gamificationController.createQuiz(quiz, name, courseUUID, chapterUUID, 45, List.of(SkillType.REMEMBER)));
 
         assertEquals(9, badgeRepository.findAll().size());
         List<BadgeEntity> quizBadges = badgeRepository.findByQuizUUID(quiz);
@@ -244,7 +251,7 @@ class QuizTest {
     void editQuizNameTest() {
         String newName = "New Name";
         assertEquals("Changed quiz name!", gamificationController.editQuiz(quizUUID,
-                courseUUID, newName, 37, SkillType.REMEMBER));
+                courseUUID, newName, 37, List.of(SkillType.REMEMBER)));
 
         List<BadgeEntity> quizBadges = badgeRepository.findByQuizUUID(quizUUID);
         assertEquals(3, quizBadges.size());

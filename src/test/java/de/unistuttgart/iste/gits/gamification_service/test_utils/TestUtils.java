@@ -2,14 +2,8 @@ package de.unistuttgart.iste.gits.gamification_service.test_utils;
 
 import de.unistuttgart.iste.meitrex.gamification_service.controller.GamificationController;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.*;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.BadgeRepository;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.CourseRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.PlayerTypeRepository;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.QuestChainRepository;
-import de.unistuttgart.iste.meitrex.gamification_service.service.BadgeService;
-import de.unistuttgart.iste.meitrex.gamification_service.service.QuestService;
 import de.unistuttgart.iste.meitrex.generated.dto.SkillType;
-import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -69,8 +63,8 @@ public class TestUtils {
                                         UUID chapterUUID) {
         gamificationController.addCourse(courseUUID, lecturerUUID, new LinkedList<>(List.of(chapterUUID)));
         gamificationController.addUserToCourse(user1, courseUUID);
-        gamificationController.createQuiz(quizUUID, "Quiz 1", courseUUID, chapterUUID, 50, SkillType.ANALYSE);
-        gamificationController.createFlashCardSet(fcsUUID, "FCS 1", courseUUID, chapterUUID, 60, SkillType.APPLY);
+        gamificationController.createQuiz(quizUUID, "Quiz 1", courseUUID, chapterUUID, 50, List.of(SkillType.ANALYSE));
+        gamificationController.createFlashCardSet(fcsUUID, "FCS 1", courseUUID, chapterUUID, 60, List.of(SkillType.APPLY));
         gamificationController.addUserToCourse(user2, courseUUID);
     }
 

@@ -92,7 +92,11 @@ class CourseTest {
     private BloomLevelRepository bloomLevelRepository;
 
     @Autowired
+    private ContentMetaDataRepository contentMetaDataRepository;
+
+    @Autowired
     private GamificationController gamificationController;
+
 
     private UUID courseUUID;
     private UUID lecturerUUID;

@@ -83,7 +83,11 @@ class FlashCardSetTest {
     private BloomLevelRepository bloomLevelRepository;
 
     @Autowired
+    private ContentMetaDataRepository contentMetaDataRepository;
+
+    @Autowired
     private GamificationController gamificationController;
+
 
     private UUID courseUUID;
     private UUID lecturerUUID;
@@ -140,7 +144,8 @@ class FlashCardSetTest {
         UUID flashCardSet = UUID.randomUUID();
         String name = "FCS 2";
         assertEquals("Created flashCardSet successfully.",
-                gamificationController.createFlashCardSet(flashCardSet, name, courseUUID, chapterUUID, 70, SkillType.REMEMBER));
+                gamificationController.createFlashCardSet(flashCardSet, name, courseUUID, chapterUUID,
+                        70, List.of(SkillType.REMEMBER)));
 
         assertEquals(9, badgeRepository.findAll().size());
         List<BadgeEntity> fcsBadges = badgeRepository.findByFlashCardSetUUID(flashCardSet);
@@ -247,7 +252,7 @@ class FlashCardSetTest {
     void editFlashCardSetNameTest() {
         String newName = "New Name";
         assertEquals("Changed flashCardSet name!", gamificationController.editFlashCardSet(flashCardSetUUID,
-                courseUUID, newName, 55, SkillType.UNDERSTAND));
+                courseUUID, newName, 55, List.of(SkillType.UNDERSTAND)));
 
         List<BadgeEntity> fcsBadges = badgeRepository.findByFlashCardSetUUID(flashCardSetUUID);
         assertEquals(3, fcsBadges.size());

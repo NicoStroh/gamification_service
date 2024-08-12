@@ -96,8 +96,8 @@ type Mutation {
   addUserToCourse(userUUID: UUID!, courseUUID: UUID!): String!
 
   # Creates gamification elements (badges / quests) for quiz / flashcardset
-  createFlashCardSet(flashCardSetUUID: UUID!, name: String!, courseUUID: UUID!, chapterUUID: UUID!, skillPoints: Int!, skillType: SkillType!): String!
-  createQuiz(quizUUID: UUID!, name: String!, courseUUID: UUID!, chapterUUID: UUID!, skillPoints: Int!, skillType: SkillType!): String!
+  createFlashCardSet(flashCardSetUUID: UUID!, name: String!, courseUUID: UUID!, chapterUUID: UUID!, skillPoints: Int!, skillTypes: [SkillType!]!): String!
+  createQuiz(quizUUID: UUID!, name: String!, courseUUID: UUID!, chapterUUID: UUID!, skillPoints: Int!, skillTypes: [SkillType!]!): String!
 
   # Deletes gamification elements of the course
   deleteBadgesAndQuestsOfCourse(courseUUID: UUID!): String!
@@ -106,8 +106,8 @@ type Mutation {
   deleteBadgesAndQuestOfQuiz(quizUUID: UUID!, courseUUID: UUID!, chapterUUID: UUID!): String!
 
   # Changes the description of the badges / quest for the quiz / flashCardSet
-  editFlashCardSet(flashCardSetUUID: UUID!, courseUUID: UUID!, name: String!, skillPoints: Int!, skillType: SkillType!): String!
-  editQuiz(quizUUID: UUID!, courseUUID: UUID!, name: String!, skillPoints: Int!, skillType: SkillType!): String!
+  editFlashCardSet(flashCardSetUUID: UUID!, courseUUID: UUID!, name: String!, skillPoints: Int!, skillTypes: [SkillType!]!): String!
+  editQuiz(quizUUID: UUID!, courseUUID: UUID!, name: String!, skillPoints: Int!, skillTypes: [SkillType!]!): String!
 
   # Test evaluation
   evaluateTest(userUUID: UUID!): ShortBartleTestResultEntity!

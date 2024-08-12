@@ -11,10 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -106,16 +103,16 @@ public class BloomLevelService {
      * @param courseUUID       the unique identifier of the course
      * @param quizUUID         the unique identifier of the quiz
      * @param skillPoints      the skillPoints rewarded for the quiz
-     * @param skillType        the skillType of the quiz
+     * @param skillTypes       the skillTypes of the quiz
      */
-    public void addQuiz(UUID chapterUUID, UUID courseUUID, UUID quizUUID, int skillPoints, SkillType skillType) {
+    public void addQuiz(UUID chapterUUID, UUID courseUUID, UUID quizUUID, int skillPoints, List<SkillType> skillTypes) {
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
         if (courseEntity.isPresent()) {
             CourseEntity course = courseEntity.get();
             course.addQuiz(chapterUUID);
             courseRepository.save(course);
         }
-        saveContent(quizUUID, skillPoints, skillType);
+        saveContent(quizUUID, skillPoints, skillTypes);
     }
 
     /**
@@ -125,16 +122,16 @@ public class BloomLevelService {
      * @param courseUUID         the unique identifier of the course
      * @param flashCardSetUUID   the unique identifier of the flashCardSet
      * @param skillPoints        the skillPoints rewarded for the flashCardSet
-     * @param skillType          the skillType of the flashCardSet
+     * @param skillTypes         the skillTypes of the flashCardSet
      */
-    public void addFlashCardSet(UUID chapterUUID, UUID courseUUID, UUID flashCardSetUUID, int skillPoints, SkillType skillType) {
+    public void addFlashCardSet(UUID chapterUUID, UUID courseUUID, UUID flashCardSetUUID, int skillPoints, List<SkillType> skillTypes) {
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
         if (courseEntity.isPresent()) {
             CourseEntity course = courseEntity.get();
             course.addFlashCardSet(chapterUUID);
             courseRepository.save(course);
         }
-        saveContent(flashCardSetUUID, skillPoints, skillType);
+        saveContent(flashCardSetUUID, skillPoints, skillTypes);
     }
 
     /**
@@ -142,10 +139,13 @@ public class BloomLevelService {
      *
      * @param contentUUID     the id of the content
      * @param skillPoints     the skillPoints rewarded for the content
-     * @param skillType       the skillType of the content
+     * @param skillTypes      the skillTypes of the content
      */
-    public void saveContent(UUID contentUUID, int skillPoints, SkillType skillType) {
-        ContentMetaDataEntity contentMetaData = new ContentMetaDataEntity(contentUUID, skillPoints, skillType);
+    public void saveContent(UUID contentUUID, int skillPoints, List<SkillType> skillTypes) {
+        SkillType maxSkillType = skillTypes.stream()
+                .max(Comparator.comparingInt(Enum::ordinal))
+                .orElseThrow(() -> new IllegalArgumentException("List is empty"));
+        ContentMetaDataEntity contentMetaData = new ContentMetaDataEntity(contentUUID, skillPoints, maxSkillType);
         contentMetaDataRepository.save(contentMetaData);
     }
 
