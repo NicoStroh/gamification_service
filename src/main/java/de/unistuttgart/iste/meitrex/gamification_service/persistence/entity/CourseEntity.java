@@ -26,6 +26,9 @@ public class CourseEntity {
     @ElementCollection
     private List<UUID> chapters;
 
+    @ElementCollection
+    private Set<UUID> content;
+
     public void addUser(UUID userUUID) {
         this.userUUIDs.add(userUUID);
     }
@@ -55,32 +58,43 @@ public class CourseEntity {
         return this.chapters.indexOf(chapterUUID);
     }
 
-    public void addQuiz(UUID chapter) {
+    public void addContent(UUID contentUUID) {
+        if (this.content == null) {
+            this.content = new HashSet<>();
+        }
+        this.content.add(contentUUID);
+    }
+
+    public void addQuiz(UUID quizUUID, UUID chapter) {
         int level = this.getLevelOfChapter(chapter);
+        this.addContent(quizUUID);
         if (this.requiredExpPerLevel == null || this.requiredExpPerLevel.size() < level) {
             return;
         }
         this.requiredExpPerLevel.set(level, requiredExpPerLevel.get(level) + quizExp);
     }
 
-    public void addFlashCardSet(UUID chapter) {
+    public void addFlashCardSet(UUID flashCardSet, UUID chapter) {
         int level = this.getLevelOfChapter(chapter);
+        this.addContent(flashCardSet);
         if (this.requiredExpPerLevel == null || this.requiredExpPerLevel.size() < level) {
             return;
         }
         this.requiredExpPerLevel.set(level, requiredExpPerLevel.get(level) + flashCardSetExp);
     }
 
-    public void removeQuiz(UUID chapter) {
+    public void removeQuiz(UUID quizUUID, UUID chapter) {
         int level = this.getLevelOfChapter(chapter);
+        this.content.remove(quizUUID);
         if (this.requiredExpPerLevel == null || this.requiredExpPerLevel.size() < level) {
             return;
         }
         this.requiredExpPerLevel.set(level, requiredExpPerLevel.get(level) - quizExp);
     }
 
-    public void removeFlashCardSet(UUID chapter) {
+    public void removeFlashCardSet(UUID flashCardSet, UUID chapter) {
         int level = this.getLevelOfChapter(chapter);
+        this.content.remove(flashCardSet);
         if (this.requiredExpPerLevel == null || this.requiredExpPerLevel.size() < level) {
             return;
         }

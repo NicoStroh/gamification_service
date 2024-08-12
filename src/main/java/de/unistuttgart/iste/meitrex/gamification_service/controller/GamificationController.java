@@ -79,10 +79,10 @@ public class GamificationController {
 
     @MutationMapping
     public String deleteBadgesAndQuestsOfCourse(@Argument UUID courseUUID) {
-        HashSet<UUID> courseMembers = courseService.deleteCourse(courseUUID);
+        bloomLevelService.deleteCourse(courseUUID);
+        courseService.deleteCourse(courseUUID);
         badgeService.deleteBadgesAndUserBadgesOfCourse(courseUUID);
         questService.deleteQuestChainAndUserQuestChainsOfCourse(courseUUID);
-        bloomLevelService.deleteCourse(courseUUID, courseMembers);
         return "Course deleted.";
     }
 
@@ -114,7 +114,7 @@ public class GamificationController {
                                    @Argument List<SkillType> skillTypes) {
         badgeService.changeFlashCardSetName(flashCardSetUUID, name);
         questService.changeFlashCardSetName(flashCardSetUUID, courseUUID, name);
-        bloomLevelService.saveContent(flashCardSetUUID, skillPoints, skillTypes);
+        bloomLevelService.saveContent(courseUUID, flashCardSetUUID, skillPoints, skillTypes);
         return "Changed flashCardSet name!";
     }
 
@@ -126,7 +126,7 @@ public class GamificationController {
                            @Argument List<SkillType> skillTypes) {
         badgeService.changeQuizName(quizUUID, name);
         questService.changeQuizName(quizUUID, courseUUID, name);
-        bloomLevelService.saveContent(quizUUID, skillPoints, skillTypes);
+        bloomLevelService.saveContent(courseUUID, quizUUID, skillPoints, skillTypes);
         return "Changed quiz name!";
     }
 

@@ -7,6 +7,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.*;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.*;
 import de.unistuttgart.iste.meitrex.gamification_service.service.*;
 import de.unistuttgart.iste.meitrex.generated.dto.Quest;
+import de.unistuttgart.iste.meitrex.generated.dto.SkillType;
 import de.unistuttgart.iste.meitrex.generated.dto.UserBadge;
 import de.unistuttgart.iste.meitrex.generated.dto.UserQuestChain;
 import org.junit.jupiter.api.BeforeEach;
@@ -143,7 +144,7 @@ class CourseTest {
      *   <li>All user badges are associated with the correct users and marked as not achieved.</li>
      *   <li>The quest chain and quests are properly linked to the course and the content.</li>
      *   <li>Each user has their own quest chain with the correct initial settings.</li>
-     *   <li>The content data of the quiz and the flashCardSet is correct.</li>
+     *   <li>The contentMetaData of the quiz and the flashCardSet is correct.</li>
      * </ul>
      */
     @Test
@@ -151,10 +152,18 @@ class CourseTest {
         assertEquals(1, courseRepository.count());
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
         assertTrue(courseEntity.isPresent());
+
         assertEquals(3, courseEntity.get().getUserUUIDs().size());
         assertTrue(courseEntity.get().getUserUUIDs().contains(lecturerUUID));
         assertTrue(courseEntity.get().getUserUUIDs().contains(user1UUID));
         assertTrue(courseEntity.get().getUserUUIDs().contains(user2UUID));
+
+        assertEquals(1, courseEntity.get().getChapters().size());
+        assertTrue(courseEntity.get().getChapters().contains(chapterUUID));
+
+        assertEquals(2, courseEntity.get().getContent().size());
+        assertTrue(courseEntity.get().getContent().contains(flashCardSetUUID));
+        assertTrue(courseEntity.get().getContent().contains(quizUUID));
 
         assertEquals(6, badgeRepository.count());
         for (BadgeEntity badgeEntity : badgeRepository.findAll()) {
@@ -205,6 +214,30 @@ class CourseTest {
             || user2UUID.equals(userQuestChainEntity.getUserUUID()));
             assertEquals(0, userQuestChainEntity.getUserLevel());
         }
+
+        List<BloomLevelEntity> bloomLevelEntities = bloomLevelRepository.findAll();
+        assertEquals(3, bloomLevelEntities.size());
+        BloomLevelEntity lecturerBloomLevel = bloomLevelRepository.findByUserUUIDAndCourseUUID(lecturerUUID, courseUUID);
+        BloomLevelEntity user1BloomLevel = bloomLevelRepository.findByUserUUIDAndCourseUUID(user1UUID, courseUUID);
+        BloomLevelEntity user2BloomLevel = bloomLevelRepository.findByUserUUIDAndCourseUUID(user2UUID, courseUUID);
+        assertNotNull(lecturerBloomLevel);
+        assertNotNull(user1BloomLevel);
+        assertNotNull(user2BloomLevel);
+        assertEquals(0, lecturerBloomLevel.getCollectedExp());
+        assertEquals(0, user1BloomLevel.getCollectedExp());
+        assertEquals(0, user2BloomLevel.getCollectedExp());
+
+        assertEquals(2, contentMetaDataRepository.findAll().size());
+        Optional<ContentMetaDataEntity> flashCardSetMetaData = contentMetaDataRepository.findById(flashCardSetUUID);
+        Optional<ContentMetaDataEntity> quizMetaData = contentMetaDataRepository.findById(quizUUID);
+
+        assertTrue(flashCardSetMetaData.isPresent());
+        assertEquals(SkillType.APPLY, flashCardSetMetaData.get().getSkillType());
+        assertEquals(60, flashCardSetMetaData.get().getSkillPoints());
+
+        assertTrue(quizMetaData.isPresent());
+        assertEquals(SkillType.ANALYSE, quizMetaData.get().getSkillType());
+        assertEquals(50, quizMetaData.get().getSkillPoints());
     }
 
     /**
@@ -217,6 +250,7 @@ class CourseTest {
      *   <li>The course is associated with the correct lecturer.</li>
      *   <li>An empty quest chain is created for the course.</li>
      *   <li>The lecturer has a corresponding user quest chain with initial settings.</li>
+     *   <li>The bloomLevel of the lecturer is initialized correctly.</li>
      * </ul>
      */
     @Test
@@ -246,6 +280,11 @@ class CourseTest {
         assertEquals(questChainEntity.getQuestChainUUID(), userQuestChainEntity.getQuestChainUUID());
         assertEquals(0, userQuestChainEntity.getUserLevel());
 
+        List<BloomLevelEntity> bloomLevelEntities = bloomLevelRepository.findAll();
+        assertEquals(4, bloomLevelEntities.size());
+        BloomLevelEntity lecturerBloomLevel = bloomLevelRepository.findByUserUUIDAndCourseUUID(lecturer, course);
+        assertNotNull(lecturerBloomLevel);
+        assertEquals(0, lecturerBloomLevel.getCollectedExp());
     }
 
     /**
@@ -258,6 +297,7 @@ class CourseTest {
      *   <li>The course is updated to include the new user.</li>
      *   <li>The new user has a quest chain associated with the course.</li>
      *   <li>The new user is assigned the correct badges for the course, all marked as not achieved.</li>
+     *   <li>The bloomLevel of the joined user is initialized correctly.</li>
      * </ul>
      */
     @Test
@@ -286,6 +326,11 @@ class CourseTest {
             assertFalse(userBadge.isAchieved());
         }
 
+        List<BloomLevelEntity> bloomLevelEntities = bloomLevelRepository.findAll();
+        assertEquals(4, bloomLevelEntities.size());
+        BloomLevelEntity lecturerBloomLevel = bloomLevelRepository.findByUserUUIDAndCourseUUID(user, courseUUID);
+        assertNotNull(lecturerBloomLevel);
+        assertEquals(0, lecturerBloomLevel.getCollectedExp());
     }
 
     /**
@@ -302,11 +347,15 @@ class CourseTest {
     void deleteBadgesAndQuestsOfCourseTest() {
         assertEquals("Course deleted.", gamificationController.deleteBadgesAndQuestsOfCourse(courseUUID));
 
+        assertFalse(courseRepository.findById(courseUUID).isPresent());
+
         assertEquals(0, courseRepository.findAll().size());
         assertEquals(0, badgeRepository.findAll().size());
         assertEquals(0, userBadgeRepository.findAll().size());
         assertEquals(0, questChainRepository.findAll().size());
         assertEquals(0, userQuestChainRepository.findAll().size());
+        assertEquals(0, bloomLevelRepository.findAll().size());
+        assertEquals(0, contentMetaDataRepository.findAll().size());
     }
 
     /**
@@ -482,6 +531,7 @@ class CourseTest {
      *   <li>The course still exists in the repository, but its user list no longer includes the removed user.</li>
      *   <li>The total number of users in the course is reduced accordingly.</li>
      *   <li>All badges and quest chains associated with the removed user are deleted from the repositories.</li>
+     *   <li>The bloomLevel of the user for the course is deleted.</li>
      * </ul>
      */
     @Test
@@ -505,6 +555,9 @@ class CourseTest {
         for (UserQuestChainEntity userQuestChain : allUserQuests) {
             assertNotEquals(lecturerUUID, userQuestChain.getUserUUID());
         }
+
+        assertEquals(2, bloomLevelRepository.count());
+        assertNull(bloomLevelRepository.findByUserUUIDAndCourseUUID(lecturerUUID, courseUUID));
 
     }
 

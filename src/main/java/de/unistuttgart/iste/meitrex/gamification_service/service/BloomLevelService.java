@@ -46,14 +46,20 @@ public class BloomLevelService {
     }
 
     /**
-     * Deletes a course and all the bloomLevel of its students.
+     * Deletes a course and all the bloomLevel of its students and all its content.
      *
      * @param courseUUID          the unique identifier of the deleted course
-     * @param courseMembers       the UUIDs of the course members
      */
-    public void deleteCourse(UUID courseUUID, HashSet<UUID> courseMembers) {
-        for (UUID user : courseMembers) {
-            bloomLevelRepository.deleteByUserUUIDAndCourseUUID(user, courseUUID);
+    public void deleteCourse(UUID courseUUID) {
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        if (courseEntity.isPresent()) {
+            CourseEntity course = courseEntity.get();
+            for (UUID user : course.getUserUUIDs()) {
+                bloomLevelRepository.deleteByUserUUIDAndCourseUUID(user, courseUUID);
+            }
+            for (UUID content : course.getContent()) {
+                contentMetaDataRepository.deleteById(content);
+            }
         }
     }
 
@@ -109,10 +115,10 @@ public class BloomLevelService {
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
         if (courseEntity.isPresent()) {
             CourseEntity course = courseEntity.get();
-            course.addQuiz(chapterUUID);
+            course.addQuiz(quizUUID, chapterUUID);
             courseRepository.save(course);
         }
-        saveContent(quizUUID, skillPoints, skillTypes);
+        saveContent(courseUUID, quizUUID, skillPoints, skillTypes);
     }
 
     /**
@@ -128,25 +134,33 @@ public class BloomLevelService {
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
         if (courseEntity.isPresent()) {
             CourseEntity course = courseEntity.get();
-            course.addFlashCardSet(chapterUUID);
+            course.addFlashCardSet(flashCardSetUUID, chapterUUID);
             courseRepository.save(course);
         }
-        saveContent(flashCardSetUUID, skillPoints, skillTypes);
+        saveContent(courseUUID, flashCardSetUUID, skillPoints, skillTypes);
     }
 
     /**
      * Updates the metadata of the content in the repository,
      *
+     * @param courseUUID      the id of the course
      * @param contentUUID     the id of the content
      * @param skillPoints     the skillPoints rewarded for the content
      * @param skillTypes      the skillTypes of the content
      */
-    public void saveContent(UUID contentUUID, int skillPoints, List<SkillType> skillTypes) {
+    public void saveContent(UUID courseUUID, UUID contentUUID, int skillPoints, List<SkillType> skillTypes) {
         SkillType maxSkillType = skillTypes.stream()
                 .max(Comparator.comparingInt(Enum::ordinal))
                 .orElseThrow(() -> new IllegalArgumentException("List is empty"));
         ContentMetaDataEntity contentMetaData = new ContentMetaDataEntity(contentUUID, skillPoints, maxSkillType);
         contentMetaDataRepository.save(contentMetaData);
+
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        if (courseEntity.isPresent()) {
+            CourseEntity course = courseEntity.get();
+            course.addContent(contentUUID);
+            courseRepository.save(course);
+        }
     }
 
     /**
@@ -176,7 +190,7 @@ public class BloomLevelService {
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
         if (courseEntity.isPresent()) {
             CourseEntity course = courseEntity.get();
-            course.removeQuiz(chapterUUID);
+            course.removeQuiz(quizUUID, chapterUUID);
             courseRepository.save(course);
         }
         contentMetaDataRepository.deleteById(quizUUID);
@@ -193,7 +207,7 @@ public class BloomLevelService {
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
         if (courseEntity.isPresent()) {
             CourseEntity course = courseEntity.get();
-            course.removeFlashCardSet(chapterUUID);
+            course.removeFlashCardSet(flashCardSetUUID, chapterUUID);
             courseRepository.save(course);
         }
         contentMetaDataRepository.deleteById(flashCardSetUUID);

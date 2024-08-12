@@ -29,7 +29,8 @@ public class CourseService {
         CourseEntity courseEntity = new CourseEntity(courseUUID,
                 new HashSet<UUID>(),
                 new ArrayList<Integer>(),
-                new LinkedList<UUID>());
+                new LinkedList<UUID>(),
+                new HashSet<UUID>());
         courseRepository.save(courseEntity);
 
         addUserToCourse(lecturerUUID, courseUUID);
@@ -45,10 +46,7 @@ public class CourseService {
     public HashSet<UUID> deleteCourse(UUID courseUUID) {
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
         courseRepository.deleteById(courseUUID);
-        if (courseEntity.isPresent()) {
-            return (HashSet<UUID>) courseEntity.get().getUserUUIDs();
-        }
-        return new HashSet<UUID>();
+        return courseEntity.map(entity -> new HashSet<>(entity.getUserUUIDs())).orElseGet(HashSet::new);
     }
 
     /**
