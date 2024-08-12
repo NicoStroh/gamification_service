@@ -122,7 +122,7 @@ public class CourseEntity {
             accumulatedExp += requiredExp;
 
             if (exp < accumulatedExp) {
-                return accumulatedExp - exp;
+                return requiredExp - (accumulatedExp - exp);
             }
         }
 

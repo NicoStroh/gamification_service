@@ -11,7 +11,9 @@ import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
@@ -24,6 +26,7 @@ public class GamificationController {
     private final BadgeService badgeService;
     private final QuestService questService;
     private final BloomLevelService bloomLevelService;
+
 
     @MutationMapping
     public String addCourse(@Argument UUID courseUUID, @Argument UUID lecturerUUID, @Argument List<UUID> chapters) {
@@ -76,10 +79,10 @@ public class GamificationController {
 
     @MutationMapping
     public String deleteBadgesAndQuestsOfCourse(@Argument UUID courseUUID) {
-        courseService.deleteCourse(courseUUID);
+        HashSet<UUID> courseMembers = courseService.deleteCourse(courseUUID);
         badgeService.deleteBadgesAndUserBadgesOfCourse(courseUUID);
         questService.deleteQuestChainAndUserQuestChainsOfCourse(courseUUID);
-        bloomLevelService.deleteCourse(courseUUID);
+        bloomLevelService.deleteCourse(courseUUID, courseMembers);
         return "Course deleted.";
     }
 
@@ -141,7 +144,8 @@ public class GamificationController {
                              @Argument UUID chapterUUID) {
         badgeService.markBadgesAsAchievedIfPassedQuiz(userUUID, quizUUID, correctAnswers, totalAnswers);
         questService.markQuestAsFinishedIfPassedQuiz(userUUID, courseUUID, quizUUID, correctAnswers, totalAnswers);
-        bloomLevelService.grantRewardToUserForFinishingQuiz(courseUUID, userUUID, chapterUUID, correctAnswers, totalAnswers);
+        bloomLevelService.grantRewardToUserForFinishingQuiz(courseUUID, userUUID, chapterUUID,
+                quizUUID, correctAnswers, totalAnswers);
         return "Finished quiz!";
     }
 
@@ -154,7 +158,8 @@ public class GamificationController {
                                      @Argument UUID chapterUUID) {
         badgeService.markBadgesAsAchievedIfPassedFlashCardSet(userUUID, flashCardSetUUID, correctAnswers, totalAnswers);
         questService.markQuestAsFinishedIfPassedFlashCardSet(userUUID, courseUUID, flashCardSetUUID, correctAnswers, totalAnswers);
-        bloomLevelService.grantRewardToUserForFinishingFlashCardSet(courseUUID, userUUID, chapterUUID, correctAnswers, totalAnswers);
+        bloomLevelService.grantRewardToUserForFinishingFlashCardSet(courseUUID, userUUID, chapterUUID,
+                flashCardSetUUID, correctAnswers, totalAnswers);
         return "Finished flashCardSet!";
     }
 

@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -51,15 +52,11 @@ public class BloomLevelService {
      * Deletes a course and all the bloomLevel of its students.
      *
      * @param courseUUID          the unique identifier of the deleted course
+     * @param courseMembers       the UUIDs of the course members
      */
-    public void deleteCourse(UUID courseUUID) {
-        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
-        if (courseEntity.isPresent()) {
-            CourseEntity course = courseEntity.get();
-            for (UUID user : course.getUserUUIDs()) {
-                bloomLevelRepository.deleteByUserUUIDAndCourseUUID(user, courseUUID);
-            }
-            courseRepository.delete(course);
+    public void deleteCourse(UUID courseUUID, HashSet<UUID> courseMembers) {
+        for (UUID user : courseMembers) {
+            bloomLevelRepository.deleteByUserUUIDAndCourseUUID(user, courseUUID);
         }
     }
 
@@ -165,7 +162,7 @@ public class BloomLevelService {
                 || courseEntity.get().getChapters().isEmpty()) {
             return -1;
         }
-        return courseEntity.get().getLevelOfChapter(chapterUUID);
+        return courseEntity.get().getLevelOfChapter(chapterUUID) + 1;
     }
 
     /**
@@ -208,45 +205,53 @@ public class BloomLevelService {
      * @param courseUUID     the unique identifier of the course
      * @param userUUID       the unique identifier of the user
      * @param chapterUUID    the id of the chapter of the quiz
+     * @param quizUUID       the id of the quiz
      * @param correctAnswers the number of correct answers given by the user
      * @param totalAnswers   the total number of questions in the quiz
      */
     public void grantRewardToUserForFinishingQuiz(UUID courseUUID,
                                                   UUID userUUID,
                                                   UUID chapterUUID,
+                                                  UUID quizUUID,
                                                   int correctAnswers,
                                                   int totalAnswers) {
         BloomLevelEntity bloomLevel = bloomLevelRepository.findByUserUUIDAndCourseUUID(userUUID, courseUUID);
-        if (bloomLevel == null) {
+        Optional<ContentMetaDataEntity> contentMetaData = contentMetaDataRepository.findById(quizUUID);
+        if (bloomLevel == null || contentMetaData.isEmpty()) {
             return;
         }
 
         int level = getLevelOfChapter(chapterUUID, courseUUID);
-        bloomLevel.addExp(CourseEntity.rewardOfFinishedQuiz(level, correctAnswers, totalAnswers));
+        int reward = CourseEntity.rewardOfFinishedQuiz(level, correctAnswers, totalAnswers);
+        bloomLevel.addExp(contentMetaData.get().rewardOfFinishingContent(reward));
         bloomLevelRepository.save(bloomLevel);
     }
 
     /**
      * Grants a reward to a user for successfully completing a flashCardSet.
      *
-     * @param courseUUID     the unique identifier of the course
-     * @param userUUID       the unique identifier of the user
-     * @param chapterUUID    the id of the chapter of the flashCardSet
-     * @param correctAnswers the number of correct answers given by the user
-     * @param totalAnswers   the total number of questions in the flashCardSet
+     * @param courseUUID            the unique identifier of the course
+     * @param userUUID              the unique identifier of the user
+     * @param chapterUUID           the id of the chapter of the flashCardSet
+     * @param flashCardSetUUID      the id of the flashCardSet
+     * @param correctAnswers        the number of correct answers given by the user
+     * @param totalAnswers          the total number of questions in the flashCardSet
      */
     public void grantRewardToUserForFinishingFlashCardSet(UUID courseUUID,
                                                           UUID userUUID,
                                                           UUID chapterUUID,
+                                                          UUID flashCardSetUUID,
                                                           int correctAnswers,
                                                           int totalAnswers) {
         BloomLevelEntity bloomLevel = bloomLevelRepository.findByUserUUIDAndCourseUUID(userUUID, courseUUID);
-        if (bloomLevel == null) {
+        Optional<ContentMetaDataEntity> contentMetaData = contentMetaDataRepository.findById(flashCardSetUUID);
+        if (bloomLevel == null || contentMetaData.isEmpty()) {
             return;
         }
 
         int level = getLevelOfChapter(chapterUUID, courseUUID);
-        bloomLevel.addExp(CourseEntity.rewardOfFinishedFlashCardSet(level, correctAnswers, totalAnswers));
+        int reward = CourseEntity.rewardOfFinishedFlashCardSet(level, correctAnswers, totalAnswers);
+        bloomLevel.addExp(contentMetaData.get().rewardOfFinishingContent(reward));
         bloomLevelRepository.save(bloomLevel);
     }
 

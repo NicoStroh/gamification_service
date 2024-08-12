@@ -22,4 +22,8 @@ public class ContentMetaDataEntity {
 
     private SkillType skillType;
 
+    public int rewardOfFinishingContent(int reward) {
+        return reward + (skillPoints * skillType.ordinal());
+    }
+
 }
