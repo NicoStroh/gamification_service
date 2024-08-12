@@ -52,10 +52,12 @@ public class GamificationController {
     public String createFlashCardSet(@Argument UUID flashCardSetUUID,
                                      @Argument String name,
                                      @Argument UUID courseUUID,
-                                     @Argument UUID chapterUUID) {
+                                     @Argument UUID chapterUUID,
+                                     @Argument int skillPoints,
+                                     @Argument SkillType skillType) {
         badgeService.createBadgesForFlashCardSet(flashCardSetUUID, name, courseUUID, courseService.getCoursesUsers(courseUUID));
         questService.createQuestForFlashCardSet(flashCardSetUUID, name, courseUUID);
-        bloomLevelService.addFlashCardSet(chapterUUID, courseUUID);
+        bloomLevelService.addFlashCardSet(chapterUUID, courseUUID, flashCardSetUUID, skillPoints, skillType);
         return "Created flashCardSet successfully.";
     }
 
@@ -63,10 +65,12 @@ public class GamificationController {
     public String createQuiz(@Argument UUID quizUUID,
                              @Argument String name,
                              @Argument UUID courseUUID,
-                             @Argument UUID chapterUUID) {
+                             @Argument UUID chapterUUID,
+                             @Argument int skillPoints,
+                             @Argument SkillType skillType) {
         badgeService.createBadgesForQuiz(quizUUID, name, courseUUID, courseService.getCoursesUsers(courseUUID));
         questService.createQuestForQuiz(quizUUID, name, courseUUID);
-        bloomLevelService.addQuiz(chapterUUID, courseUUID);
+        bloomLevelService.addQuiz(chapterUUID, courseUUID, quizUUID, skillPoints, skillType);
         return "Created quiz successfully.";
     }
 
@@ -75,6 +79,7 @@ public class GamificationController {
         courseService.deleteCourse(courseUUID);
         badgeService.deleteBadgesAndUserBadgesOfCourse(courseUUID);
         questService.deleteQuestChainAndUserQuestChainsOfCourse(courseUUID);
+        bloomLevelService.deleteCourse(courseUUID);
         return "Course deleted.";
     }
 
@@ -84,7 +89,7 @@ public class GamificationController {
                                                      @Argument UUID chapterUUID) {
         badgeService.deleteBadgesAndUserBadgesOfFCS(flashCardSetUUID);
         questService.deleteQuestOfFCS(courseUUID, flashCardSetUUID);
-        bloomLevelService.removeFlashCardSet(courseUUID, chapterUUID);
+        bloomLevelService.removeFlashCardSet(courseUUID, chapterUUID, flashCardSetUUID);
         return "FlashCardSet deleted.";
     }
 
@@ -94,25 +99,31 @@ public class GamificationController {
                                              @Argument UUID chapterUUID) {
         badgeService.deleteBadgesAndUserBadgesOfQuiz(quizUUID);
         questService.deleteQuestOfQuiz(courseUUID, quizUUID);
-        bloomLevelService.removeQuiz(courseUUID, chapterUUID);
+        bloomLevelService.removeQuiz(courseUUID, chapterUUID, quizUUID);
         return "Quiz deleted.";
     }
 
     @MutationMapping
-    public String editFlashCardSetName(@Argument UUID flashCardSetUUID,
-                                       @Argument UUID courseUUID,
-                                       @Argument String name) {
+    public String editFlashCardSet(@Argument UUID flashCardSetUUID,
+                                   @Argument UUID courseUUID,
+                                   @Argument String name,
+                                   @Argument int skillPoints,
+                                   @Argument SkillType skillType) {
         badgeService.changeFlashCardSetName(flashCardSetUUID, name);
         questService.changeFlashCardSetName(flashCardSetUUID, courseUUID, name);
+        bloomLevelService.saveContent(flashCardSetUUID, skillPoints, skillType);
         return "Changed flashCardSet name!";
     }
 
     @MutationMapping
-    public String editQuizName(@Argument UUID quizUUID,
-                               @Argument UUID courseUUID,
-                               @Argument String name) {
+    public String editQuiz(@Argument UUID quizUUID,
+                           @Argument UUID courseUUID,
+                           @Argument String name,
+                           @Argument int skillPoints,
+                           @Argument SkillType skillType) {
         badgeService.changeQuizName(quizUUID, name);
         questService.changeQuizName(quizUUID, courseUUID, name);
+        bloomLevelService.saveContent(quizUUID, skillPoints, skillType);
         return "Changed quiz name!";
     }
 

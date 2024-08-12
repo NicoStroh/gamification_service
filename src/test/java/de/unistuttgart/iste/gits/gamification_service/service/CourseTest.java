@@ -139,6 +139,7 @@ class CourseTest {
      *   <li>All user badges are associated with the correct users and marked as not achieved.</li>
      *   <li>The quest chain and quests are properly linked to the course and the content.</li>
      *   <li>Each user has their own quest chain with the correct initial settings.</li>
+     *   <li>The content data of the quiz and the flashCardSet is correct.</li>
      * </ul>
      */
     @Test

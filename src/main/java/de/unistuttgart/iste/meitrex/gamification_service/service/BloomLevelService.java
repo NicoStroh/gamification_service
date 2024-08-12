@@ -1,12 +1,11 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service;
 
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.BloomLevelEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.CourseEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.QuestChainEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserQuestChainEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.*;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.BloomLevelRepository;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.ContentMetaDataRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.CourseRepository;
 import de.unistuttgart.iste.meitrex.generated.dto.BloomLevel;
+import de.unistuttgart.iste.meitrex.generated.dto.SkillType;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +25,9 @@ public class BloomLevelService {
 
     private final BloomLevelRepository bloomLevelRepository;
 
+    private final ContentMetaDataRepository contentMetaDataRepository;
+
+
     /**
      * Adds a new course, with the number of levels in the course.
      *
@@ -40,9 +42,25 @@ public class BloomLevelService {
             for (UUID chapter : chapters) {
                 course.addChapter(chapter);
             }
-            courseRepository.save(courseEntity.get());
+            courseRepository.save(course);
         }
         addUserToCourse(lecturerUUID, courseUUID);
+    }
+
+    /**
+     * Deletes a course and all the bloomLevel of its students.
+     *
+     * @param courseUUID          the unique identifier of the deleted course
+     */
+    public void deleteCourse(UUID courseUUID) {
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        if (courseEntity.isPresent()) {
+            CourseEntity course = courseEntity.get();
+            for (UUID user : course.getUserUUIDs()) {
+                bloomLevelRepository.deleteByUserUUIDAndCourseUUID(user, courseUUID);
+            }
+            courseRepository.delete(course);
+        }
     }
 
     /**
@@ -80,7 +98,7 @@ public class BloomLevelService {
         if (courseEntity.isPresent()) {
             CourseEntity course = courseEntity.get();
             course.addChapter(chapterUUID);
-            courseRepository.save(courseEntity.get());
+            courseRepository.save(course);
         }
     }
 
@@ -89,29 +107,49 @@ public class BloomLevelService {
      *
      * @param chapterUUID      the UUID of the chapter where the quiz will be added
      * @param courseUUID       the unique identifier of the course
+     * @param quizUUID         the unique identifier of the quiz
+     * @param skillPoints      the skillPoints rewarded for the quiz
+     * @param skillType        the skillType of the quiz
      */
-    public void addQuiz(UUID chapterUUID, UUID courseUUID) {
+    public void addQuiz(UUID chapterUUID, UUID courseUUID, UUID quizUUID, int skillPoints, SkillType skillType) {
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
         if (courseEntity.isPresent()) {
             CourseEntity course = courseEntity.get();
             course.addQuiz(chapterUUID);
-            courseRepository.save(courseEntity.get());
+            courseRepository.save(course);
         }
+        saveContent(quizUUID, skillPoints, skillType);
     }
 
     /**
      * Adds a flashCardSet to a specific level in the course, which increases the required expPoints for the level.
      *
-     * @param chapterUUID      the UUID of the chapter where the flashCardSet will be added
-     * @param courseUUID       the unique identifier of the course
+     * @param chapterUUID        the UUID of the chapter where the flashCardSet will be added
+     * @param courseUUID         the unique identifier of the course
+     * @param flashCardSetUUID   the unique identifier of the flashCardSet
+     * @param skillPoints        the skillPoints rewarded for the flashCardSet
+     * @param skillType          the skillType of the flashCardSet
      */
-    public void addFlashCardSet(UUID chapterUUID, UUID courseUUID) {
+    public void addFlashCardSet(UUID chapterUUID, UUID courseUUID, UUID flashCardSetUUID, int skillPoints, SkillType skillType) {
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
         if (courseEntity.isPresent()) {
             CourseEntity course = courseEntity.get();
             course.addFlashCardSet(chapterUUID);
-            courseRepository.save(courseEntity.get());
+            courseRepository.save(course);
         }
+        saveContent(flashCardSetUUID, skillPoints, skillType);
+    }
+
+    /**
+     * Updates the metadata of the content in the repository,
+     *
+     * @param contentUUID     the id of the content
+     * @param skillPoints     the skillPoints rewarded for the content
+     * @param skillType       the skillType of the content
+     */
+    public void saveContent(UUID contentUUID, int skillPoints, SkillType skillType) {
+        ContentMetaDataEntity contentMetaData = new ContentMetaDataEntity(contentUUID, skillPoints, skillType);
+        contentMetaDataRepository.save(contentMetaData);
     }
 
     /**
@@ -122,8 +160,10 @@ public class BloomLevelService {
      */
     public int getLevelOfChapter(UUID chapterUUID, UUID courseUUID) {
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
-        if (courseEntity.isEmpty()) {
-            return 0;
+        if (courseEntity.isEmpty()
+                || courseEntity.get().getChapters() == null
+                || courseEntity.get().getChapters().isEmpty()) {
+            return -1;
         }
         return courseEntity.get().getLevelOfChapter(chapterUUID);
     }
@@ -133,29 +173,33 @@ public class BloomLevelService {
      *
      * @param courseUUID     the id of the course
      * @param chapterUUID    the UUID of the chapter of the deleted quiz
+     * @param quizUUID       the UUID of the deleted quiz
      */
-    public void removeQuiz(UUID courseUUID, UUID chapterUUID) {
+    public void removeQuiz(UUID courseUUID, UUID chapterUUID, UUID quizUUID) {
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
         if (courseEntity.isPresent()) {
             CourseEntity course = courseEntity.get();
             course.removeQuiz(chapterUUID);
-            courseRepository.save(courseEntity.get());
+            courseRepository.save(course);
         }
+        contentMetaDataRepository.deleteById(quizUUID);
     }
 
     /**
      * Decreases the required exp for the chapter of the flashCardSet.
      *
-     * @param courseUUID     the id of the course
-     * @param chapterUUID    the UUID of the chapter of the deleted flashCardSet
+     * @param courseUUID             the id of the course
+     * @param chapterUUID            the UUID of the chapter of the deleted flashCardSet
+     * @param flashCardSetUUID       the UUID of the deleted flashCardSet
      */
-    public void removeFlashCardSet(UUID courseUUID, UUID chapterUUID) {
+    public void removeFlashCardSet(UUID courseUUID, UUID chapterUUID, UUID flashCardSetUUID) {
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
         if (courseEntity.isPresent()) {
             CourseEntity course = courseEntity.get();
             course.removeFlashCardSet(chapterUUID);
-            courseRepository.save(courseEntity.get());
+            courseRepository.save(course);
         }
+        contentMetaDataRepository.deleteById(flashCardSetUUID);
     }
 
     /**
@@ -228,7 +272,7 @@ public class BloomLevelService {
         int level = course.calculateLevelForExp(collectedExp);
         bloomLevel.setLevel(level);
         bloomLevel.setExpForCurrentLevel(course.calculateRemainingExpForCurrentLevel(collectedExp));
-        bloomLevel.setRequiredExpForCurrentLevel(course.getRequiredExpPerLevel().get(level));
+        bloomLevel.setRequiredExpForCurrentLevel(course.getRequiredExpOfLevel(level));
 
         return bloomLevel;
     }

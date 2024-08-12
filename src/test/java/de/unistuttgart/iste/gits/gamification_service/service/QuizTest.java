@@ -7,6 +7,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.*;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.*;
 import de.unistuttgart.iste.meitrex.gamification_service.service.BadgeService;
 import de.unistuttgart.iste.meitrex.gamification_service.service.QuestService;
+import de.unistuttgart.iste.meitrex.generated.dto.SkillType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -137,7 +138,7 @@ class QuizTest {
         UUID quiz = UUID.randomUUID();
         String name = "Quiz 2";
         assertEquals("Created quiz successfully.",
-                gamificationController.createQuiz(quiz, name, courseUUID, chapterUUID));
+                gamificationController.createQuiz(quiz, name, courseUUID, chapterUUID, 45, SkillType.REMEMBER));
 
         assertEquals(9, badgeRepository.findAll().size());
         List<BadgeEntity> quizBadges = badgeRepository.findByQuizUUID(quiz);
@@ -242,7 +243,8 @@ class QuizTest {
     @Test
     void editQuizNameTest() {
         String newName = "New Name";
-        assertEquals("Changed quiz name!", gamificationController.editQuizName(quizUUID, courseUUID, newName));
+        assertEquals("Changed quiz name!", gamificationController.editQuiz(quizUUID,
+                courseUUID, newName, 37, SkillType.REMEMBER));
 
         List<BadgeEntity> quizBadges = badgeRepository.findByQuizUUID(quizUUID);
         assertEquals(3, quizBadges.size());

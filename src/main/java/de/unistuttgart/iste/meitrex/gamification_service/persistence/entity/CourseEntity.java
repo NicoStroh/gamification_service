@@ -112,7 +112,7 @@ public class CourseEntity {
     }
 
     public int calculateRemainingExpForCurrentLevel(int exp) {
-        if (this.requiredExpPerLevel == null) {
+        if (this.requiredExpPerLevel == null || exp == 0) {
             return 0;
         }
 
@@ -127,6 +127,16 @@ public class CourseEntity {
         }
 
         return 0;
+    }
+
+    public int getRequiredExpOfLevel(int level) {
+        if (this.requiredExpPerLevel == null
+        || this.requiredExpPerLevel.isEmpty()
+        || this.requiredExpPerLevel.size() < level
+        || level < 0) {
+            return 0;
+        }
+        return this.requiredExpPerLevel.get(level);
     }
 
 

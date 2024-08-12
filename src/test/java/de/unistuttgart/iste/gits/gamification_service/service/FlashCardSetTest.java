@@ -6,6 +6,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.controller.Gamification
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.*;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.*;
 import de.unistuttgart.iste.meitrex.gamification_service.service.*;
+import de.unistuttgart.iste.meitrex.generated.dto.SkillType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -139,7 +140,7 @@ class FlashCardSetTest {
         UUID flashCardSet = UUID.randomUUID();
         String name = "FCS 2";
         assertEquals("Created flashCardSet successfully.",
-                gamificationController.createFlashCardSet(flashCardSet, name, courseUUID, chapterUUID));
+                gamificationController.createFlashCardSet(flashCardSet, name, courseUUID, chapterUUID, 70, SkillType.REMEMBER));
 
         assertEquals(9, badgeRepository.findAll().size());
         List<BadgeEntity> fcsBadges = badgeRepository.findByFlashCardSetUUID(flashCardSet);
@@ -245,7 +246,8 @@ class FlashCardSetTest {
     @Test
     void editFlashCardSetNameTest() {
         String newName = "New Name";
-        assertEquals("Changed flashCardSet name!", gamificationController.editFlashCardSetName(flashCardSetUUID, courseUUID, newName));
+        assertEquals("Changed flashCardSet name!", gamificationController.editFlashCardSet(flashCardSetUUID,
+                courseUUID, newName, 55, SkillType.UNDERSTAND));
 
         List<BadgeEntity> fcsBadges = badgeRepository.findByFlashCardSetUUID(flashCardSetUUID);
         assertEquals(3, fcsBadges.size());
