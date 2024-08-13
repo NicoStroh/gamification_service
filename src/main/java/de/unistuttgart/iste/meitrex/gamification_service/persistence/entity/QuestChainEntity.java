@@ -45,25 +45,27 @@ public class QuestChainEntity {
     }
 
     public void changeNameOfQuiz(UUID quizUUID, String newName) {
-        if (this.quests != null) {
-            for (QuestEntity quest : this.quests) {
-                if (quizUUID.equals(quest.getQuizUUID())) {
-                    quest.setDescription(QuestService.descriptionPart1 + "quiz " + newName + QuestService.descriptionPart2 +
-                            QuestService.passingPercentage + QuestService.descriptionPart3);
-                    break;
-                }
+        if (this.quests == null) {
+            return;
+        }
+        for (QuestEntity quest : this.quests) {
+            if (quizUUID.equals(quest.getQuizUUID())) {
+                quest.setDescription(QuestService.descriptionPart1 + "quiz " + newName +
+                        QuestService.descriptionPart2 + QuestService.passingPercentage + QuestService.descriptionPart3);
+                break;
             }
         }
     }
 
     public void changeNameOfFlashCardSet(UUID flashCardSetUUID, String newName) {
-        if (this.quests != null) {
-            for (QuestEntity quest : this.quests) {
-                if (flashCardSetUUID.equals(quest.getFlashCardSetUUID())) {
-                    quest.setDescription(QuestService.descriptionPart1 + "flashCardSet " + newName + QuestService.descriptionPart2 +
-                            QuestService.passingPercentage + QuestService.descriptionPart3);
-                    break;
-                }
+        if (this.quests == null) {
+            return;
+        }
+        for (QuestEntity quest : this.quests) {
+            if (flashCardSetUUID.equals(quest.getFlashCardSetUUID())) {
+                quest.setDescription(QuestService.descriptionPart1 + "flashCardSet " + newName +
+                        QuestService.descriptionPart2 + QuestService.passingPercentage + QuestService.descriptionPart3);
+                break;
             }
         }
     }

@@ -140,15 +140,16 @@ public class CourseEntity {
             }
         }
 
-        return 0;
+        return exp - accumulatedExp;
     }
 
     public int getRequiredExpOfLevel(int level) {
         if (this.requiredExpPerLevel == null
         || this.requiredExpPerLevel.isEmpty()
-        || this.requiredExpPerLevel.size() < level
         || level < 0) {
             return 0;
+        } else if (level >= this.requiredExpPerLevel.size()) {
+            return Integer.MAX_VALUE;
         }
         return this.requiredExpPerLevel.get(level);
     }

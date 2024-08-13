@@ -194,7 +194,8 @@ public class BadgeService {
     public void changeFlashCardSetName(UUID flashCardSetUUID, String name) {
         List<BadgeEntity> fcsBadges = badgeRepository.findByFlashCardSetUUID(flashCardSetUUID);
         for (BadgeEntity fcsBadge : fcsBadges) {
-            fcsBadge.setDescription(descriptionPart1 + fcsBadge.getPassingPercentage() + descriptionPart2 + "flashCardSet " + name + descriptionPart3);
+            fcsBadge.setDescription(descriptionPart1 + fcsBadge.getPassingPercentage() + descriptionPart2 +
+                    "flashCardSet " + name + descriptionPart3);
             badgeRepository.save(fcsBadge);
         }
     }
@@ -208,7 +209,8 @@ public class BadgeService {
     public void changeQuizName(UUID quizUUID, String name) {
         List<BadgeEntity> quizBadges = badgeRepository.findByQuizUUID(quizUUID);
         for (BadgeEntity quizBadge : quizBadges) {
-            quizBadge.setDescription(descriptionPart1 + quizBadge.getPassingPercentage() + descriptionPart2 + "quiz " + name + descriptionPart3);
+            quizBadge.setDescription(descriptionPart1 + quizBadge.getPassingPercentage() + descriptionPart2 + "quiz "
+                    + name + descriptionPart3);
             badgeRepository.save(quizBadge);
         }
     }
@@ -301,6 +303,9 @@ public class BadgeService {
      */
     public void markBadgeAsAchieved(UUID userUUID, UUID badgeUUID) {
         UserBadgeEntity userBadge = userBadgeRepository.findByUserUUIDAndBadgeUUID(userUUID, badgeUUID);
+        if (userBadge == null) {
+            return;
+        }
         userBadge.setAchieved(true);
         userBadgeRepository.save(userBadge);
     }

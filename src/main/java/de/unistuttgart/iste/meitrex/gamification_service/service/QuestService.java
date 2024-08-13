@@ -52,7 +52,10 @@ public class QuestService {
      */
     public void deleteQuestChainAndUserQuestChainsOfCourse(UUID courseUUID) {
         QuestChainEntity courseQuestChain = questChainRepository.findByCourseUUID(courseUUID);
-        questChainRepository.delete(courseQuestChain);
+        if (courseQuestChain == null) {
+            return;
+        }
+        questChainRepository.deleteById(courseQuestChain.getQuestChainUUID());
 
         List<UserQuestChainEntity> userQuestChainEntities = userQuestChainRepository.findByQuestChainUUID(courseQuestChain.getQuestChainUUID());
         userQuestChainRepository.deleteAll(userQuestChainEntities);
@@ -66,6 +69,9 @@ public class QuestService {
      */
     public void deleteQuestOfQuiz(UUID courseUUID, UUID quizUUID) {
         QuestChainEntity courseQuestChain = questChainRepository.findByCourseUUID(courseUUID);
+        if (courseQuestChain == null) {
+            return;
+        }
         int indexOfQuizQuest = courseQuestChain.removeQuestOfQuiz(quizUUID);
         questChainRepository.save(courseQuestChain);
 
@@ -86,6 +92,9 @@ public class QuestService {
      */
     public void deleteQuestOfFCS(UUID courseUUID, UUID flashCardSetUUID) {
         QuestChainEntity courseQuestChain = questChainRepository.findByCourseUUID(courseUUID);
+        if (courseQuestChain == null) {
+            return;
+        }
         int indexOfFCSQuest = courseQuestChain.removeQuestOfFCS(flashCardSetUUID);
         questChainRepository.save(courseQuestChain);
 
@@ -204,6 +213,9 @@ public class QuestService {
         quest.setDescription(descriptionPart1 + "quiz " + name + descriptionPart2 + passingPercentage + descriptionPart3);
 
         QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
+        if (questChainEntity == null) {
+            return;
+        }
         questChainEntity.addQuest(quest);
         questChainRepository.save(questChainEntity);
 
@@ -223,6 +235,9 @@ public class QuestService {
         quest.setDescription(descriptionPart1 + "flashCardSet " + name + descriptionPart2 + passingPercentage + descriptionPart3);
 
         QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
+        if (questChainEntity == null) {
+            return;
+        }
         questChainEntity.addQuest(quest);
         questChainRepository.save(questChainEntity);
 
@@ -237,6 +252,9 @@ public class QuestService {
      */
     public void changeQuizName(UUID quizUUID, UUID courseUUID, String name) {
         QuestChainEntity questChain = questChainRepository.findByCourseUUID(courseUUID);
+        if (questChain == null) {
+            return;
+        }
         questChain.changeNameOfQuiz(quizUUID, name);
         questChainRepository.save(questChain);
     }
@@ -250,6 +268,9 @@ public class QuestService {
      */
     public void changeFlashCardSetName(UUID flashCardSetUUID, UUID courseUUID, String name) {
         QuestChainEntity questChain = questChainRepository.findByCourseUUID(courseUUID);
+        if (questChain == null) {
+            return;
+        }
         questChain.changeNameOfFlashCardSet(flashCardSetUUID, name);
         questChainRepository.save(questChain);
     }

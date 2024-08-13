@@ -40,13 +40,9 @@ public class CourseService {
      * Removes the course from the courseRepository
      *
      * @param courseUUID     the id of the course which shall be deleted
-     *
-     * @return the ids of the course members
      */
-    public HashSet<UUID> deleteCourse(UUID courseUUID) {
-        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+    public void deleteCourse(UUID courseUUID) {
         courseRepository.deleteById(courseUUID);
-        return courseEntity.map(entity -> new HashSet<>(entity.getUserUUIDs())).orElseGet(HashSet::new);
     }
 
     /**

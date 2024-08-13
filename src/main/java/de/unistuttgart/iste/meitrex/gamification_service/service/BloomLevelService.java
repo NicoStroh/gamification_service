@@ -41,8 +41,8 @@ public class BloomLevelService {
                 course.addChapter(chapter);
             }
             courseRepository.save(course);
+            addUserToCourse(lecturerUUID, courseUUID);
         }
-        addUserToCourse(lecturerUUID, courseUUID);
     }
 
     /**
@@ -70,6 +70,10 @@ public class BloomLevelService {
      * @param courseUUID     the id of the course
      */
     public void addUserToCourse(UUID userUUID, UUID courseUUID) {
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        if (courseEntity.isEmpty()) {
+            return;
+        }
         BloomLevelEntity bloomLevelEntity = new BloomLevelEntity();
         bloomLevelEntity.setCourseUUID(courseUUID);
         bloomLevelEntity.setUserUUID(userUUID);
@@ -291,7 +295,12 @@ public class BloomLevelService {
         }
         CourseEntity course = courseEntity.get();
 
-        int collectedExp = bloomLevelRepository.findByUserUUIDAndCourseUUID(userUUID, courseUUID).getCollectedExp();
+        BloomLevelEntity bloomLevelEntity = bloomLevelRepository.findByUserUUIDAndCourseUUID(userUUID, courseUUID);
+        if (bloomLevelEntity == null) {
+            return new BloomLevel();
+        }
+
+        int collectedExp = bloomLevelEntity.getCollectedExp();
         BloomLevel bloomLevel = new BloomLevel();
         bloomLevel.setTotalExp(collectedExp);
         int level = course.calculateLevelForExp(collectedExp);
