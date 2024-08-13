@@ -27,7 +27,14 @@ public class GamificationController {
     private final QuestService questService;
     private final BloomLevelService bloomLevelService;
 
-
+    /**
+     * Creates a new course and saves it in the repositories, adds the creator of the course to it.
+     * The quest chain is created for the course and assigned to the creator, same for the bloomLevel.
+     *
+     * @param courseUUID       the id of the created course
+     * @param lecturerUUID     the id of the creator of the course
+     * @param chapters         the ids of the created chapters of the course, creating levels for the course level.
+     */
     @MutationMapping
     public String addCourse(@Argument UUID courseUUID, @Argument UUID lecturerUUID, @Argument List<UUID> chapters) {
         courseService.addCourse(courseUUID, lecturerUUID);
@@ -36,12 +43,24 @@ public class GamificationController {
         return "Added course.";
     }
 
+    /**
+     * Creates a new chapter and therefore a new level inside the course
+     *
+     * @param courseUUID       the id of the created course
+     * @param chapterUUID      the id of the created chapter
+     */
     @MutationMapping
     public String addChapter(@Argument UUID courseUUID, @Argument UUID chapterUUID) {
         bloomLevelService.addChapter(courseUUID, chapterUUID);
-        return "Added section to course.";
+        return "Added chapter to course.";
     }
 
+    /**
+     * Adds a user to the course and assigns the courses badges, the quest chain and the bloomLevel to the user
+     *
+     * @param userUUID         the id of the user who joined
+     * @param courseUUID       the id of the created course
+     */
     @MutationMapping
     public String addUserToCourse(@Argument UUID userUUID, @Argument UUID courseUUID) {
         courseService.addUserToCourse(userUUID, courseUUID);
@@ -51,6 +70,16 @@ public class GamificationController {
         return "Added user to course.";
     }
 
+    /**
+     * Creates a flashCardSet and all the badges and the quest for it. The required exp for the level increase.
+     *
+     * @param flashCardSetUUID         the id of the created flashCardSet
+     * @param name                     the name of the created flashCardSet
+     * @param courseUUID               the id of the course where it was created
+     * @param chapterUUID              the id of the chapter where it was created
+     * @param skillPoints              the rewarded skill points for the flashCardSet
+     * @param skillTypes               the skill types of bloom for the flashCardSet
+     */
     @MutationMapping
     public String createFlashCardSet(@Argument UUID flashCardSetUUID,
                                      @Argument String name,
@@ -64,6 +93,16 @@ public class GamificationController {
         return "Created flashCardSet successfully.";
     }
 
+    /**
+     * Creates a quiz and all the badges and the quest for it. The required exp for the level increase.
+     *
+     * @param quizUUID         the id of the created quiz
+     * @param name             the name of the created quiz
+     * @param courseUUID       the id of the course where it was created
+     * @param chapterUUID      the id of the chapter where it was created
+     * @param skillPoints      the rewarded skill points for the quiz
+     * @param skillTypes       the skill types of bloom for the quiz
+     */
     @MutationMapping
     public String createQuiz(@Argument UUID quizUUID,
                              @Argument String name,
@@ -77,6 +116,12 @@ public class GamificationController {
         return "Created quiz successfully.";
     }
 
+    /**
+     * Deletes all the objects of the course, which are badges, userbadges, quest chains, user quest chains,
+     * the course entity itself, the bloomLevels of its students, and the course content (flashCardSets, quizzes).
+     *
+     * @param courseUUID       the id of the deleted course
+     */
     @MutationMapping
     public String deleteBadgesAndQuestsOfCourse(@Argument UUID courseUUID) {
         bloomLevelService.deleteCourse(courseUUID);
@@ -86,6 +131,14 @@ public class GamificationController {
         return "Course deleted.";
     }
 
+    /**
+     * Deletes all the objects of the flashCardSet, which are badges, userbadges, quests and the flashCardSet
+     * entity itself. The required exp for the level of the chapter decreased.
+     *
+     * @param flashCardSetUUID       the id of the deleted flashCardSet
+     * @param courseUUID             the id of the course
+     * @param chapterUUID            the id of the chapter
+     */
     @MutationMapping
     public String deleteBadgesAndQuestOfFlashCardSet(@Argument UUID flashCardSetUUID,
                                                      @Argument UUID courseUUID,
@@ -96,6 +149,14 @@ public class GamificationController {
         return "FlashCardSet deleted.";
     }
 
+    /**
+     * Deletes all the objects of the quiz, which are badges, userbadges, quests and the quiz
+     * entity itself. The required exp for the level of the chapter decreased.
+     *
+     * @param quizUUID       the id of the deleted quiz
+     * @param courseUUID     the id of the course
+     * @param chapterUUID    the id of the chapter
+     */
     @MutationMapping
     public String deleteBadgesAndQuestOfQuiz(@Argument UUID quizUUID,
                                              @Argument UUID courseUUID,
@@ -106,6 +167,17 @@ public class GamificationController {
         return "Quiz deleted.";
     }
 
+    /**
+     * Changes the name, the skillPoints or the skillTypes of the flashCardSet.
+     * Therefore, the data in the repositories are updated, like the description of the
+     * flashCardSets badges or its quest.
+     *
+     * @param flashCardSetUUID       the id of the edited flashCardSet
+     * @param courseUUID             the id of the course
+     * @param name                   the new name of the flashCardSet
+     * @param skillPoints            the new rewarded skillPoints of the flashCardSet
+     * @param skillTypes             the new skill types of bloom of the flashCardSet
+     */
     @MutationMapping
     public String editFlashCardSet(@Argument UUID flashCardSetUUID,
                                    @Argument UUID courseUUID,
@@ -118,6 +190,17 @@ public class GamificationController {
         return "Changed flashCardSet name!";
     }
 
+    /**
+     * Changes the name, the skillPoints or the skillTypes of the quiz.
+     * Therefore, the data in the repositories are updated, like the description of the
+     * quiz badges or its quest.
+     *
+     * @param quizUUID          the id of the edited quiz
+     * @param courseUUID        the id of the course
+     * @param name              the new name of the quiz
+     * @param skillPoints       the new rewarded skillPoints of the quiz
+     * @param skillTypes        the new skill types of bloom of the quiz
+     */
     @MutationMapping
     public String editQuiz(@Argument UUID quizUUID,
                            @Argument UUID courseUUID,
@@ -130,11 +213,27 @@ public class GamificationController {
         return "Changed quiz name!";
     }
 
+    /**
+     * Evaluates the currently selected BartleTest with the submitted answers.
+     *
+     * @param userUUID       the id of the user who took the BartleTest
+     */
     @MutationMapping
     public PlayerTypeEntity evaluateTest(@Argument UUID userUUID) {
         return playerTypeService.evaluateTest(userUUID);
     }
 
+    /**
+     * The user finishes a quiz. It is checked, whether the requirements for achieving the quizzes badges or quest
+     * are fulfilled. The user is rewarded some experience points for finishing the quiz.
+     *
+     * @param userUUID          the id of the user who finished quiz
+     * @param courseUUID        the id of the course where the quiz is located
+     * @param quizUUID          the id of the finished quiz
+     * @param correctAnswers    the number of correct answers the user hat for the quiz
+     * @param totalAnswers      the total number of answers for the quiz
+     * @param chapterUUID       the id of the chapter where the quiz is located
+     */
     @MutationMapping
     public String finishQuiz(@Argument UUID userUUID,
                              @Argument UUID courseUUID,
@@ -149,6 +248,18 @@ public class GamificationController {
         return "Finished quiz!";
     }
 
+    /**
+     * The user finishes a flashCardSet. It is checked, whether the requirements for achieving the
+     * flashCardSets badges or quest are fulfilled. The user is rewarded some experience points for finishing
+     * the flashCardSet.
+     *
+     * @param userUUID                  the id of the user who finished flashCardSet
+     * @param courseUUID                the id of the course where the flashCardSet is located
+     * @param flashCardSetUUID          the id of the finished flashCardSet
+     * @param correctAnswers            the number of correct answers the user hat for the flashCardSet
+     * @param totalAnswers              the total number of answers for the flashCardSet
+     * @param chapterUUID               the id of the chapter where the flashCardSet is located
+     */
     @MutationMapping
     public String finishFlashCardSet(@Argument UUID userUUID,
                                      @Argument UUID courseUUID,
@@ -163,26 +274,57 @@ public class GamificationController {
         return "Finished flashCardSet!";
     }
 
+    /**
+     * Retrieves all of the users badges for the course
+     *
+     * @param userUUID         the id of the user
+     * @param courseUUID       the id of the course
+     */
     @QueryMapping
     public List<UserBadge> getCoursesUserBadges(@Argument UUID courseUUID, @Argument UUID userUUID) {
         return badgeService.getUserBadgesByCourseUUID(courseUUID, userUUID);
     }
 
+    /**
+     * Retrieves the current quest of the user for the course
+     *
+     * @param userUUID         the id of the user
+     * @param courseUUID       the id of the course
+     */
     @QueryMapping
     public Quest getCurrentUserQuest(@Argument UUID userUUID, @Argument UUID courseUUID) {
         return questService.getCurrentUserQuest(userUUID, courseUUID);
     }
 
+    /**
+     * Retrieves the users bloom level for the course
+     *
+     * @param userUUID         the id of the user
+     * @param courseUUID       the id of the course
+     */
     @QueryMapping
     public BloomLevel getUsersBloomLevel(@Argument UUID userUUID, @Argument UUID courseUUID) {
         return bloomLevelService.getUsersBloomLevel(userUUID, courseUUID);
     }
 
+    /**
+     * Retrieves the whole quest chain of the user for the course
+     *
+     * @param userUUID         the id of the user
+     * @param courseUUID       the id of the course
+     */
     @QueryMapping
     public UserQuestChain getUserQuestChain(@Argument UUID userUUID, @Argument UUID courseUUID) {
         return questService.getUserQuestChain(userUUID, courseUUID);
     }
 
+    /**
+     * Removes the user from the course. The user badges are the deleted, as well as the user quest chain
+     * and the bloomLevel
+     *
+     * @param userUUID         the id of the user who left the course
+     * @param courseUUID       the id of the course the user left
+     */
     @MutationMapping
     public String removeUserFromCourse(@Argument UUID userUUID, @Argument UUID courseUUID) {
         courseService.removeUserFromCourse(userUUID, courseUUID);
@@ -192,21 +334,40 @@ public class GamificationController {
         return "Removed user from course.";
     }
 
+    /**
+     * Submits a answer for a question for the currently selected bartle test
+     *
+     * @param questionId       the id of the question
+     * @param answer           the submitted answer
+     */
     @MutationMapping
     public String submitAnswer(@Argument int questionId, @Argument boolean answer) {
         return playerTypeService.submitAnswer(questionId, answer);
     }
 
+    /**
+     * Retrieves the questions of an empty bartle test
+     */
     @QueryMapping
     public PlayerTypeTestQuestion[] test() {
         return playerTypeService.test();
     }
 
+    /**
+     * Retrieves whether the user has already taken the bartle test
+     *
+     * @param userUUID         the id of the user
+     */
     @QueryMapping
     public boolean userHasTakenTest(@Argument UUID userUUID) {
         return playerTypeService.userHasTakenTest(userUUID);
     }
 
+    /**
+     * Retrieves the dominant bartles player type of the user
+     *
+     * @param userUUID         the id of the user
+     */
     @QueryMapping
     public PlayerTypeEntity.DominantPlayerType usersDominantPlayerType(@Argument UUID userUUID) {
         return playerTypeService.usersDominantPlayerType(userUUID);

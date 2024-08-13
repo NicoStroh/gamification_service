@@ -309,6 +309,7 @@ class FlashCardSetTest {
      *   <li>Badges are marked as achieved or not based on the user's performance.</li>
      *   <li>The quest chain reflects the user's progress, not updating their levels accordingly,
      *   as their current quest is not completing the flashCardSet.</li>
+     *   <li>The users receive experience points.</li>
      * </ul>
      */
     @Test
@@ -382,6 +383,17 @@ class FlashCardSetTest {
         assertEquals(0, lecturerQuestChainEntity.getUserLevel());
         assertEquals(0, user1QuestChainEntity.getUserLevel());
         assertEquals(0, user2QuestChainEntity.getUserLevel());
+
+        BloomLevelEntity lecturerBloomLevel = bloomLevelRepository.findByUserUUIDAndCourseUUID(lecturerUUID, courseUUID);
+        BloomLevelEntity user1BloomLevel = bloomLevelRepository.findByUserUUIDAndCourseUUID(user1UUID, courseUUID);
+        BloomLevelEntity user2BloomLevel = bloomLevelRepository.findByUserUUIDAndCourseUUID(user2UUID, courseUUID);
+        assertNotNull(lecturerBloomLevel);
+        assertNotNull(user1BloomLevel);
+        assertNotNull(user2BloomLevel);
+        assertEquals(43, lecturerBloomLevel.getCollectedExp());
+        assertEquals(27, user1BloomLevel.getCollectedExp());
+        assertEquals(0, user2BloomLevel.getCollectedExp());
+
     }
 
 }

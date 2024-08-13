@@ -71,7 +71,7 @@ public class CourseEntity {
         if (this.requiredExpPerLevel == null || this.requiredExpPerLevel.size() < level) {
             return;
         }
-        this.requiredExpPerLevel.set(level, requiredExpPerLevel.get(level) + quizExp);
+        this.requiredExpPerLevel.set(level, requiredExpPerLevel.get(level) + 50);
     }
 
     public void addFlashCardSet(UUID flashCardSet, UUID chapter) {
@@ -80,7 +80,7 @@ public class CourseEntity {
         if (this.requiredExpPerLevel == null || this.requiredExpPerLevel.size() < level) {
             return;
         }
-        this.requiredExpPerLevel.set(level, requiredExpPerLevel.get(level) + flashCardSetExp);
+        this.requiredExpPerLevel.set(level, requiredExpPerLevel.get(level) + 30);
     }
 
     public void removeQuiz(UUID quizUUID, UUID chapter) {
@@ -89,7 +89,7 @@ public class CourseEntity {
         if (this.requiredExpPerLevel == null || this.requiredExpPerLevel.size() < level) {
             return;
         }
-        this.requiredExpPerLevel.set(level, requiredExpPerLevel.get(level) - quizExp);
+        this.requiredExpPerLevel.set(level, requiredExpPerLevel.get(level) - 50);
     }
 
     public void removeFlashCardSet(UUID flashCardSet, UUID chapter) {
@@ -98,7 +98,7 @@ public class CourseEntity {
         if (this.requiredExpPerLevel == null || this.requiredExpPerLevel.size() < level) {
             return;
         }
-        this.requiredExpPerLevel.set(level, requiredExpPerLevel.get(level) - flashCardSetExp);
+        this.requiredExpPerLevel.set(level, requiredExpPerLevel.get(level) - 30);
     }
 
 
@@ -154,20 +154,8 @@ public class CourseEntity {
     }
 
 
-
-    private static int quizExp = 50;
-    private static int flashCardSetExp = 30;
-
     private static int requiredExpOfLevel(int level) {
         return 100 + (50 * level * level);
-    }
-
-    public static int rewardOfFinishedQuiz(int level, int correctAnswers, int totalAnswers) {
-        return quizExp * level * (correctAnswers / totalAnswers);
-    }
-
-    public static int rewardOfFinishedFlashCardSet(int level, int correctAnswers, int totalAnswers) {
-        return flashCardSetExp * level * (correctAnswers / totalAnswers);
     }
 
 }

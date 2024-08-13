@@ -231,13 +231,16 @@ public class BloomLevelService {
                                                   int totalAnswers) {
         BloomLevelEntity bloomLevel = bloomLevelRepository.findByUserUUIDAndCourseUUID(userUUID, courseUUID);
         Optional<ContentMetaDataEntity> contentMetaData = contentMetaDataRepository.findById(quizUUID);
-        if (bloomLevel == null || contentMetaData.isEmpty()) {
+        if (bloomLevel == null
+                || contentMetaData.isEmpty()
+                || correctAnswers > totalAnswers
+                || correctAnswers < 0) {
             return;
         }
 
         int level = getLevelOfChapter(chapterUUID, courseUUID);
-        int reward = CourseEntity.rewardOfFinishedQuiz(level, correctAnswers, totalAnswers);
-        bloomLevel.addExp(contentMetaData.get().rewardOfFinishingContent(reward));
+        bloomLevel.addExp(contentMetaData.get().rewardOfFinishingContent(
+                50, correctAnswers, totalAnswers, level));
         bloomLevelRepository.save(bloomLevel);
     }
 
@@ -259,13 +262,16 @@ public class BloomLevelService {
                                                           int totalAnswers) {
         BloomLevelEntity bloomLevel = bloomLevelRepository.findByUserUUIDAndCourseUUID(userUUID, courseUUID);
         Optional<ContentMetaDataEntity> contentMetaData = contentMetaDataRepository.findById(flashCardSetUUID);
-        if (bloomLevel == null || contentMetaData.isEmpty()) {
+        if (bloomLevel == null
+                || contentMetaData.isEmpty()
+                || correctAnswers > totalAnswers
+                || correctAnswers < 0) {
             return;
         }
 
         int level = getLevelOfChapter(chapterUUID, courseUUID);
-        int reward = CourseEntity.rewardOfFinishedFlashCardSet(level, correctAnswers, totalAnswers);
-        bloomLevel.addExp(contentMetaData.get().rewardOfFinishingContent(reward));
+        bloomLevel.addExp(contentMetaData.get().rewardOfFinishingContent(
+                30, correctAnswers, totalAnswers, level));
         bloomLevelRepository.save(bloomLevel);
     }
 

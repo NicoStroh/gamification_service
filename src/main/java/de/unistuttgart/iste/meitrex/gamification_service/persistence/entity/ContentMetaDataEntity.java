@@ -22,8 +22,10 @@ public class ContentMetaDataEntity {
 
     private SkillType skillType;
 
-    public int rewardOfFinishingContent(int reward) {
-        return reward + (skillPoints * skillType.ordinal());
+    public int rewardOfFinishingContent(int defaultReward, int correctAnswers, int totalAnswers, int level) {
+        int reward = (level * defaultReward * correctAnswers) / totalAnswers;
+        int skillReward = (skillPoints * (skillType.ordinal() + 1)) / 10;
+        return (reward * skillReward) / 10;
     }
 
 }
