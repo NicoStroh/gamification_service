@@ -230,7 +230,7 @@ public class GamificationController {
      * @param userUUID          the id of the user who finished quiz
      * @param courseUUID        the id of the course where the quiz is located
      * @param quizUUID          the id of the finished quiz
-     * @param correctAnswers    the number of correct answers the user hat for the quiz
+     * @param correctAnswers    the number of correct answers the user had for the quiz
      * @param totalAnswers      the total number of answers for the quiz
      * @param chapterUUID       the id of the chapter where the quiz is located
      */
@@ -256,7 +256,7 @@ public class GamificationController {
      * @param userUUID                  the id of the user who finished flashCardSet
      * @param courseUUID                the id of the course where the flashCardSet is located
      * @param flashCardSetUUID          the id of the finished flashCardSet
-     * @param correctAnswers            the number of correct answers the user hat for the flashCardSet
+     * @param correctAnswers            the number of correct answers the user had for the flashCardSet
      * @param totalAnswers              the total number of answers for the flashCardSet
      * @param chapterUUID               the id of the chapter where the flashCardSet is located
      */
