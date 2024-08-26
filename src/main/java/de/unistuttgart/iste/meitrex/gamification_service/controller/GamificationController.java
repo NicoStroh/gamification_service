@@ -193,7 +193,7 @@ public class GamificationController {
     /**
      * Changes the name, the skillPoints or the skillTypes of the quiz.
      * Therefore, the data in the repositories are updated, like the description of the
-     * quiz badges or its quest.
+     * quiz badges or it's quest.
      *
      * @param quizUUID          the id of the edited quiz
      * @param courseUUID        the id of the course
