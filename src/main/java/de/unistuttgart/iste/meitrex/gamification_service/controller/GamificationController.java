@@ -275,7 +275,7 @@ public class GamificationController {
     }
 
     /**
-     * Retrieves all of the users badges for the course
+     * Retrieves all the users badges for the course
      *
      * @param userUUID         the id of the user
      * @param courseUUID       the id of the course
