@@ -310,13 +310,13 @@ public class BloomLevelService {
 
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
         if (courseEntity.isEmpty()) {
-            return new BloomLevel();
+            return null;
         }
         CourseEntity course = courseEntity.get();
 
         BloomLevelEntity bloomLevelEntity = bloomLevelRepository.findByUserUUIDAndCourseUUID(userUUID, courseUUID);
         if (bloomLevelEntity == null) {
-            return new BloomLevel();
+            return null;
         }
 
         int collectedExp = bloomLevelEntity.getCollectedExp();

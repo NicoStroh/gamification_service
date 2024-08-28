@@ -333,11 +333,14 @@ public class GamificationController {
      */
     @MutationMapping
     public String removeUserFromCourse(@Argument UUID userUUID, @Argument UUID courseUUID) {
-        courseService.removeUserFromCourse(userUUID, courseUUID);
-        badgeService.deleteUserBadgesOfCourse(userUUID, courseUUID);
-        questService.deleteUserQuestChain(userUUID, courseUUID);
-        bloomLevelService.removeUserFromCourse(userUUID, courseUUID);
-        return "Removed user from course.";
+        boolean userRemovedSuccessfully = courseService.removeUserFromCourse(userUUID, courseUUID);
+        if (userRemovedSuccessfully) {
+            badgeService.deleteUserBadgesOfCourse(userUUID, courseUUID);
+            questService.deleteUserQuestChain(userUUID, courseUUID);
+            bloomLevelService.removeUserFromCourse(userUUID, courseUUID);
+            return "Removed user from course.";
+        }
+        return "Error at removing user from course.";
     }
 
     /**

@@ -791,6 +791,38 @@ class CourseTest {
     }
 
     /**
+     * Tests the retrieval of a users questChain for a course that does not exist.
+     * <p>
+     * This test ensures that the users questChain for the course is null, since the course does not exist.
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>The retrieved quest chain is null.</li>
+     * </ul>
+     */
+    @Test
+    void getUserQuestChainForNotExistingCourseTest() {
+        UUID course = UUID.randomUUID();
+        assertNull(gamificationController.getUserQuestChain(lecturerUUID, course));
+    }
+
+    /**
+     * Tests the retrieval of a users questChain for a course that does not contain the user.
+     * <p>
+     * This test ensures that the users questChain for the course is null, since the user is not in the course.
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>The retrieved quest chain is null.</li>
+     * </ul>
+     */
+    @Test
+    void getUserQuestChainForUserNotInCourseTest() {
+        UUID user = UUID.randomUUID();
+        assertNull(gamificationController.getUserQuestChain(user, courseUUID));
+    }
+
+    /**
      * Tests the removal of a user from a course and ensures that related data is correctly updated.
      * <p>
      * This test checks if a user can be successfully removed from a course and verifies that the course's
@@ -830,6 +862,49 @@ class CourseTest {
 
         assertEquals(2, bloomLevelRepository.count());
         assertNull(bloomLevelRepository.findByUserUUIDAndCourseUUID(lecturerUUID, courseUUID));
+
+    }
+
+    /**
+     * Tests the removal of a user from a course that does not exist.
+     * <p>
+     * This test checks if a user can be removed from a course that does not exist.
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>An error at trying to remove the user from the course.</li>
+     * </ul>
+     */
+    @Test
+    void removeUserFromNotExistingCourseTest() {
+
+        UUID course = UUID.randomUUID();
+        assertEquals("Error at removing user from course.", gamificationController.removeUserFromCourse(lecturerUUID, course));
+
+        Optional<CourseEntity> courseEntity = courseRepository.findById(course);
+        assertFalse(courseEntity.isPresent());
+
+    }
+
+    /**
+     * Tests the removal of a user from a course that does not contain the user.
+     * <p>
+     * This test checks if a user can be removed from a course that does not contain the user.
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>An error at trying to remove the user from the course.</li>
+     * </ul>
+     */
+    @Test
+    void removeUserFromCourseForUserNotInCourseTest() {
+
+        UUID user = UUID.randomUUID();
+        assertEquals("Error at removing user from course.", gamificationController.removeUserFromCourse(user, courseUUID));
+
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        assertTrue(courseEntity.isPresent());
+        assertEquals(3, courseEntity.get().getUserUUIDs().size());
 
     }
 

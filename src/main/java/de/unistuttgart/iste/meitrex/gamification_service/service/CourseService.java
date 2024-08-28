@@ -102,11 +102,24 @@ public class CourseService {
      *
      * @param userUUID       the id of the user, who left the course
      * @param courseUUID     the id of the course
+     *
+     * @return whether the user was removed successfully from the course.
      */
-    public void removeUserFromCourse(UUID userUUID, UUID courseUUID) {
-        CourseEntity courseEntity = courseRepository.findById(courseUUID).orElseThrow(() -> new RuntimeException("Course not found"));
-        courseEntity.removeUser(userUUID);
-        courseRepository.save(courseEntity);
+    public boolean removeUserFromCourse(UUID userUUID, UUID courseUUID) {
+
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        if (courseEntity.isEmpty()) {
+            return false;
+        }
+
+        CourseEntity course = courseEntity.get();
+        if (!course.getUserUUIDs().contains(userUUID)) {
+            return false;
+        }
+        course.removeUser(userUUID);
+        courseRepository.save(course);
+        return true;
+
     }
 
 }
