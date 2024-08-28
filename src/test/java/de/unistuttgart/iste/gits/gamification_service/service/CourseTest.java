@@ -292,6 +292,96 @@ class CourseTest {
     }
 
     /**
+     * Tests the addition of a course that already exists and verifies that the course is not saved again, along with its
+     * properties.
+     * <p>
+     * This test ensures that:
+     * <ul>
+     *   <li>The course is not added again to the repository.</li>
+     *   <li>The old course is saved with its properties in the repository.</li>
+     * </ul>
+     */
+    @Test
+    void addExistingCourseTest() {
+
+        UUID lecturer = UUID.randomUUID();
+        UUID chapter = UUID.randomUUID();
+        assertEquals("Course already exists.", gamificationController.addCourse(courseUUID, lecturer, new LinkedList<>(List.of(chapter))));
+
+        assertEquals(1, courseRepository.count());
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        assertTrue(courseEntity.isPresent());
+
+        assertEquals(3, courseEntity.get().getUserUUIDs().size());
+        assertTrue(courseEntity.get().getUserUUIDs().contains(lecturerUUID));
+        assertTrue(courseEntity.get().getUserUUIDs().contains(user1UUID));
+        assertTrue(courseEntity.get().getUserUUIDs().contains(user2UUID));
+
+        assertEquals(1, courseEntity.get().getChapters().size());
+        assertTrue(courseEntity.get().getChapters().contains(chapterUUID));
+
+        assertEquals(2, courseEntity.get().getContent().size());
+        assertTrue(courseEntity.get().getContent().contains(flashCardSetUUID));
+        assertTrue(courseEntity.get().getContent().contains(quizUUID));
+
+        assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
+        assertEquals(230, courseEntity.get().getRequiredExpOfLevel(0));
+
+        assertEquals(6, badgeRepository.count());
+        for (BadgeEntity badgeEntity : badgeRepository.findAll()) {
+            assertEquals(courseUUID, badgeEntity.getCourseUUID());
+        }
+
+        assertEquals(18, userBadgeRepository.count());
+
+        assertEquals(1, questChainRepository.count());
+        QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
+        assertNotNull(questChainEntity);
+        assertEquals(courseUUID, questChainEntity.getCourseUUID());
+        assertEquals(2, questChainEntity.size());
+
+        assertEquals(3, userQuestChainRepository.count());
+
+        assertEquals(3, bloomLevelRepository.count());
+
+        assertEquals(2, contentMetaDataRepository.count());
+
+    }
+
+    /**
+     * Tests the addition of a new course with an empty list of chapters.
+     * <p>
+     * This test ensures that:
+     * <ul>
+     *   <li>A new course is successfully added to the repository.</li>
+     *   <li>The course is associated with the correct lecturer.</li>
+     *   <li>An empty quest chain is created for the course.</li>
+     *   <li>The lecturer has a corresponding user quest chain with initial settings.</li>
+     *   <li>The bloomLevel of the lecturer is initialized correctly.</li>
+     * </ul>
+     */
+    @Test
+    void addCourseWithNoChaptersTest() {
+
+        UUID course = UUID.randomUUID();
+        UUID lecturer = UUID.randomUUID();
+        assertEquals("Added course.", gamificationController.addCourse(course, lecturer, null));
+
+        Optional<CourseEntity> courseEntity = courseRepository.findById(course);
+        assertEquals(2, courseRepository.findAll().size());
+        assertTrue(courseEntity.isPresent());
+        assertEquals(1, courseEntity.get().getUserUUIDs().size());
+        assertTrue(courseEntity.get().getUserUUIDs().contains(lecturer));
+        assertTrue(courseEntity.get().getRequiredExpPerLevel().isEmpty());
+
+        List<BloomLevelEntity> bloomLevelEntities = bloomLevelRepository.findAll();
+        assertEquals(4, bloomLevelEntities.size());
+        BloomLevelEntity lecturerBloomLevel = bloomLevelRepository.findByUserUUIDAndCourseUUID(lecturer, course);
+        assertNotNull(lecturerBloomLevel);
+        assertEquals(0, lecturerBloomLevel.getCollectedExp());
+    }
+
+    /**
      * Tests the addition of a new user to an existing course and verifies that the user and their
      * associated entities (badges, quest chain) are created correctly.
      * <p>
@@ -335,6 +425,83 @@ class CourseTest {
         BloomLevelEntity lecturerBloomLevel = bloomLevelRepository.findByUserUUIDAndCourseUUID(user, courseUUID);
         assertNotNull(lecturerBloomLevel);
         assertEquals(0, lecturerBloomLevel.getCollectedExp());
+
+    }
+
+    /**
+     * Tests the addition of a new user to a not existing course and verifies that no to the user associated
+     * entities (badges, quest chain) are created.
+     * <p>
+     * This test ensures that:
+     * <ul>
+     *   <li>The course is not found.</li>
+     *   <li>No changes in the repositories.</li>
+     * </ul>
+     */
+    @Test
+    void addUserToNotExistingCourseTest() {
+
+        UUID course = UUID.randomUUID();
+        UUID user = UUID.randomUUID();
+        assertEquals("Error at adding user to the course.", gamificationController.addUserToCourse(user, course));
+
+        assertFalse(courseRepository.existsById(course));
+
+        QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(course);
+        assertNull(questChainEntity);
+        assertEquals(3, userQuestChainRepository.findAll().size());
+
+        List<UserBadgeEntity> allUserBadges = userBadgeRepository.findByUserUUID(user);
+        assertEquals(0, allUserBadges.size());
+
+        List<BloomLevelEntity> bloomLevelEntities = bloomLevelRepository.findAll();
+        assertEquals(3, bloomLevelEntities.size());
+        BloomLevelEntity usersBloomLevel = bloomLevelRepository.findByUserUUIDAndCourseUUID(user, course);
+        assertNull(usersBloomLevel);
+
+    }
+
+    /**
+     * Tests the addition of a user to a course which already contains the user.
+     * <p>
+     * This test ensures that:
+     * <ul>
+     *   <li>The user is not added again to the course.</li>
+     *   <li>No changes in the repositories.</li>
+     * </ul>
+     */
+    @Test
+    void addUserAgainToCourseTest() {
+
+        assertEquals("Error at adding user to the course.", gamificationController.addUserToCourse(user1UUID, courseUUID));
+
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        assertTrue(courseEntity.isPresent());
+        assertEquals(3, courseEntity.get().getUserUUIDs().size());
+
+        QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
+        UserQuestChainEntity userQuestChainEntity =
+                userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), user1UUID);
+        assertEquals(3, userQuestChainRepository.findAll().size());
+        assertNotNull(userQuestChainEntity);
+        assertEquals(0, userQuestChainEntity.getUserLevel());
+        assertEquals(user1UUID, userQuestChainEntity.getUserUUID());
+        assertEquals(questChainEntity.getQuestChainUUID(), userQuestChainEntity.getQuestChainUUID());
+
+        List<UserBadgeEntity> allUserBadges = userBadgeRepository.findByUserUUID(user1UUID);
+        assertEquals(6, allUserBadges.size());
+        for (UserBadgeEntity userBadge : allUserBadges) {
+            assertTrue(badgeRepository.findById(userBadge.getBadgeUUID()).isPresent());
+            assertEquals(user1UUID, userBadge.getUserUUID());
+            assertFalse(userBadge.isAchieved());
+        }
+
+        List<BloomLevelEntity> bloomLevelEntities = bloomLevelRepository.findAll();
+        assertEquals(3, bloomLevelEntities.size());
+        BloomLevelEntity userBloomLevel = bloomLevelRepository.findByUserUUIDAndCourseUUID(user1UUID, courseUUID);
+        assertNotNull(userBloomLevel);
+        assertEquals(0, userBloomLevel.getCollectedExp());
+
     }
 
     /**
@@ -360,6 +527,32 @@ class CourseTest {
         assertEquals(0, userQuestChainRepository.findAll().size());
         assertEquals(0, bloomLevelRepository.findAll().size());
         assertEquals(0, contentMetaDataRepository.findAll().size());
+    }
+
+    /**
+     * Tests the deletion of a course that does not exist.
+     * <p>
+     * This test ensures that:
+     * <ul>
+     *   <li>The course is not found.</li>
+     *   <li>No changes in the repositories.</li>
+     * </ul>
+     */
+    @Test
+    void deleteBadgesAndQuestsOfNotExistingCourseTest() {
+
+        UUID course = UUID.randomUUID();
+        assertEquals("Course not found.", gamificationController.deleteBadgesAndQuestsOfCourse(course));
+
+        assertFalse(courseRepository.findById(course).isPresent());
+
+        assertEquals(1, courseRepository.findAll().size());
+        assertEquals(6, badgeRepository.findAll().size());
+        assertEquals(18, userBadgeRepository.findAll().size());
+        assertEquals(1, questChainRepository.findAll().size());
+        assertEquals(3, userQuestChainRepository.findAll().size());
+        assertEquals(3, bloomLevelRepository.findAll().size());
+        assertEquals(2, contentMetaDataRepository.findAll().size());
     }
 
     /**
@@ -423,6 +616,48 @@ class CourseTest {
     }
 
     /**
+     * Tests the retrieval of a users badges for a course that does not exist.
+     * <p>
+     * This test verifies that when a user tries to retrieve its user badges for a course that does not exist,
+     * an empty list is returned.
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>The user retrieves an empty list.</li>
+     * </ul>
+     */
+    @Test
+    void getNotExistingCoursesUserBadgesTest() {
+
+        UUID course = UUID.randomUUID();
+        List<UserBadge> lecturersUserBadges = gamificationController.getCoursesUserBadges(course, lecturerUUID);
+
+        assertTrue(lecturersUserBadges.isEmpty());
+
+    }
+
+    /**
+     * Tests the retrieval of a users badges for a course where the user is not contained.
+     * <p>
+     * This test verifies that when a user tries to retrieve its user badges for a course in which it is not present,
+     * an empty list is returned.
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>The user retrieves an empty list.</li>
+     * </ul>
+     */
+    @Test
+    void getCoursesUserBadgesForUserNotInCourseTest() {
+
+        UUID user = UUID.randomUUID();
+        List<UserBadge> userBadges = gamificationController.getCoursesUserBadges(courseUUID, user);
+
+        assertTrue(userBadges.isEmpty());
+
+    }
+
+    /**
      * Tests the retrieval of the current quest for different users after completing various tasks.
      * <p>
      * This test verifies that the current quest for each user is correctly updated and retrieved
@@ -472,6 +707,39 @@ class CourseTest {
         assertEquals(2, user2Quest.getLevel());
         assertEquals("You finished all quests for this course!", user2Quest.getDescription());
 
+    }
+
+    /**
+     * Tests the retrieval of the current quest for a course that does not exist.
+     * <p>
+     * This test verifies that the current quest of the course is null, since the course does not exist.
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>The current user quest for the course is null.</li>
+     * </ul>
+     */
+    @Test
+    void getCurrentUserQuestForUserNotInCourseTest() {
+        UUID user = UUID.randomUUID();
+        assertNull(gamificationController.getCurrentUserQuest(user, courseUUID));
+    }
+
+    /**
+     * Tests the retrieval of the current quest for a course where the user is not contained.
+     * <p>
+     * This test verifies that when a user tries to retrieve its current quest for a course in which it is not present,
+     * null is returned.
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>The current user quest for the course is null.</li>
+     * </ul>
+     */
+    @Test
+    void getCurrentUserQuestForNotExistingCourseTest() {
+        UUID course = UUID.randomUUID();
+        assertNull(gamificationController.getCurrentUserQuest(lecturerUUID, course));
     }
 
     /**

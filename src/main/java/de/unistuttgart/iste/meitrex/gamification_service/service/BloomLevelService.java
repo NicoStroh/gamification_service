@@ -37,8 +37,11 @@ public class BloomLevelService {
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
         if (courseEntity.isPresent()) {
             CourseEntity course = courseEntity.get();
-            for (UUID chapter : chapters) {
-                course.addChapter(chapter);
+
+            if (chapters != null) {
+                for (UUID chapter : chapters) {
+                    course.addChapter(chapter);
+                }
             }
             courseRepository.save(course);
             addUserToCourse(lecturerUUID, courseUUID);
@@ -48,9 +51,11 @@ public class BloomLevelService {
     /**
      * Deletes a course and all the bloomLevel of its students and all its content.
      *
-     * @param courseUUID          the unique identifier of the deleted course
+     * @param courseUUID          the unique identifier of the deleted
+     *
+     * @return whether the course exists
      */
-    public void deleteCourse(UUID courseUUID) {
+    public boolean deleteCourse(UUID courseUUID) {
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
         if (courseEntity.isPresent()) {
             CourseEntity course = courseEntity.get();
@@ -60,7 +65,9 @@ public class BloomLevelService {
             for (UUID content : course.getContent()) {
                 contentMetaDataRepository.deleteById(content);
             }
+            return true;
         }
+        return false;
     }
 
     /**
@@ -96,14 +103,26 @@ public class BloomLevelService {
      *
      * @param courseUUID     the unique identifier of the course
      * @param chapterUUID    the unique identifier of the course
+     *
+     * @return The outcome of trying to add the chapter.
      */
-    public void addChapter(UUID courseUUID, UUID chapterUUID) {
+    public String addChapter(UUID courseUUID, UUID chapterUUID) {
+
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
         if (courseEntity.isPresent()) {
             CourseEntity course = courseEntity.get();
+
+            if (course.getChapters().contains(chapterUUID)) {
+                return "Chapter already in course";
+            }
+
             course.addChapter(chapterUUID);
             courseRepository.save(course);
+
+            return "Added chapter to course.";
         }
+        return "Course not found.";
+
     }
 
     /**

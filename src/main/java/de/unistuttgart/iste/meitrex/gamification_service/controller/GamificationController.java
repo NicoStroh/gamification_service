@@ -11,9 +11,7 @@ import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
@@ -37,10 +35,13 @@ public class GamificationController {
      */
     @MutationMapping
     public String addCourse(@Argument UUID courseUUID, @Argument UUID lecturerUUID, @Argument List<UUID> chapters) {
-        courseService.addCourse(courseUUID, lecturerUUID);
-        questService.addCourse(courseUUID, lecturerUUID);
-        bloomLevelService.addCourse(courseUUID, chapters, lecturerUUID);
-        return "Added course.";
+        boolean newCourse = courseService.addCourse(courseUUID, lecturerUUID);
+        if (newCourse) {
+            questService.addCourse(courseUUID, lecturerUUID);
+            bloomLevelService.addCourse(courseUUID, chapters, lecturerUUID);
+            return "Added course.";
+        }
+        return "Course already exists.";
     }
 
     /**
@@ -51,8 +52,7 @@ public class GamificationController {
      */
     @MutationMapping
     public String addChapter(@Argument UUID courseUUID, @Argument UUID chapterUUID) {
-        bloomLevelService.addChapter(courseUUID, chapterUUID);
-        return "Added chapter to course.";
+        return bloomLevelService.addChapter(courseUUID, chapterUUID);
     }
 
     /**
@@ -63,11 +63,14 @@ public class GamificationController {
      */
     @MutationMapping
     public String addUserToCourse(@Argument UUID userUUID, @Argument UUID courseUUID) {
-        courseService.addUserToCourse(userUUID, courseUUID);
-        badgeService.assignCoursesBadgesToUser(courseUUID, userUUID);
-        questService.assignQuestChainToUser(userUUID, courseUUID);
-        bloomLevelService.addUserToCourse(userUUID, courseUUID);
-        return "Added user to course.";
+        boolean userAddedSuccessFully = courseService.addUserToCourse(userUUID, courseUUID);
+        if (userAddedSuccessFully) {
+            badgeService.assignCoursesBadgesToUser(courseUUID, userUUID);
+            questService.assignQuestChainToUser(userUUID, courseUUID);
+            bloomLevelService.addUserToCourse(userUUID, courseUUID);
+            return "Added user to course.";
+        }
+        return "Error at adding user to the course.";
     }
 
     /**
@@ -124,11 +127,14 @@ public class GamificationController {
      */
     @MutationMapping
     public String deleteBadgesAndQuestsOfCourse(@Argument UUID courseUUID) {
-        bloomLevelService.deleteCourse(courseUUID);
-        courseService.deleteCourse(courseUUID);
-        badgeService.deleteBadgesAndUserBadgesOfCourse(courseUUID);
-        questService.deleteQuestChainAndUserQuestChainsOfCourse(courseUUID);
-        return "Course deleted.";
+        boolean courseExists = bloomLevelService.deleteCourse(courseUUID);
+        if (courseExists) {
+            courseService.deleteCourse(courseUUID);
+            badgeService.deleteBadgesAndUserBadgesOfCourse(courseUUID);
+            questService.deleteQuestChainAndUserQuestChainsOfCourse(courseUUID);
+            return "Course deleted.";
+        }
+        return "Course not found.";
     }
 
     /**

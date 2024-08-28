@@ -37,6 +37,7 @@ public class QuestService {
      * @param lecturerUUID     the id of the creator of the course
      */
     public void addCourse(UUID courseUUID, UUID lecturerUUID) {
+
         QuestChainEntity questChainEntity = new QuestChainEntity();
         questChainEntity.setCourseUUID(courseUUID);
         questChainEntity.setQuests(new LinkedList<QuestEntity>());

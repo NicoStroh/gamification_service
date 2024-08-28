@@ -24,8 +24,15 @@ public class CourseService {
      *
      * @param courseUUID       the id of the created course
      * @param lecturerUUID     the id of the creator of the course
+     *
+     * @return is the course new
      */
-    public void addCourse(UUID courseUUID, UUID lecturerUUID) {
+    public boolean addCourse(UUID courseUUID, UUID lecturerUUID) {
+
+        if (courseRepository.existsById(courseUUID)) {
+            return false;
+        }
+
         CourseEntity courseEntity = new CourseEntity(courseUUID,
                 new HashSet<UUID>(),
                 new ArrayList<Integer>(),
@@ -34,6 +41,8 @@ public class CourseService {
         courseRepository.save(courseEntity);
 
         addUserToCourse(lecturerUUID, courseUUID);
+
+        return true;
     }
 
     /**
@@ -50,15 +59,24 @@ public class CourseService {
      *
      * @param userUUID       the id of the user, who joined the course
      * @param courseUUID     the id of the course
+     *
+     * @return whether the user is added successfully to the course
      */
-    public void addUserToCourse(UUID userUUID, UUID courseUUID) {
+    public boolean addUserToCourse(UUID userUUID, UUID courseUUID) {
 
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
         if (courseEntity.isPresent()) {
             CourseEntity course = courseEntity.get();
+
+            if (course.getUserUUIDs().contains(userUUID)) {
+                return false;
+            }
+
             course.addUser(userUUID);
             courseRepository.save(course);
+            return true;
         }
+        return false;
 
     }
 

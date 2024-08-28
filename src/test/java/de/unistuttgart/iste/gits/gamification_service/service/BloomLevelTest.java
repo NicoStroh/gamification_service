@@ -144,7 +144,7 @@ class BloomLevelTest {
     @Test
     void addChapterTest() {
         UUID chapter = UUID.randomUUID();
-        gamificationController.addChapter(courseUUID, chapter);
+        assertEquals("Added chapter to course.", gamificationController.addChapter(courseUUID, chapter));
 
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
         assertTrue(courseEntity.isPresent());
@@ -153,6 +153,57 @@ class BloomLevelTest {
 
         assertEquals(2, courseEntity.get().getRequiredExpPerLevel().size());
         assertEquals(300, courseEntity.get().getRequiredExpOfLevel(1));
+    }
+
+    /**
+     * Tests the addition of an already existing chapter.
+     * <p>
+     * This test verifies that the chapter is not added again to the course.
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>A new chapter is created successfully.</li>
+     *   <li>The index of the chapter is 1.</li>
+     *   <li>The required exp for the level of the chapter increased are 300.</li>
+     * </ul>
+     */
+    @Test
+    void addExistingChapterTest() {
+
+        assertEquals("Chapter already in course", gamificationController.addChapter(courseUUID, chapterUUID));
+
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        assertTrue(courseEntity.isPresent());
+        assertEquals(1, courseEntity.get().getChapters().size());
+
+        assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
+    }
+
+    /**
+     * Tests the addition of a new chapter to a course that does not exist.
+     * <p>
+     * This test verifies that the chapter can not be added, since the course does not exist
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>The course is not found.</li>
+     *   <li>The only existing course is the previously created one.</li>
+     *   <li>The existing course does still contain just one chapter.</li>
+     * </ul>
+     */
+    @Test
+    void addChapterToNotExistingCourseTest() {
+
+        UUID course = UUID.randomUUID();
+        UUID chapter = UUID.randomUUID();
+        assertEquals("Course not found.", gamificationController.addChapter(course, chapter));
+
+        assertEquals(1, courseRepository.count());
+
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        assertTrue(courseEntity.isPresent());
+        assertEquals(1, courseEntity.get().getChapters().size());
+
     }
 
     /**
