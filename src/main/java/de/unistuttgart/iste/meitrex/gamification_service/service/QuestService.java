@@ -120,13 +120,13 @@ public class QuestService {
 
         QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
         if (questChainEntity == null) {
-            return null;
+            return new Quest();
         }
 
         UserQuestChainEntity userQuestChainEntity =
                 userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), userUUID);
         if (userQuestChainEntity == null) {
-            return null;
+            return new Quest();
         }
 
         int userLevel = userQuestChainEntity.getUserLevel();
@@ -153,13 +153,13 @@ public class QuestService {
 
         QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
         if (questChainEntity == null) {
-            return null;
+            return new UserQuestChain();
         }
 
         UserQuestChainEntity userQuestChainEntity =
                 userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), userUUID);
         if (userQuestChainEntity == null) {
-            return null;
+            return new UserQuestChain();
         }
 
         return questMapper.userQuestChainEntityToDto(userQuestChainEntity, questChainEntity.getQuests());

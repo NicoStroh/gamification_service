@@ -712,34 +712,34 @@ class CourseTest {
     /**
      * Tests the retrieval of the current quest for a course that does not exist.
      * <p>
-     * This test verifies that the current quest of the course is null, since the course does not exist.
+     * This test verifies that the current quest of the course is the default value, since the course does not exist.
      * <p>
      * Expected Outcome:
      * <ul>
-     *   <li>The current user quest for the course is null.</li>
+     *   <li>The current user quest for the course is default.</li>
      * </ul>
      */
     @Test
     void getCurrentUserQuestForUserNotInCourseTest() {
         UUID user = UUID.randomUUID();
-        assertNull(gamificationController.getCurrentUserQuest(user, courseUUID));
+        assertEquals(new Quest(), gamificationController.getCurrentUserQuest(user, courseUUID));
     }
 
     /**
      * Tests the retrieval of the current quest for a course where the user is not contained.
      * <p>
      * This test verifies that when a user tries to retrieve its current quest for a course in which it is not present,
-     * null is returned.
+     * default value is returned.
      * <p>
      * Expected Outcome:
      * <ul>
-     *   <li>The current user quest for the course is null.</li>
+     *   <li>The current user quest for the course is default.</li>
      * </ul>
      */
     @Test
     void getCurrentUserQuestForNotExistingCourseTest() {
         UUID course = UUID.randomUUID();
-        assertNull(gamificationController.getCurrentUserQuest(lecturerUUID, course));
+        assertEquals(new Quest(), gamificationController.getCurrentUserQuest(lecturerUUID, course));
     }
 
     /**
@@ -793,33 +793,33 @@ class CourseTest {
     /**
      * Tests the retrieval of a users questChain for a course that does not exist.
      * <p>
-     * This test ensures that the users questChain for the course is null, since the course does not exist.
+     * This test ensures that the users questChain for the course is the defautl value, since the course does not exist.
      * <p>
      * Expected Outcome:
      * <ul>
-     *   <li>The retrieved quest chain is null.</li>
+     *   <li>The retrieved quest chain is default.</li>
      * </ul>
      */
     @Test
     void getUserQuestChainForNotExistingCourseTest() {
         UUID course = UUID.randomUUID();
-        assertNull(gamificationController.getUserQuestChain(lecturerUUID, course));
+        assertEquals(new UserQuestChain(), gamificationController.getUserQuestChain(lecturerUUID, course));
     }
 
     /**
      * Tests the retrieval of a users questChain for a course that does not contain the user.
      * <p>
-     * This test ensures that the users questChain for the course is null, since the user is not in the course.
+     * This test ensures that the users questChain for the course is the default value, since the user is not in the course.
      * <p>
      * Expected Outcome:
      * <ul>
-     *   <li>The retrieved quest chain is null.</li>
+     *   <li>The retrieved quest chain is default.</li>
      * </ul>
      */
     @Test
     void getUserQuestChainForUserNotInCourseTest() {
         UUID user = UUID.randomUUID();
-        assertNull(gamificationController.getUserQuestChain(user, courseUUID));
+        assertEquals(new UserQuestChain(), gamificationController.getUserQuestChain(user, courseUUID));
     }
 
     /**

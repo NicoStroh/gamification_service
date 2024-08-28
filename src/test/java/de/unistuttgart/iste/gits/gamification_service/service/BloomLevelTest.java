@@ -244,33 +244,33 @@ class BloomLevelTest {
     /**
      * Tests the retrieval of the bloom level of a user for a not existing course.
      * <p>
-     * This test verifies that the bloom level is null.
+     * This test verifies that the bloom level is the default value.
      * <p>
      * Expected Outcome:
      * <ul>
-     *   <li>The lecturers bloom level is null.</li>
+     *   <li>The lecturers bloom level is default.</li>
      * </ul>
      */
     @Test
     void getUsersBloomLevelForNotExistingCourseTest() {
         UUID course = UUID.randomUUID();
-        assertNull(gamificationController.getUsersBloomLevel(lecturerUUID, course));
+        assertEquals(new BloomLevel(), gamificationController.getUsersBloomLevel(lecturerUUID, course));
     }
 
     /**
      * Tests the retrieval of the bloom level of a user for a course where the user is not contained.
      * <p>
-     * This test verifies that the bloom level is null.
+     * This test verifies that the bloom level is the default value.
      * <p>
      * Expected Outcome:
      * <ul>
-     *   <li>The users bloom level is null.</li>
+     *   <li>The users bloom level is default.</li>
      * </ul>
      */
     @Test
     void getUsersBloomLevelForUserNotInCourseTest() {
         UUID user = UUID.randomUUID();
-        assertNull(gamificationController.getUsersBloomLevel(user, courseUUID));
+        assertEquals(new BloomLevel(), gamificationController.getUsersBloomLevel(user, courseUUID));
     }
 
 }
