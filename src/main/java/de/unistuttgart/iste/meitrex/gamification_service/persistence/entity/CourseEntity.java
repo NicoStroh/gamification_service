@@ -65,22 +65,32 @@ public class CourseEntity {
         this.content.add(contentUUID);
     }
 
-    public void addQuiz(UUID quizUUID, UUID chapter) {
+    public boolean addQuiz(UUID quizUUID, UUID chapter) {
         int level = this.getLevelOfChapter(chapter);
+        if (level < 0) {
+            return false;
+        }
+
         this.addContent(quizUUID);
         if (this.requiredExpPerLevel == null || this.requiredExpPerLevel.size() < level) {
-            return;
+            return false;
         }
         this.requiredExpPerLevel.set(level, requiredExpPerLevel.get(level) + 50);
+        return true;
     }
 
-    public void addFlashCardSet(UUID flashCardSet, UUID chapter) {
+    public boolean addFlashCardSet(UUID flashCardSet, UUID chapter) {
         int level = this.getLevelOfChapter(chapter);
+        if (level < 0) {
+            return false;
+        }
+
         this.addContent(flashCardSet);
         if (this.requiredExpPerLevel == null || this.requiredExpPerLevel.size() < level) {
-            return;
+            return false;
         }
         this.requiredExpPerLevel.set(level, requiredExpPerLevel.get(level) + 30);
+        return true;
     }
 
     public void removeQuiz(UUID quizUUID, UUID chapter) {

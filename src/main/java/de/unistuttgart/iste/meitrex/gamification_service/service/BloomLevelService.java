@@ -128,20 +128,34 @@ public class BloomLevelService {
     /**
      * Adds a quiz to a specific level in the course, which increases the required expPoints for the level.
      *
-     * @param chapterUUID      the UUID of the chapter where the quiz will be added
-     * @param courseUUID       the unique identifier of the course
-     * @param quizUUID         the unique identifier of the quiz
-     * @param skillPoints      the skillPoints rewarded for the quiz
-     * @param skillTypes       the skillTypes of the quiz
+     * @param chapterUUID        the UUID of the chapter where the quiz will be added
+     * @param courseUUID         the unique identifier of the course
+     * @param quizUUID           the unique identifier of the quiz
+     * @param skillPoints        the skillPoints rewarded for the quiz
+     * @param skillTypes         the skillTypes of the quiz
+     *
+     * @return indicates whether the quiz was created
      */
-    public void addQuiz(UUID chapterUUID, UUID courseUUID, UUID quizUUID, int skillPoints, List<SkillType> skillTypes) {
+    public boolean addQuiz(UUID chapterUUID, UUID courseUUID, UUID quizUUID, int skillPoints, List<SkillType> skillTypes) {
+
+        if (contentMetaDataRepository.existsById(quizUUID)
+                || skillPoints < 0 || skillPoints > 100
+                || skillTypes == null || skillTypes.isEmpty()) {
+            return false;
+        }
+
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
         if (courseEntity.isPresent()) {
             CourseEntity course = courseEntity.get();
-            course.addQuiz(quizUUID, chapterUUID);
+            if (!course.addQuiz(quizUUID, chapterUUID)) {
+                return false;
+            }
             courseRepository.save(course);
+            saveContent(courseUUID, quizUUID, skillPoints, skillTypes);
+            return true;
         }
-        saveContent(courseUUID, quizUUID, skillPoints, skillTypes);
+
+        return false;
     }
 
     /**
@@ -152,15 +166,29 @@ public class BloomLevelService {
      * @param flashCardSetUUID   the unique identifier of the flashCardSet
      * @param skillPoints        the skillPoints rewarded for the flashCardSet
      * @param skillTypes         the skillTypes of the flashCardSet
+     *
+     * @return indicates whether the flashCardSet was created
      */
-    public void addFlashCardSet(UUID chapterUUID, UUID courseUUID, UUID flashCardSetUUID, int skillPoints, List<SkillType> skillTypes) {
+    public boolean addFlashCardSet(UUID chapterUUID, UUID courseUUID, UUID flashCardSetUUID, int skillPoints, List<SkillType> skillTypes) {
+
+        if (contentMetaDataRepository.existsById(flashCardSetUUID)
+                || skillPoints < 0 || skillPoints > 100
+                || skillTypes == null || skillTypes.isEmpty()) {
+            return false;
+        }
+
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
         if (courseEntity.isPresent()) {
             CourseEntity course = courseEntity.get();
-            course.addFlashCardSet(flashCardSetUUID, chapterUUID);
+            if (!course.addFlashCardSet(flashCardSetUUID, chapterUUID)) {
+                return false;
+            }
             courseRepository.save(course);
+            saveContent(courseUUID, flashCardSetUUID, skillPoints, skillTypes);
+            return true;
         }
-        saveContent(courseUUID, flashCardSetUUID, skillPoints, skillTypes);
+
+        return false;
     }
 
     /**
@@ -170,20 +198,52 @@ public class BloomLevelService {
      * @param contentUUID     the id of the content
      * @param skillPoints     the skillPoints rewarded for the content
      * @param skillTypes      the skillTypes of the content
+     *
+     * @return indicates whether the content is updated successfully
      */
-    public void saveContent(UUID courseUUID, UUID contentUUID, int skillPoints, List<SkillType> skillTypes) {
-        SkillType maxSkillType = skillTypes.stream()
-                .max(Comparator.comparingInt(Enum::ordinal))
-                .orElseThrow(() -> new IllegalArgumentException("List is empty"));
-        ContentMetaDataEntity contentMetaData = new ContentMetaDataEntity(contentUUID, skillPoints, maxSkillType);
-        contentMetaDataRepository.save(contentMetaData);
+    public boolean updateContent(UUID courseUUID, UUID contentUUID, int skillPoints, List<SkillType> skillTypes) {
+
+        boolean contentAlreadyExists = contentMetaDataRepository.existsById(contentUUID);
 
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
-        if (courseEntity.isPresent()) {
-            CourseEntity course = courseEntity.get();
-            course.addContent(contentUUID);
-            courseRepository.save(course);
+        if (contentAlreadyExists &&
+                courseEntity.isPresent() && courseEntity.get().getContent().contains(contentUUID)) {
+            return saveContent(courseUUID, contentUUID, skillPoints, skillTypes);
         }
+        return false;
+
+    }
+
+    /**
+     * Saves the metadata of the content in the repository,
+     *
+     * @param courseUUID      the id of the course
+     * @param contentUUID     the id of the content
+     * @param skillPoints     the skillPoints rewarded for the content
+     * @param skillTypes      the skillTypes of the content
+     *
+     * @return indicates whether the content is saved successfully
+     */
+    public boolean saveContent(UUID courseUUID, UUID contentUUID, int skillPoints, List<SkillType> skillTypes) {
+
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        if (courseEntity.isEmpty()
+                || skillPoints < 0 || skillPoints > 100
+                || skillTypes == null || skillTypes.isEmpty()) {
+            return false;
+        }
+        SkillType maxSkillType = skillTypes.stream()
+                .max(Comparator.comparingInt(Enum::ordinal))
+                .get();
+
+        CourseEntity course = courseEntity.get();
+        course.addContent(contentUUID);
+        courseRepository.save(course);
+
+        ContentMetaDataEntity contentMetaData = new ContentMetaDataEntity(contentUUID, skillPoints, maxSkillType);
+        contentMetaDataRepository.save(contentMetaData);
+        return true;
+
     }
 
     /**

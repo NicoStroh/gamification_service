@@ -90,10 +90,13 @@ public class GamificationController {
                                      @Argument UUID chapterUUID,
                                      @Argument int skillPoints,
                                      @Argument List<SkillType> skillTypes) {
-        badgeService.createBadgesForFlashCardSet(flashCardSetUUID, name, courseUUID, courseService.getCoursesUsers(courseUUID));
-        questService.createQuestForFlashCardSet(flashCardSetUUID, name, courseUUID);
-        bloomLevelService.addFlashCardSet(chapterUUID, courseUUID, flashCardSetUUID, skillPoints, skillTypes);
-        return "Created flashCardSet successfully.";
+        boolean flashCardSetWasCreated = bloomLevelService.addFlashCardSet(chapterUUID, courseUUID, flashCardSetUUID, skillPoints, skillTypes);
+        if (flashCardSetWasCreated) {
+            badgeService.createBadgesForFlashCardSet(flashCardSetUUID, name, courseUUID, courseService.getCoursesUsers(courseUUID));
+            questService.createQuestForFlashCardSet(flashCardSetUUID, name, courseUUID);
+            return "Created flashCardSet successfully.";
+        }
+        return "Error at creating flashCardSet.";
     }
 
     /**
@@ -113,10 +116,13 @@ public class GamificationController {
                              @Argument UUID chapterUUID,
                              @Argument int skillPoints,
                              @Argument List<SkillType> skillTypes) {
-        badgeService.createBadgesForQuiz(quizUUID, name, courseUUID, courseService.getCoursesUsers(courseUUID));
-        questService.createQuestForQuiz(quizUUID, name, courseUUID);
-        bloomLevelService.addQuiz(chapterUUID, courseUUID, quizUUID, skillPoints, skillTypes);
-        return "Created quiz successfully.";
+        boolean quizWasCreated = bloomLevelService.addQuiz(chapterUUID, courseUUID, quizUUID, skillPoints, skillTypes);
+        if (quizWasCreated) {
+            badgeService.createBadgesForQuiz(quizUUID, name, courseUUID, courseService.getCoursesUsers(courseUUID));
+            questService.createQuestForQuiz(quizUUID, name, courseUUID);
+            return "Created quiz successfully.";
+        }
+        return "Error at creating quiz.";
     }
 
     /**
@@ -190,16 +196,19 @@ public class GamificationController {
                                    @Argument String name,
                                    @Argument int skillPoints,
                                    @Argument List<SkillType> skillTypes) {
-        badgeService.changeFlashCardSetName(flashCardSetUUID, name);
-        questService.changeFlashCardSetName(flashCardSetUUID, courseUUID, name);
-        bloomLevelService.saveContent(courseUUID, flashCardSetUUID, skillPoints, skillTypes);
-        return "Changed flashCardSet name!";
+        boolean flashCardSetExists = bloomLevelService.updateContent(courseUUID, flashCardSetUUID, skillPoints, skillTypes);
+        if (flashCardSetExists) {
+            badgeService.changeFlashCardSetName(flashCardSetUUID, name);
+            questService.changeFlashCardSetName(flashCardSetUUID, courseUUID, name);
+            return "Changed flashCardSet data!";
+        }
+        return "Error at editing flashCardSet.";
     }
 
     /**
      * Changes the name, the skillPoints or the skillTypes of the quiz.
      * Therefore, the data in the repositories are updated, like the description of the
-     * quiz badges or it's quest.
+     * quiz badges or its quest.
      *
      * @param quizUUID          the id of the edited quiz
      * @param courseUUID        the id of the course
@@ -213,10 +222,13 @@ public class GamificationController {
                            @Argument String name,
                            @Argument int skillPoints,
                            @Argument List<SkillType> skillTypes) {
-        badgeService.changeQuizName(quizUUID, name);
-        questService.changeQuizName(quizUUID, courseUUID, name);
-        bloomLevelService.saveContent(courseUUID, quizUUID, skillPoints, skillTypes);
-        return "Changed quiz name!";
+        boolean quizExists = bloomLevelService.updateContent(courseUUID, quizUUID, skillPoints, skillTypes);
+        if (quizExists) {
+            badgeService.changeQuizName(quizUUID, name);
+            questService.changeQuizName(quizUUID, courseUUID, name);
+            return "Changed quiz data!";
+        }
+        return "Error at editing quiz.";
     }
 
     /**

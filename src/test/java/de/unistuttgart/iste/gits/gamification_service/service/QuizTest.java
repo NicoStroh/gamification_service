@@ -197,6 +197,276 @@ class QuizTest {
     }
 
     /**
+     * Tests the creation of a quiz, that already exists.
+     * <p>
+     * This test verifies the creation of a quiz, that already exists and that the other repositories are
+     * not changed
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>The quiz is not created again.</li>
+     *   <li>No changes in the repositories.</li>
+     * </ul>
+     */
+    @Test
+    void createQuizForExistingQuizTest() {
+
+        String name = "FCS 2";
+        assertEquals("Error at creating quiz.",
+                gamificationController.createQuiz(quizUUID, name, courseUUID, chapterUUID,
+                        70, List.of(SkillType.REMEMBER)));
+
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        assertTrue(courseEntity.isPresent());
+        assertEquals(2, courseEntity.get().getContent().size());
+        assertTrue(courseEntity.get().getContent().contains(quizUUID));
+        assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
+        assertEquals(230, courseEntity.get().getRequiredExpOfLevel(0));
+
+        assertEquals(6, badgeRepository.findAll().size());
+        List<BadgeEntity> quizBadges = badgeRepository.findByQuizUUID(quizUUID);
+        assertEquals(3, quizBadges.size());
+
+        List<UserBadgeEntity> quizUserBadges = new LinkedList<>();
+        for (BadgeEntity badge : quizBadges) {
+            quizUserBadges.addAll(userBadgeRepository.findByBadgeUUID(badge.getBadgeUUID()));
+        }
+
+        assertEquals(18, userBadgeRepository.findAll().size());
+        assertEquals(9, quizUserBadges.size());
+        for (UserBadgeEntity userBadge : quizUserBadges) {
+            assertNotNull(userBadge.getUserBadgeUUID());
+            assertTrue(badgeRepository.findById(userBadge.getBadgeUUID()).isPresent());
+            assertFalse(userBadge.isAchieved());
+        }
+
+        QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
+        assertEquals(1, questChainRepository.findAll().size());
+        assertNotNull(questChainEntity);
+        assertEquals(2, questChainEntity.size());
+        assertTrue(questChainEntity.getQuests().stream().anyMatch(
+                questEntity -> { return quizUUID.equals(questEntity.getQuizUUID());}));
+
+
+    }
+
+    /**
+     * Tests the addition of a quiz, to a course, that does not exist.
+     * <p>
+     * This test verifies that the addition of a quiz, to a course, that does not exist, fails.
+     * There should also be no changes to the repositories
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>The quiz is not created.</li>
+     *   <li>No changes in the repositories.</li>
+     * </ul>
+     */
+    @Test
+    void createQuizForNotExistingCourseTest() {
+
+        UUID course = UUID.randomUUID();
+        UUID quiz = UUID.randomUUID();
+        String name = "FCS 2";
+        assertEquals("Error at creating quiz.",
+                gamificationController.createQuiz(quiz, name, course, chapterUUID,
+                        70, List.of(SkillType.REMEMBER)));
+
+        Optional<CourseEntity> courseEntity = courseRepository.findById(course);
+        assertFalse(courseEntity.isPresent());
+
+        assertEquals(6, badgeRepository.findAll().size());
+        List<BadgeEntity> quizBadges = badgeRepository.findByQuizUUID(quiz);
+        assertEquals(0, quizBadges.size());
+        assertEquals(18, userBadgeRepository.findAll().size());
+
+        QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(course);
+        assertEquals(1, questChainRepository.findAll().size());
+        assertNull(questChainEntity);
+
+    }
+
+    /**
+     * Tests the addition of a quiz, to a chapter, that does not exist.
+     * <p>
+     * This test verifies that the addition of a quiz, to a chapter, that does not exist, fails.
+     * There should also be no changes to the repositories
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>The quiz is not created.</li>
+     *   <li>No changes in the repositories.</li>
+     * </ul>
+     */
+    @Test
+    void createQuizForNotExistingChapterTest() {
+
+        UUID chapter = UUID.randomUUID();
+        UUID quiz = UUID.randomUUID();
+        String name = "FCS 2";
+        assertEquals("Error at creating quiz.",
+                gamificationController.createQuiz(quiz, name, courseUUID, chapter,
+                        70, List.of(SkillType.REMEMBER)));
+
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        assertTrue(courseEntity.isPresent());
+        assertEquals(2, courseEntity.get().getContent().size());
+        assertFalse(courseEntity.get().getContent().contains(quiz));
+        assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
+        assertEquals(230, courseEntity.get().getRequiredExpOfLevel(0));
+
+        assertEquals(6, badgeRepository.findAll().size());
+        List<BadgeEntity> quizBadges = badgeRepository.findByQuizUUID(quiz);
+        assertEquals(0, quizBadges.size());
+        assertEquals(18, userBadgeRepository.findAll().size());
+
+        QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
+        assertEquals(1, questChainRepository.findAll().size());
+        assertNotNull(questChainEntity);
+        assertEquals(2, questChainEntity.size());
+        assertFalse(questChainEntity.getQuests().stream().anyMatch(
+                questEntity -> { return quiz.equals(questEntity.getQuizUUID());}));
+
+
+    }
+
+    /**
+     * Tests the addition of a quiz for an invalid value of skillPoints.
+     * <p>
+     * This test verifies that the addition of a quiz, for skillPoints < 0 or > 100</>
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>The quiz is not created.</li>
+     *   <li>No changes in the repositories.</li>
+     * </ul>
+     */
+    @Test
+    void createQuizForSkillPointsOutOfRangeTest() {
+
+        UUID quiz = UUID.randomUUID();
+        String name = "FCS 2";
+        assertEquals("Error at creating quiz.",
+                gamificationController.createQuiz(quiz, name, courseUUID, chapterUUID,
+                        -1, List.of(SkillType.REMEMBER)));
+
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        assertTrue(courseEntity.isPresent());
+        assertEquals(2, courseEntity.get().getContent().size());
+        assertFalse(courseEntity.get().getContent().contains(quiz));
+        assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
+        assertEquals(230, courseEntity.get().getRequiredExpOfLevel(0));
+
+        assertEquals(6, badgeRepository.findAll().size());
+        List<BadgeEntity> quizBadges = badgeRepository.findByQuizUUID(quiz);
+        assertEquals(0, quizBadges.size());
+        assertEquals(18, userBadgeRepository.findAll().size());
+
+        QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
+        assertEquals(1, questChainRepository.findAll().size());
+        assertNotNull(questChainEntity);
+        assertEquals(2, questChainEntity.size());
+        assertFalse(questChainEntity.getQuests().stream().anyMatch(
+                questEntity -> { return quiz.equals(questEntity.getQuizUUID());}));
+
+
+
+
+        assertEquals("Error at creating quiz.",
+                gamificationController.createQuiz(quiz, name, courseUUID, chapterUUID,
+                        101, List.of(SkillType.REMEMBER)));
+
+        courseEntity = courseRepository.findById(courseUUID);
+        assertTrue(courseEntity.isPresent());
+        assertEquals(2, courseEntity.get().getContent().size());
+        assertFalse(courseEntity.get().getContent().contains(quiz));
+        assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
+        assertEquals(230, courseEntity.get().getRequiredExpOfLevel(0));
+
+        assertEquals(6, badgeRepository.findAll().size());
+        quizBadges = badgeRepository.findByQuizUUID(quiz);
+        assertEquals(0, quizBadges.size());
+        assertEquals(18, userBadgeRepository.findAll().size());
+
+        questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
+        assertEquals(1, questChainRepository.findAll().size());
+        assertNotNull(questChainEntity);
+        assertEquals(2, questChainEntity.size());
+        assertFalse(questChainEntity.getQuests().stream().anyMatch(
+                questEntity -> { return quiz.equals(questEntity.getQuizUUID());}));
+
+
+    }
+
+    /**
+     * Tests the addition of a quiz for an invalid value of skillTypes.
+     * <p>
+     * This test verifies that the addition of a quiz, for skillPoints null or an empty list</>
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>The quiz is not created.</li>
+     *   <li>No changes in the repositories.</li>
+     * </ul>
+     */
+    @Test
+    void createQuizForEmptySkillTypesTest() {
+
+        UUID quiz = UUID.randomUUID();
+        String name = "FCS 2";
+        assertEquals("Error at creating quiz.",
+                gamificationController.createQuiz(quiz, name, courseUUID, chapterUUID,
+                        70, null));
+
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        assertTrue(courseEntity.isPresent());
+        assertEquals(2, courseEntity.get().getContent().size());
+        assertFalse(courseEntity.get().getContent().contains(quiz));
+        assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
+        assertEquals(230, courseEntity.get().getRequiredExpOfLevel(0));
+
+        assertEquals(6, badgeRepository.findAll().size());
+        List<BadgeEntity> quizBadges = badgeRepository.findByQuizUUID(quiz);
+        assertEquals(0, quizBadges.size());
+        assertEquals(18, userBadgeRepository.findAll().size());
+
+        QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
+        assertEquals(1, questChainRepository.findAll().size());
+        assertNotNull(questChainEntity);
+        assertEquals(2, questChainEntity.size());
+        assertFalse(questChainEntity.getQuests().stream().anyMatch(
+                questEntity -> { return quiz.equals(questEntity.getQuizUUID());}));
+
+
+
+
+        assertEquals("Error at creating quiz.",
+                gamificationController.createQuiz(quiz, name, courseUUID, chapterUUID,
+                        70, new LinkedList<>()));
+
+        courseEntity = courseRepository.findById(courseUUID);
+        assertTrue(courseEntity.isPresent());
+        assertEquals(2, courseEntity.get().getContent().size());
+        assertFalse(courseEntity.get().getContent().contains(quiz));
+        assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
+        assertEquals(230, courseEntity.get().getRequiredExpOfLevel(0));
+
+        assertEquals(6, badgeRepository.findAll().size());
+        quizBadges = badgeRepository.findByQuizUUID(quiz);
+        assertEquals(0, quizBadges.size());
+        assertEquals(18, userBadgeRepository.findAll().size());
+
+        questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
+        assertEquals(1, questChainRepository.findAll().size());
+        assertNotNull(questChainEntity);
+        assertEquals(2, questChainEntity.size());
+        assertFalse(questChainEntity.getQuests().stream().anyMatch(
+                questEntity -> { return quiz.equals(questEntity.getQuizUUID());}));
+
+
+    }
+
+    /**
      * Tests the deletion of badges and quests associated with a quiz.
      * <p>
      * This test verifies that when a quiz is deleted, the corresponding badges, userBadges and quests are also removed
@@ -256,27 +526,29 @@ class QuizTest {
     }
 
     /**
-     * Tests the renaming of a quiz.
+     * Tests the changing of a quizs data.
      * <p>
-     * This test verifies that when a quiz is renamed, the descriptions of the associated badges and quests
+     * This test verifies that when a quizs data is changed, the descriptions of the associated badges and quests
      * are updated accordingly. The test checks that all related entities reflect the new quiz name.
+     * The quizs metadata is updated as well.
      * <p>
      * Expected Outcome:
      * <ul>
      *   <li>The quiz name and metadata is changed successfully.</li>
      *   <li>All badges associated with the quiz have their descriptions updated.</li>
      *   <li>The quest associated with the quiz in the quest chain also has its description updated.</li>
+     *   <li>The metadata of the quiz is changed accordingly.</li>
      * </ul>
      */
     @Test
-    void editQuizNameTest() {
+    void editQuizTest() {
         String newName = "New Name";
-        assertEquals("Changed quiz name!", gamificationController.editQuiz(quizUUID,
-                courseUUID, newName, 37, List.of(SkillType.REMEMBER)));
+        assertEquals("Changed quiz data!", gamificationController.editQuiz(quizUUID,
+                courseUUID, newName, 55, List.of(SkillType.UNDERSTAND)));
 
-        List<BadgeEntity> quizBadges = badgeRepository.findByQuizUUID(quizUUID);
-        assertEquals(3, quizBadges.size());
-        for (BadgeEntity badge : quizBadges) {
+        List<BadgeEntity> fcsBadges = badgeRepository.findByQuizUUID(quizUUID);
+        assertEquals(3, fcsBadges.size());
+        for (BadgeEntity badge : fcsBadges) {
             int passingPercentage = badge.getPassingPercentage();
             assertEquals(BadgeService.descriptionPart1 + passingPercentage + BadgeService.descriptionPart2 +
                     "quiz " + newName + BadgeService.descriptionPart3, badge.getDescription());
@@ -286,15 +558,276 @@ class QuizTest {
         int index = questChainEntity.findIndexOfQuizQuest(quizUUID);
         QuestEntity quest = questChainEntity.getQuest(index);
         assertEquals(QuestService.descriptionPart1 + "quiz " + newName +
-                QuestService.descriptionPart2 + QuestService.passingPercentage +
-                QuestService.descriptionPart3, quest.getDescription());
-
+                QuestService.descriptionPart2 + 80 + QuestService.descriptionPart3, quest.getDescription());
 
         Optional<ContentMetaDataEntity> quizMetaData = contentMetaDataRepository.findById(quizUUID);
 
         assertTrue(quizMetaData.isPresent());
-        assertEquals(SkillType.REMEMBER, quizMetaData.get().getSkillType());
-        assertEquals(37, quizMetaData.get().getSkillPoints());
+        assertEquals(SkillType.UNDERSTAND, quizMetaData.get().getSkillType());
+        assertEquals(50, quizMetaData.get().getSkillPoints());
+    }
+
+    /**
+     * Tests the editing of a quiz, that does not exist.
+     * <p>
+     * This test verifies that trying to edit a quiz that does not exist, fails and that the metadata is not changed.
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>No changes in the repositories.</li>
+     * </ul>
+     */
+    @Test
+    void editQuizForNotExistingQuizTest() {
+
+        UUID quiz = UUID.randomUUID();
+        String name = "New name";
+        assertEquals("Error at editing quiz.",
+                gamificationController.editQuiz(quiz, courseUUID, name,55,
+                        List.of(SkillType.UNDERSTAND)));
+
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        assertTrue(courseEntity.isPresent());
+        assertEquals(2, courseEntity.get().getContent().size());
+        assertFalse(courseEntity.get().getContent().contains(quiz));
+
+        List<BadgeEntity> fcsBadges = badgeRepository.findByQuizUUID(quiz);
+        assertEquals(0, fcsBadges.size());
+        assertEquals(6, badgeRepository.count());
+        assertEquals(18, userBadgeRepository.count());
+
+        assertEquals(2, contentMetaDataRepository.count());
+        Optional<ContentMetaDataEntity> quizMetaData = contentMetaDataRepository.findById(quiz);
+        assertTrue(quizMetaData.isEmpty());
+
+    }
+
+    /**
+     * Tests the editing of a quiz for a course, that does not exist.
+     * <p>
+     * This test verifies that the editing of a quiz for a course, that does not exist, fails.
+     * There should also be no changes to the repositories.
+     * <p>
+     *
+     * Expected Outcome:
+     * <ul>
+     *   <li>The quiz is not edited.</li>
+     *   <li>No changes in the repositories.</li>
+     * </ul>
+     */
+    @Test
+    void editQuizForNotExistingCourseTest() {
+
+        UUID course = UUID.randomUUID();
+        String name = "FCS 2";
+        assertEquals("Error at editing quiz.",
+                gamificationController.editQuiz(quizUUID, course, name,
+                        70, List.of(SkillType.REMEMBER)));
+
+        Optional<CourseEntity> courseEntity = courseRepository.findById(course);
+        assertFalse(courseEntity.isPresent());
+
+        assertEquals(6, badgeRepository.findAll().size());
+        List<BadgeEntity> fcsBadges = badgeRepository.findByQuizUUID(quizUUID);
+        assertEquals(3, fcsBadges.size());
+        assertEquals(18, userBadgeRepository.findAll().size());
+
+        QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(course);
+        assertEquals(1, questChainRepository.findAll().size());
+        assertNull(questChainEntity);
+
+    }
+
+    /**
+     * Tests the editing of a quiz for a course, that does not contain the quiz.
+     * <p>
+     * This test verifies that the editing of a quiz for the wrong course, fails.
+     * There should also be no changes to the repositories.
+     * <p>
+     *
+     * Expected Outcome:
+     * <ul>
+     *   <li>The quiz is not edited.</li>
+     *   <li>No changes in the repositories.</li>
+     * </ul>
+     */
+    @Test
+    void editQuizForWrongCourseTest() {
+
+        UUID course = UUID.randomUUID();
+        gamificationController.addCourse(courseUUID, UUID.randomUUID(), List.of(UUID.randomUUID()));
+
+        String name = "FCS 2";
+        assertEquals("Error at editing quiz.",
+                gamificationController.editQuiz(quizUUID, course, name,
+                        70, List.of(SkillType.REMEMBER)));
+
+        Optional<CourseEntity> courseEntity = courseRepository.findById(course);
+        assertFalse(courseEntity.isPresent());
+
+        assertEquals(6, badgeRepository.findAll().size());
+        List<BadgeEntity> fcsBadges = badgeRepository.findByQuizUUID(quizUUID);
+        assertEquals(3, fcsBadges.size());
+        assertEquals(18, userBadgeRepository.findAll().size());
+
+        QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(course);
+        assertEquals(1, questChainRepository.findAll().size());
+        assertNull(questChainEntity);
+
+    }
+
+    /**
+     * Tests the editing of a quiz for invalid values of skillPoints.
+     * <p>
+     * This test verifies that the editing of a quiz, for skillPoints < 0 or > 100 fails
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>The quiz is not edited.</li>
+     *   <li>No changes in the repositories.</li>
+     * </ul>
+     */
+    @Test
+    void editQuizForSkillPointsOutOfRangeTest() {
+
+        String name = "FCS 2";
+        assertEquals("Error at editing quiz.",
+                gamificationController.editQuiz(quizUUID, courseUUID, name,
+                        -1, List.of(SkillType.UNDERSTAND)));
+
+        Optional<ContentMetaDataEntity> contentMetaDataEntity = contentMetaDataRepository.findById(quizUUID);
+        assertTrue(contentMetaDataEntity.isPresent());
+        assertEquals(quizUUID, contentMetaDataEntity.get().getContentUUID());
+        assertEquals(50, contentMetaDataEntity.get().getSkillPoints());
+        assertEquals(SkillType.ANALYSE, contentMetaDataEntity.get().getSkillType());
+
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        assertTrue(courseEntity.isPresent());
+        assertEquals(2, courseEntity.get().getContent().size());
+        assertTrue(courseEntity.get().getContent().contains(quizUUID));
+        assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
+        assertEquals(230, courseEntity.get().getRequiredExpOfLevel(0));
+
+        assertEquals(6, badgeRepository.findAll().size());
+        List<BadgeEntity> fcsBadges = badgeRepository.findByQuizUUID(quizUUID);
+        assertEquals(3, fcsBadges.size());
+        assertEquals(18, userBadgeRepository.findAll().size());
+
+        QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
+        assertEquals(1, questChainRepository.findAll().size());
+        assertNotNull(questChainEntity);
+        assertEquals(2, questChainEntity.size());
+        assertTrue(questChainEntity.getQuests().stream().anyMatch(
+                questEntity -> { return quizUUID.equals(questEntity.getQuizUUID());}));
+
+
+        assertEquals("Error at editing quiz.",
+                gamificationController.editQuiz(quizUUID, courseUUID, name,
+                        101, List.of(SkillType.APPLY)));
+
+        contentMetaDataEntity = contentMetaDataRepository.findById(quizUUID);
+        assertTrue(contentMetaDataEntity.isPresent());
+        assertEquals(quizUUID, contentMetaDataEntity.get().getContentUUID());
+        assertEquals(50, contentMetaDataEntity.get().getSkillPoints());
+        assertEquals(SkillType.ANALYSE, contentMetaDataEntity.get().getSkillType());
+
+        courseEntity = courseRepository.findById(courseUUID);
+        assertTrue(courseEntity.isPresent());
+        assertEquals(2, courseEntity.get().getContent().size());
+        assertTrue(courseEntity.get().getContent().contains(quizUUID));
+        assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
+        assertEquals(230, courseEntity.get().getRequiredExpOfLevel(0));
+
+        assertEquals(6, badgeRepository.findAll().size());
+        fcsBadges = badgeRepository.findByQuizUUID(quizUUID);
+        assertEquals(3, fcsBadges.size());
+        assertEquals(18, userBadgeRepository.findAll().size());
+
+        questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
+        assertEquals(1, questChainRepository.findAll().size());
+        assertNotNull(questChainEntity);
+        assertEquals(2, questChainEntity.size());
+        assertTrue(questChainEntity.getQuests().stream().anyMatch(
+                questEntity -> { return quizUUID.equals(questEntity.getQuizUUID());}));
+
+
+    }
+
+    /**
+     * Tests the editing of a quiz for an invalid value of skillTypes.
+     * <p>
+     * This test verifies that the editing of a quiz, for skillPoints null or an empty list</>
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>The quiz is not edited.</li>
+     *   <li>No changes in the repositories.</li>
+     * </ul>
+     */
+    @Test
+    void editQuizForEmptySkillTypesTest() {
+
+        String name = "FCS 2";
+        assertEquals("Error at editing quiz.",
+                gamificationController.editQuiz(quizUUID, courseUUID, name,
+                        65, null));
+
+        Optional<ContentMetaDataEntity> contentMetaDataEntity = contentMetaDataRepository.findById(quizUUID);
+        assertTrue(contentMetaDataEntity.isPresent());
+        assertEquals(quizUUID, contentMetaDataEntity.get().getContentUUID());
+        assertEquals(50, contentMetaDataEntity.get().getSkillPoints());
+        assertEquals(SkillType.ANALYSE, contentMetaDataEntity.get().getSkillType());
+
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        assertTrue(courseEntity.isPresent());
+        assertEquals(2, courseEntity.get().getContent().size());
+        assertTrue(courseEntity.get().getContent().contains(quizUUID));
+        assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
+        assertEquals(230, courseEntity.get().getRequiredExpOfLevel(0));
+
+        assertEquals(6, badgeRepository.findAll().size());
+        List<BadgeEntity> fcsBadges = badgeRepository.findByQuizUUID(quizUUID);
+        assertEquals(3, fcsBadges.size());
+        assertEquals(18, userBadgeRepository.findAll().size());
+
+        QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
+        assertEquals(1, questChainRepository.findAll().size());
+        assertNotNull(questChainEntity);
+        assertEquals(2, questChainEntity.size());
+        assertTrue(questChainEntity.getQuests().stream().anyMatch(
+                questEntity -> { return quizUUID.equals(questEntity.getQuizUUID());}));
+
+
+        assertEquals("Error at editing quiz.",
+                gamificationController.editQuiz(quizUUID, courseUUID, name,
+                        65, List.of()));
+
+        contentMetaDataEntity = contentMetaDataRepository.findById(quizUUID);
+        assertTrue(contentMetaDataEntity.isPresent());
+        assertEquals(quizUUID, contentMetaDataEntity.get().getContentUUID());
+        assertEquals(50, contentMetaDataEntity.get().getSkillPoints());
+        assertEquals(SkillType.ANALYSE, contentMetaDataEntity.get().getSkillType());
+
+        courseEntity = courseRepository.findById(courseUUID);
+        assertTrue(courseEntity.isPresent());
+        assertEquals(2, courseEntity.get().getContent().size());
+        assertTrue(courseEntity.get().getContent().contains(quizUUID));
+        assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
+        assertEquals(230, courseEntity.get().getRequiredExpOfLevel(0));
+
+        assertEquals(6, badgeRepository.findAll().size());
+        fcsBadges = badgeRepository.findByQuizUUID(quizUUID);
+        assertEquals(3, fcsBadges.size());
+        assertEquals(18, userBadgeRepository.findAll().size());
+
+        questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
+        assertEquals(1, questChainRepository.findAll().size());
+        assertNotNull(questChainEntity);
+        assertEquals(2, questChainEntity.size());
+        assertTrue(questChainEntity.getQuests().stream().anyMatch(
+                questEntity -> { return quizUUID.equals(questEntity.getQuizUUID());}));
+
+
     }
 
     /**

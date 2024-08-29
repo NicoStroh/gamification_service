@@ -83,7 +83,7 @@ public class QuestChainEntity {
         return -1;
     }
 
-    public int findIndexOfFlashcardSetQuest(UUID flashCardSetUUID) {
+    public int findIndexOfFlashCardSetQuest(UUID flashCardSetUUID) {
         if (this.quests != null) {
             int i = 0;
             for (QuestEntity quest : this.quests) {
@@ -109,7 +109,7 @@ public class QuestChainEntity {
 
     public int removeQuestOfFCS(UUID flashCardSetUUID) {
         if (this.quests != null) {
-            int indexOfFCSQuest = this.findIndexOfFlashcardSetQuest(flashCardSetUUID);
+            int indexOfFCSQuest = this.findIndexOfFlashCardSetQuest(flashCardSetUUID);
             if (0 <= indexOfFCSQuest && indexOfFCSQuest < this.quests.size()) {
                 this.quests.remove(indexOfFCSQuest);
             }
