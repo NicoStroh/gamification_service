@@ -263,21 +263,29 @@ public class BloomLevelService {
     }
 
     /**
-     * Decreases the required exp for the chapter of the quiz.
+     * Decreases the required exp for the chapter of the quizUUID.
      *
-     * @param courseUUID     the id of the course
-     * @param chapterUUID    the UUID of the chapter of the deleted quiz
-     * @param quizUUID       the UUID of the deleted quiz
+     * @param courseUUID       the id of the course
+     * @param chapterUUID      the UUID of the chapter of the deleted quizUUID
+     * @param quizUUID             the UUID of the deleted quizUUID
+     *
+     * @return indicates whether the quizUUID could be deleted successfully.
      */
-    public void removeQuiz(UUID courseUUID, UUID chapterUUID, UUID quizUUID) {
+    public boolean removeQuiz(UUID courseUUID, UUID chapterUUID, UUID quizUUID) {
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
-        if (courseEntity.isPresent()) {
+        if (contentMetaDataRepository.existsById(quizUUID)
+                && courseEntity.isPresent()
+                && courseEntity.get().getContent().contains(quizUUID)
+                && courseEntity.get().getChapters().contains(chapterUUID)) {
             CourseEntity course = courseEntity.get();
             course.removeQuiz(quizUUID, chapterUUID);
             courseRepository.save(course);
+            contentMetaDataRepository.deleteById(quizUUID);
+            return true;
         }
-        contentMetaDataRepository.deleteById(quizUUID);
+        return false;
     }
+
 
     /**
      * Decreases the required exp for the chapter of the flashCardSet.
@@ -285,15 +293,55 @@ public class BloomLevelService {
      * @param courseUUID             the id of the course
      * @param chapterUUID            the UUID of the chapter of the deleted flashCardSet
      * @param flashCardSetUUID       the UUID of the deleted flashCardSet
+     *
+     * @return indicates whether the flashCardSet could be deleted successfully.
      */
-    public void removeFlashCardSet(UUID courseUUID, UUID chapterUUID, UUID flashCardSetUUID) {
+    public boolean removeFlashCardSet(UUID courseUUID, UUID chapterUUID, UUID flashCardSetUUID) {
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
-        if (courseEntity.isPresent()) {
+        if (contentMetaDataRepository.existsById(flashCardSetUUID)
+                && courseEntity.isPresent()
+                && courseEntity.get().getContent().contains(flashCardSetUUID)
+                && courseEntity.get().getChapters().contains(chapterUUID)) {
             CourseEntity course = courseEntity.get();
             course.removeFlashCardSet(flashCardSetUUID, chapterUUID);
             courseRepository.save(course);
+            contentMetaDataRepository.deleteById(flashCardSetUUID);
+            return true;
         }
-        contentMetaDataRepository.deleteById(flashCardSetUUID);
+        return false;
+    }
+
+    /**
+     * Grants a reward to a user for successfully completing content.
+     *
+     * @param courseUUID     the unique identifier of the course
+     * @param userUUID       the unique identifier of the user
+     * @param chapterUUID    the id of the chapter of the finished content
+     * @param contentUUID    the id of the content
+     * @param correctAnswers the number of correct answers given by the user
+     * @param totalAnswers   the total number of questions in the content
+     *
+     * @return indicates whether the finishing is valid
+     */
+    private boolean validateFinish(UUID courseUUID,
+                                  UUID userUUID,
+                                  UUID chapterUUID,
+                                  UUID contentUUID,
+                                  int correctAnswers,
+                                  int totalAnswers) {
+
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        BloomLevelEntity bloomLevel = bloomLevelRepository.findByUserUUIDAndCourseUUID(userUUID, courseUUID);
+        Optional<ContentMetaDataEntity> contentMetaData = contentMetaDataRepository.findById(contentUUID);
+        return courseEntity.isPresent()
+                && courseEntity.get().getUserUUIDs().contains(userUUID)
+                && courseEntity.get().getContent().contains(contentUUID)
+                && courseEntity.get().getChapters().contains(chapterUUID)
+                && bloomLevel != null
+                && contentMetaData.isPresent()
+                && correctAnswers <= totalAnswers
+                && correctAnswers >= 0;
+
     }
 
     /**
@@ -305,26 +353,29 @@ public class BloomLevelService {
      * @param quizUUID       the id of the quiz
      * @param correctAnswers the number of correct answers given by the user
      * @param totalAnswers   the total number of questions in the quiz
+     *
+     * @return indicates whether the finishing is valid
      */
-    public void grantRewardToUserForFinishingQuiz(UUID courseUUID,
+    public boolean grantRewardToUserForFinishingQuiz(UUID courseUUID,
                                                   UUID userUUID,
                                                   UUID chapterUUID,
                                                   UUID quizUUID,
                                                   int correctAnswers,
                                                   int totalAnswers) {
+
         BloomLevelEntity bloomLevel = bloomLevelRepository.findByUserUUIDAndCourseUUID(userUUID, courseUUID);
         Optional<ContentMetaDataEntity> contentMetaData = contentMetaDataRepository.findById(quizUUID);
-        if (bloomLevel == null
-                || contentMetaData.isEmpty()
-                || correctAnswers > totalAnswers
-                || correctAnswers < 0) {
-            return;
+
+        if (! validateFinish(courseUUID, userUUID, chapterUUID, quizUUID, correctAnswers, totalAnswers)
+                || bloomLevel == null || contentMetaData.isEmpty()) {
+            return false;
         }
 
         int level = getLevelOfChapter(chapterUUID, courseUUID);
         bloomLevel.addExp(contentMetaData.get().rewardOfFinishingContent(
                 50, correctAnswers, totalAnswers, level));
         bloomLevelRepository.save(bloomLevel);
+        return true;
     }
 
     /**
@@ -336,8 +387,10 @@ public class BloomLevelService {
      * @param flashCardSetUUID      the id of the flashCardSet
      * @param correctAnswers        the number of correct answers given by the user
      * @param totalAnswers          the total number of questions in the flashCardSet
+     *
+     * @return indicates whether the finishing is valid
      */
-    public void grantRewardToUserForFinishingFlashCardSet(UUID courseUUID,
+    public boolean grantRewardToUserForFinishingFlashCardSet(UUID courseUUID,
                                                           UUID userUUID,
                                                           UUID chapterUUID,
                                                           UUID flashCardSetUUID,
@@ -345,17 +398,17 @@ public class BloomLevelService {
                                                           int totalAnswers) {
         BloomLevelEntity bloomLevel = bloomLevelRepository.findByUserUUIDAndCourseUUID(userUUID, courseUUID);
         Optional<ContentMetaDataEntity> contentMetaData = contentMetaDataRepository.findById(flashCardSetUUID);
-        if (bloomLevel == null
-                || contentMetaData.isEmpty()
-                || correctAnswers > totalAnswers
-                || correctAnswers < 0) {
-            return;
+
+        if (! validateFinish(courseUUID, userUUID, chapterUUID, flashCardSetUUID, correctAnswers, totalAnswers)
+                || bloomLevel == null || contentMetaData.isEmpty()) {
+            return false;
         }
 
         int level = getLevelOfChapter(chapterUUID, courseUUID);
         bloomLevel.addExp(contentMetaData.get().rewardOfFinishingContent(
                 30, correctAnswers, totalAnswers, level));
         bloomLevelRepository.save(bloomLevel);
+        return true;
     }
 
     /**

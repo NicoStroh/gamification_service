@@ -526,6 +526,203 @@ class QuizTest {
     }
 
     /**
+     * Tests the deletion of badges and quests associated with a quiz, that does not exist.
+     * <p>
+     * This test verifies that when a quiz, that does not exist, is tried to be, that badges and quests
+     * related to other entities (e.g., quizzes) are not affected.
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>No changes in the repositories.</li>
+     * </ul>
+     */
+    @Test
+    void deleteBadgesAndQuestOfNotExistingQuizTest() {
+        gamificationController.finishFlashCardSet(user1UUID, courseUUID, flashCardSetUUID, 5, 5, chapterUUID);
+        gamificationController.finishQuiz(user2UUID, courseUUID, quizUUID, 5, 5, chapterUUID);
+
+        UUID quiz = UUID.randomUUID();
+        assertEquals("Error at deleting quiz.", gamificationController.deleteBadgesAndQuestOfQuiz(quiz, courseUUID, chapterUUID));
+
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        assertTrue(courseEntity.isPresent());
+        assertEquals(2, courseEntity.get().getContent().size());
+        assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
+        assertEquals(230, courseEntity.get().getRequiredExpOfLevel(0));
+
+        List<BadgeEntity> allBadges = badgeRepository.findAll();
+        assertEquals(6, allBadges.size());
+
+        List<UserBadgeEntity> allUserBadges = userBadgeRepository.findAll();
+        assertEquals(18, allUserBadges.size());
+
+        QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
+        assertNotNull(questChainEntity);
+        assertEquals(2, questChainEntity.size());
+
+        UserQuestChainEntity lecturerQuestChainEntity =
+                userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), lecturerUUID);
+        UserQuestChainEntity user1QuestChainEntity =
+                userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), user1UUID);
+        UserQuestChainEntity user2QuestChainEntity =
+                userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), user2UUID);
+        assertEquals(3, userQuestChainRepository.findAll().size());
+        assertEquals(0, lecturerQuestChainEntity.getUserLevel());
+        assertEquals(0, user1QuestChainEntity.getUserLevel());
+        assertEquals(1, user2QuestChainEntity.getUserLevel());
+
+    }
+
+    /**
+     * Tests the deletion of badges and quests associated with a quiz, but with a not existing course id.
+     * <p>
+     * This test verifies that when a quiz, is tried to be deleted for a not existing course,
+     * that badges and quests related to other entities (e.g., quizzes) are not affected.
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>No changes in the repositories.</li>
+     * </ul>
+     */
+    @Test
+    void deleteBadgesAndQuestOfQuizForNotExistingCourseTest() {
+        gamificationController.finishFlashCardSet(user1UUID, courseUUID, flashCardSetUUID, 5, 5, chapterUUID);
+        gamificationController.finishQuiz(user2UUID, courseUUID, quizUUID, 5, 5, chapterUUID);
+
+        UUID course = UUID.randomUUID();
+        assertEquals("Error at deleting quiz.", gamificationController.deleteBadgesAndQuestOfQuiz(
+                quizUUID, course, chapterUUID));
+
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        assertTrue(courseEntity.isPresent());
+        assertEquals(2, courseEntity.get().getContent().size());
+        assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
+        assertEquals(230, courseEntity.get().getRequiredExpOfLevel(0));
+
+        List<BadgeEntity> allBadges = badgeRepository.findAll();
+        assertEquals(6, allBadges.size());
+
+        List<UserBadgeEntity> allUserBadges = userBadgeRepository.findAll();
+        assertEquals(18, allUserBadges.size());
+
+        QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
+        assertNotNull(questChainEntity);
+        assertEquals(2, questChainEntity.size());
+
+        UserQuestChainEntity lecturerQuestChainEntity =
+                userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), lecturerUUID);
+        UserQuestChainEntity user1QuestChainEntity =
+                userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), user1UUID);
+        UserQuestChainEntity user2QuestChainEntity =
+                userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), user2UUID);
+        assertEquals(3, userQuestChainRepository.findAll().size());
+        assertEquals(0, lecturerQuestChainEntity.getUserLevel());
+        assertEquals(0, user1QuestChainEntity.getUserLevel());
+        assertEquals(1, user2QuestChainEntity.getUserLevel());
+
+    }
+
+    /**
+     * Tests the deletion of badges and quests associated with a quiz, but with a wrong course id.
+     * <p>
+     * This test verifies that when a quiz, is tried to be deleted for the wrong course,
+     * that badges and quests related to other entities (e.g., quizzes) are not affected.
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>No changes in the repositories.</li>
+     * </ul>
+     */
+    @Test
+    void deleteBadgesAndQuestOfQuizForWrongCourseTest() {
+        gamificationController.finishFlashCardSet(user1UUID, courseUUID, flashCardSetUUID, 5, 5, chapterUUID);
+        gamificationController.finishQuiz(user2UUID, courseUUID, quizUUID, 5, 5, chapterUUID);
+
+        UUID course = UUID.randomUUID();
+        gamificationController.addCourse(course, UUID.randomUUID(), List.of(UUID.randomUUID()));
+
+        assertEquals("Error at deleting quiz.", gamificationController.deleteBadgesAndQuestOfQuiz(
+                quizUUID, course, chapterUUID));
+
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        assertTrue(courseEntity.isPresent());
+        assertEquals(2, courseEntity.get().getContent().size());
+        assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
+        assertEquals(230, courseEntity.get().getRequiredExpOfLevel(0));
+
+        List<BadgeEntity> allBadges = badgeRepository.findAll();
+        assertEquals(6, allBadges.size());
+
+        List<UserBadgeEntity> allUserBadges = userBadgeRepository.findAll();
+        assertEquals(18, allUserBadges.size());
+
+        QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
+        assertNotNull(questChainEntity);
+        assertEquals(2, questChainEntity.size());
+
+        UserQuestChainEntity lecturerQuestChainEntity =
+                userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), lecturerUUID);
+        UserQuestChainEntity user1QuestChainEntity =
+                userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), user1UUID);
+        UserQuestChainEntity user2QuestChainEntity =
+                userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), user2UUID);
+        assertEquals(4, userQuestChainRepository.findAll().size());
+        assertEquals(0, lecturerQuestChainEntity.getUserLevel());
+        assertEquals(0, user1QuestChainEntity.getUserLevel());
+        assertEquals(1, user2QuestChainEntity.getUserLevel());
+
+    }
+
+    /**
+     * Tests the deletion of badges and quests associated with a quiz, but with a wrong chapter id.
+     * <p>
+     * This test verifies that when a quiz, is tried to be deleted for a course, that is not in the course,
+     * that badges and quests related to other entities (e.g., quizzes) are not affected.
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>No changes in the repositories.</li>
+     * </ul>
+     */
+    @Test
+    void deleteBadgesAndQuestOfQuizForNotExistingChapterTest() {
+        gamificationController.finishFlashCardSet(user1UUID, courseUUID, flashCardSetUUID, 5, 5, chapterUUID);
+        gamificationController.finishQuiz(user2UUID, courseUUID, quizUUID, 5, 5, chapterUUID);
+
+        UUID chapter = UUID.randomUUID();
+        assertEquals("Error at deleting quiz.", gamificationController.deleteBadgesAndQuestOfQuiz(
+                quizUUID, courseUUID, chapter));
+
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        assertTrue(courseEntity.isPresent());
+        assertEquals(2, courseEntity.get().getContent().size());
+        assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
+        assertEquals(230, courseEntity.get().getRequiredExpOfLevel(0));
+
+        List<BadgeEntity> allBadges = badgeRepository.findAll();
+        assertEquals(6, allBadges.size());
+
+        List<UserBadgeEntity> allUserBadges = userBadgeRepository.findAll();
+        assertEquals(18, allUserBadges.size());
+
+        QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
+        assertNotNull(questChainEntity);
+        assertEquals(2, questChainEntity.size());
+
+        UserQuestChainEntity lecturerQuestChainEntity =
+                userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), lecturerUUID);
+        UserQuestChainEntity user1QuestChainEntity =
+                userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), user1UUID);
+        UserQuestChainEntity user2QuestChainEntity =
+                userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), user2UUID);
+        assertEquals(3, userQuestChainRepository.findAll().size());
+        assertEquals(0, lecturerQuestChainEntity.getUserLevel());
+        assertEquals(0, user1QuestChainEntity.getUserLevel());
+        assertEquals(1, user2QuestChainEntity.getUserLevel());
+
+    }
+
+    /**
      * Tests the changing of a quizs data.
      * <p>
      * This test verifies that when a quizs data is changed, the descriptions of the associated badges and quests
@@ -564,7 +761,7 @@ class QuizTest {
 
         assertTrue(quizMetaData.isPresent());
         assertEquals(SkillType.UNDERSTAND, quizMetaData.get().getSkillType());
-        assertEquals(50, quizMetaData.get().getSkillPoints());
+        assertEquals(55, quizMetaData.get().getSkillPoints());
     }
 
     /**
@@ -574,6 +771,7 @@ class QuizTest {
      * <p>
      * Expected Outcome:
      * <ul>
+     *
      *   <li>No changes in the repositories.</li>
      * </ul>
      */
@@ -852,7 +1050,7 @@ class QuizTest {
         assertEquals("Finished quiz!",
                 gamificationController.finishQuiz(user1UUID, courseUUID, quizUUID, 5, 10, chapterUUID));
         assertEquals("Finished quiz!",
-                gamificationController.finishQuiz(lecturerUUID, courseUUID, quizUUID, 11, -1, chapterUUID));
+                gamificationController.finishQuiz(user2UUID, courseUUID, quizUUID, 2, 10, chapterUUID));
 
         List<BadgeEntity> quizBadges = badgeRepository.findByQuizUUID(quizUUID);
         assertEquals(3, quizBadges.size());
@@ -925,7 +1123,257 @@ class QuizTest {
         assertNotNull(user2BloomLevel);
         assertEquals(80, lecturerBloomLevel.getCollectedExp());
         assertEquals(50, user1BloomLevel.getCollectedExp());
-        assertEquals(0, user2BloomLevel.getCollectedExp());
+        assertEquals(20, user2BloomLevel.getCollectedExp());
+
+    }
+
+    /**
+     * Tests the completion of a quiz by a users for an invalid number of correct answers.
+     * <p>
+     * This test verifies that when users complete a quiz with an invalid number of correct answers,
+     * their progress is not updated correctly in the badges and quest chain entities.
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>No changes for badges, quests, or the users Bloom Level.</li>
+     * </ul>
+     */
+    @Test
+    void finishQuizForCorrectAnswersOutOfBoundsTest() {
+        assertEquals("Error at finishing quiz.",
+                gamificationController.finishQuiz(lecturerUUID, courseUUID, quizUUID, 11, -1, chapterUUID));
+
+        List<BadgeEntity> fcsBadges = badgeRepository.findByQuizUUID(quizUUID);
+        assertEquals(3, fcsBadges.size());
+        List<UserBadgeEntity> lecturerFCSBadges = new ArrayList<UserBadgeEntity>();
+        for (BadgeEntity badge : fcsBadges) {
+            lecturerFCSBadges.add(userBadgeRepository.findByUserUUIDAndBadgeUUID(lecturerUUID, badge.getBadgeUUID()));
+        }
+        assertEquals(3, lecturerFCSBadges.size());
+
+        for (UserBadgeEntity userBadge : lecturerFCSBadges) {
+            assertFalse(userBadge.isAchieved());
+        }
+
+        QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
+        UserQuestChainEntity lecturerQuestChainEntity =
+                userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), lecturerUUID);
+        assertNotNull(lecturerQuestChainEntity);
+        assertEquals(0, lecturerQuestChainEntity.getUserLevel());
+
+        BloomLevelEntity lecturerBloomLevel = bloomLevelRepository.findByUserUUIDAndCourseUUID(lecturerUUID, courseUUID);
+        assertNotNull(lecturerBloomLevel);
+        assertEquals(0, lecturerBloomLevel.getCollectedExp());
+
+
+
+        assertEquals("Error at finishing quiz.",
+                gamificationController.finishQuiz(lecturerUUID, courseUUID, quizUUID, 11, -1, chapterUUID));
+
+        lecturerFCSBadges = new ArrayList<UserBadgeEntity>();
+        for (BadgeEntity badge : fcsBadges) {
+            lecturerFCSBadges.add(userBadgeRepository.findByUserUUIDAndBadgeUUID(lecturerUUID, badge.getBadgeUUID()));
+        }
+        assertEquals(3, lecturerFCSBadges.size());
+
+        for (UserBadgeEntity userBadge : lecturerFCSBadges) {
+            assertFalse(userBadge.isAchieved());
+        }
+
+        questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
+        lecturerQuestChainEntity = userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), lecturerUUID);
+        assertNotNull(lecturerQuestChainEntity);
+        assertEquals(0, lecturerQuestChainEntity.getUserLevel());
+
+        lecturerBloomLevel = bloomLevelRepository.findByUserUUIDAndCourseUUID(lecturerUUID, courseUUID);
+        assertNotNull(lecturerBloomLevel);
+        assertEquals(0, lecturerBloomLevel.getCollectedExp());
+
+    }
+
+    /**
+     * Tests the completion of a quiz, that does not exist.
+     * <p>
+     * This test verifies that when users complete a quiz, that does not exist, their progress is not updated
+     * in the badges and quest chain entities.
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>No changes in the repositories.</li>
+     * </ul>
+     */
+    @Test
+    void finishNotExistingQuizTest() {
+
+        UUID quiz = UUID.randomUUID();
+        assertEquals("Error at finishing quiz.",
+                gamificationController.finishQuiz(lecturerUUID, courseUUID, quiz, 8, 10, chapterUUID));
+
+        List<BadgeEntity> fcsBadges = badgeRepository.findByQuizUUID(quiz);
+        assertEquals(0, fcsBadges.size());
+        List<UserBadgeEntity> lecturerFCSBadges = new ArrayList<UserBadgeEntity>();
+        for (BadgeEntity badge : fcsBadges) {
+            lecturerFCSBadges.add(userBadgeRepository.findByUserUUIDAndBadgeUUID(lecturerUUID, badge.getBadgeUUID()));
+        }
+        assertEquals(0, lecturerFCSBadges.size());
+
+        for (UserBadgeEntity userBadge : lecturerFCSBadges) {
+            assertFalse(userBadge.isAchieved());
+        }
+
+        QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
+        UserQuestChainEntity lecturerQuestChainEntity =
+                userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), lecturerUUID);
+        assertNotNull(lecturerQuestChainEntity);
+        assertEquals(0, lecturerQuestChainEntity.getUserLevel());
+
+        BloomLevelEntity lecturerBloomLevel = bloomLevelRepository.findByUserUUIDAndCourseUUID(lecturerUUID, courseUUID);
+        assertNotNull(lecturerBloomLevel);
+        assertEquals(0, lecturerBloomLevel.getCollectedExp());
+
+    }
+
+    /**
+     * Tests the completion of a quiz, which is in a course, where the user is not present.
+     * <p>
+     * This test verifies that when users tries to complete a quiz, where it has no access to,
+     * their progress is not updated in the badges and quest chain entities.
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>No changes in the repositories.</li>
+     * </ul>
+     */
+    @Test
+    void finishQuizForUserNotInCourseTest() {
+
+        UUID user = UUID.randomUUID();
+        assertEquals("Error at finishing quiz.",
+                gamificationController.finishQuiz(user, courseUUID, quizUUID, 8, 10, chapterUUID));
+
+        List<BadgeEntity> fcsBadges = badgeRepository.findByQuizUUID(quizUUID);
+        assertEquals(3, fcsBadges.size());
+        for (BadgeEntity badge : fcsBadges) {
+            assertNull(userBadgeRepository.findByUserUUIDAndBadgeUUID(user, badge.getBadgeUUID()));
+        }
+
+        QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
+        UserQuestChainEntity userQuestChainEntity =
+                userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), user);
+        assertNull(userQuestChainEntity);
+
+        BloomLevelEntity lecturerBloomLevel = bloomLevelRepository.findByUserUUIDAndCourseUUID(user, courseUUID);
+        assertNull(lecturerBloomLevel);
+
+    }
+
+    /**
+     * Tests the completion of a quiz, with a course, that does not exist and the wrong course id.
+     * <p>
+     * This test verifies that when users complete a quiz, with a course, that does not exist, or
+     * the wrong course id, their progress is not updated in the badges and quest chain entities.
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>No changes in the repositories.</li>
+     * </ul>
+     */
+    @Test
+    void finishQuizForWrongCourseTest() {
+
+        UUID course = UUID.randomUUID();
+        assertEquals("Error at finishing quiz.",
+                gamificationController.finishQuiz(lecturerUUID, course, quizUUID, 8, 10, chapterUUID));
+
+        List<BadgeEntity> fcsBadges = badgeRepository.findByQuizUUID(quizUUID);
+        assertEquals(3, fcsBadges.size());
+        List<UserBadgeEntity> lecturerFCSBadges = new ArrayList<UserBadgeEntity>();
+        for (BadgeEntity badge : fcsBadges) {
+            lecturerFCSBadges.add(userBadgeRepository.findByUserUUIDAndBadgeUUID(lecturerUUID, badge.getBadgeUUID()));
+        }
+
+        for (UserBadgeEntity userBadge : lecturerFCSBadges) {
+            assertNotNull(userBadge);
+            assertFalse(userBadge.isAchieved());
+        }
+
+        QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(course);
+        assertNull(questChainEntity);
+
+        BloomLevelEntity lecturerBloomLevel = bloomLevelRepository.findByUserUUIDAndCourseUUID(lecturerUUID, course);
+        assertNull(lecturerBloomLevel);
+
+
+
+        gamificationController.addCourse(course, lecturerUUID, List.of(UUID.randomUUID()));
+        assertEquals("Error at finishing quiz.",
+                gamificationController.finishQuiz(lecturerUUID, course, quizUUID, 8, 10, chapterUUID));
+
+        fcsBadges = badgeRepository.findByQuizUUID(quizUUID);
+        assertEquals(3, fcsBadges.size());
+        lecturerFCSBadges = new ArrayList<UserBadgeEntity>();
+        for (BadgeEntity badge : fcsBadges) {
+            lecturerFCSBadges.add(userBadgeRepository.findByUserUUIDAndBadgeUUID(lecturerUUID, badge.getBadgeUUID()));
+        }
+
+        for (UserBadgeEntity userBadge : lecturerFCSBadges) {
+            assertNotNull(userBadge);
+            assertFalse(userBadge.isAchieved());
+        }
+
+        questChainEntity = questChainRepository.findByCourseUUID(course);
+        UserQuestChainEntity lecturerQuestChainEntity =
+                userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), lecturerUUID);
+        assertNotNull(questChainEntity);
+        assertNotNull(lecturerQuestChainEntity);
+        assertEquals(0, lecturerQuestChainEntity.getUserLevel());
+
+        lecturerBloomLevel = bloomLevelRepository.findByUserUUIDAndCourseUUID(lecturerUUID, course);
+        assertNotNull(lecturerBloomLevel);
+        assertEquals(0, lecturerBloomLevel.getCollectedExp());
+
+    }
+
+    /**
+     * Tests the completion of a quiz, for a chapter, that does not exist.
+     * <p>
+     * This test verifies that when users complete a quiz, in a chapter, that does not exist,
+     * their progress is not updated in the badges and quest chain entities.
+     * <p>
+     * Expected Outcome:
+     * <ul>
+     *   <li>No changes in the repositories.</li>
+     * </ul>
+     */
+    @Test
+    void finishNotExistingQuizForNotExistingChapterTest() {
+
+        UUID chapter = UUID.randomUUID();
+        assertEquals("Error at finishing quiz.",
+                gamificationController.finishQuiz(lecturerUUID, courseUUID, quizUUID, 8, 10, chapter));
+
+        List<BadgeEntity> fcsBadges = badgeRepository.findByQuizUUID(quizUUID);
+        assertEquals(3, fcsBadges.size());
+        List<UserBadgeEntity> lecturerFCSBadges = new ArrayList<UserBadgeEntity>();
+        for (BadgeEntity badge : fcsBadges) {
+            lecturerFCSBadges.add(userBadgeRepository.findByUserUUIDAndBadgeUUID(lecturerUUID, badge.getBadgeUUID()));
+        }
+        assertEquals(3, lecturerFCSBadges.size());
+
+        for (UserBadgeEntity userBadge : lecturerFCSBadges) {
+            assertNotNull(userBadge);
+            assertFalse(userBadge.isAchieved());
+        }
+
+        QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
+        UserQuestChainEntity lecturerQuestChainEntity =
+                userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), lecturerUUID);
+        assertNotNull(lecturerQuestChainEntity);
+        assertEquals(0, lecturerQuestChainEntity.getUserLevel());
+
+        BloomLevelEntity lecturerBloomLevel = bloomLevelRepository.findByUserUUIDAndCourseUUID(lecturerUUID, courseUUID);
+        assertNotNull(lecturerBloomLevel);
+        assertEquals(0, lecturerBloomLevel.getCollectedExp());
 
     }
 

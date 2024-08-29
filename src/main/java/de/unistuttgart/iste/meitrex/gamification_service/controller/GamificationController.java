@@ -155,10 +155,13 @@ public class GamificationController {
     public String deleteBadgesAndQuestOfFlashCardSet(@Argument UUID flashCardSetUUID,
                                                      @Argument UUID courseUUID,
                                                      @Argument UUID chapterUUID) {
-        badgeService.deleteBadgesAndUserBadgesOfFCS(flashCardSetUUID);
-        questService.deleteQuestOfFCS(courseUUID, flashCardSetUUID);
-        bloomLevelService.removeFlashCardSet(courseUUID, chapterUUID, flashCardSetUUID);
-        return "FlashCardSet deleted.";
+        boolean removedSuccessfully = bloomLevelService.removeFlashCardSet(courseUUID, chapterUUID, flashCardSetUUID);
+        if (removedSuccessfully) {
+            badgeService.deleteBadgesAndUserBadgesOfFCS(flashCardSetUUID);
+            questService.deleteQuestOfFCS(courseUUID, flashCardSetUUID);
+            return "FlashCardSet deleted.";
+        }
+        return "Error at deleting flashCardSet.";
     }
 
     /**
@@ -173,10 +176,13 @@ public class GamificationController {
     public String deleteBadgesAndQuestOfQuiz(@Argument UUID quizUUID,
                                              @Argument UUID courseUUID,
                                              @Argument UUID chapterUUID) {
-        badgeService.deleteBadgesAndUserBadgesOfQuiz(quizUUID);
-        questService.deleteQuestOfQuiz(courseUUID, quizUUID);
-        bloomLevelService.removeQuiz(courseUUID, chapterUUID, quizUUID);
-        return "Quiz deleted.";
+        boolean removedSuccessfully = bloomLevelService.removeQuiz(courseUUID, chapterUUID, quizUUID);
+        if (removedSuccessfully) {
+            badgeService.deleteBadgesAndUserBadgesOfQuiz(quizUUID);
+            questService.deleteQuestOfQuiz(courseUUID, quizUUID);
+            return "Quiz deleted.";
+        }
+        return "Error at deleting quiz.";
     }
 
     /**
@@ -259,11 +265,16 @@ public class GamificationController {
                              @Argument int correctAnswers,
                              @Argument int totalAnswers,
                              @Argument UUID chapterUUID) {
-        badgeService.markBadgesAsAchievedIfPassedQuiz(userUUID, quizUUID, correctAnswers, totalAnswers);
-        questService.markQuestAsFinishedIfPassedQuiz(userUUID, courseUUID, quizUUID, correctAnswers, totalAnswers);
-        bloomLevelService.grantRewardToUserForFinishingQuiz(courseUUID, userUUID, chapterUUID,
-                quizUUID, correctAnswers, totalAnswers);
-        return "Finished quiz!";
+
+        boolean finishingValid = bloomLevelService.grantRewardToUserForFinishingQuiz(courseUUID, userUUID, chapterUUID,
+                        quizUUID, correctAnswers, totalAnswers);
+        if (finishingValid) {
+            badgeService.markBadgesAsAchievedIfPassedQuiz(userUUID, quizUUID, correctAnswers, totalAnswers);
+            questService.markQuestAsFinishedIfPassedQuiz(userUUID, courseUUID, quizUUID, correctAnswers, totalAnswers);
+            return "Finished quiz!";
+        }
+        return "Error at finishing quiz.";
+
     }
 
     /**
@@ -285,11 +296,16 @@ public class GamificationController {
                                      @Argument int correctAnswers,
                                      @Argument int totalAnswers,
                                      @Argument UUID chapterUUID) {
-        badgeService.markBadgesAsAchievedIfPassedFlashCardSet(userUUID, flashCardSetUUID, correctAnswers, totalAnswers);
-        questService.markQuestAsFinishedIfPassedFlashCardSet(userUUID, courseUUID, flashCardSetUUID, correctAnswers, totalAnswers);
-        bloomLevelService.grantRewardToUserForFinishingFlashCardSet(courseUUID, userUUID, chapterUUID,
-                flashCardSetUUID, correctAnswers, totalAnswers);
-        return "Finished flashCardSet!";
+
+        boolean finishingValid = bloomLevelService.grantRewardToUserForFinishingFlashCardSet(courseUUID, userUUID, chapterUUID,
+                        flashCardSetUUID, correctAnswers, totalAnswers);
+        if (finishingValid) {
+            badgeService.markBadgesAsAchievedIfPassedFlashCardSet(userUUID, flashCardSetUUID, correctAnswers, totalAnswers);
+            questService.markQuestAsFinishedIfPassedFlashCardSet(userUUID, courseUUID, flashCardSetUUID, correctAnswers, totalAnswers);
+            return "Finished flashCardSet!";
+        }
+        return "Error at finishing flashCardSet.";
+
     }
 
     /**
