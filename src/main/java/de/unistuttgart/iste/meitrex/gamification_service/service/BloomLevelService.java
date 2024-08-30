@@ -126,6 +126,36 @@ public class BloomLevelService {
     }
 
     /**
+     * Validates whether the input is correct for adding content.
+     *
+     * @param courseUUID     the unique identifier of the course
+     * @param chapterUUID    the id of the chapter of the created content
+     * @param contentUUID    the id of the created content
+     * @param skillPoints    the rewarded skillPoints for finishing the content
+     * @param skillTypes     the max skill Type (Bloom's Tax) of the content
+     *
+     * @return indicates whether the adding is valid
+     */
+    private boolean validateAdd(UUID courseUUID,
+                                UUID contentUUID,
+                                UUID chapterUUID,
+                                int skillPoints,
+                                List<SkillType> skillTypes) {
+
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        Optional<ContentMetaDataEntity> contentMetaData = contentMetaDataRepository.findById(contentUUID);
+        return courseEntity.isPresent()
+                && ! courseEntity.get().getContent().contains(contentUUID)
+                && courseEntity.get().getChapters().contains(chapterUUID)
+                && ! contentMetaData.isPresent()
+                && skillPoints >= 0
+                && skillPoints <= 100
+                && skillTypes != null
+                && ! skillTypes.isEmpty();
+
+    }
+
+    /**
      * Adds a quiz to a specific level in the course, which increases the required expPoints for the level.
      *
      * @param chapterUUID        the UUID of the chapter where the quiz will be added
@@ -138,20 +168,14 @@ public class BloomLevelService {
      */
     public boolean addQuiz(UUID chapterUUID, UUID courseUUID, UUID quizUUID, int skillPoints, List<SkillType> skillTypes) {
 
-        if (contentMetaDataRepository.existsById(quizUUID)
-                || skillPoints < 0 || skillPoints > 100
-                || skillTypes == null || skillTypes.isEmpty()) {
-            return false;
-        }
-
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
-        if (courseEntity.isPresent()) {
+        if (validateAdd(courseUUID, quizUUID, chapterUUID, skillPoints, skillTypes)) {
             CourseEntity course = courseEntity.get();
-            if (!course.addQuiz(quizUUID, chapterUUID)) {
+            if (! course.addContent(quizUUID, chapterUUID, skillPoints)) {
                 return false;
             }
             courseRepository.save(course);
-            saveContent(courseUUID, quizUUID, skillPoints, skillTypes);
+            saveContent(courseUUID, quizUUID, chapterUUID, skillPoints, skillTypes);
             return true;
         }
 
@@ -171,20 +195,14 @@ public class BloomLevelService {
      */
     public boolean addFlashCardSet(UUID chapterUUID, UUID courseUUID, UUID flashCardSetUUID, int skillPoints, List<SkillType> skillTypes) {
 
-        if (contentMetaDataRepository.existsById(flashCardSetUUID)
-                || skillPoints < 0 || skillPoints > 100
-                || skillTypes == null || skillTypes.isEmpty()) {
-            return false;
-        }
-
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
-        if (courseEntity.isPresent()) {
+        if (validateAdd(courseUUID, flashCardSetUUID, chapterUUID, skillPoints, skillTypes)) {
             CourseEntity course = courseEntity.get();
-            if (!course.addFlashCardSet(flashCardSetUUID, chapterUUID)) {
+            if (! course.addContent(flashCardSetUUID, chapterUUID, skillPoints)) {
                 return false;
             }
             courseRepository.save(course);
-            saveContent(courseUUID, flashCardSetUUID, skillPoints, skillTypes);
+            saveContent(courseUUID, flashCardSetUUID, chapterUUID, skillPoints, skillTypes);
             return true;
         }
 
@@ -192,23 +210,52 @@ public class BloomLevelService {
     }
 
     /**
+     * Validates whether the input is correct for editing content.
+     *
+     * @param courseUUID     the unique identifier of the course
+     * @param contentUUID    the id of the content
+     * @param chapterUUID    the id of the chapter of the edited content
+     * @param skillPoints    the rewarded skillPoints for finishing the content
+     * @param skillTypes     the max skill Type (Bloom's Tax) of the content
+     *
+     * @return indicates whether the editing is valid
+     */
+    private boolean validateEdit(UUID courseUUID,
+                                 UUID contentUUID,
+                                 UUID chapterUUID,
+                                 int skillPoints,
+                                 List<SkillType> skillTypes) {
+
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        Optional<ContentMetaDataEntity> contentMetaData = contentMetaDataRepository.findById(contentUUID);
+        return courseEntity.isPresent()
+                && courseEntity.get().getContent().contains(contentUUID)
+                && courseEntity.get().getChapters().contains(chapterUUID)
+                && contentMetaData.isPresent()
+                && skillPoints >= 0
+                && skillPoints <= 100
+                && skillTypes != null
+                && ! skillTypes.isEmpty();
+
+    }
+
+    /**
      * Updates the metadata of the content in the repository,
      *
      * @param courseUUID      the id of the course
      * @param contentUUID     the id of the content
+     * @param chapterUUID     the id of the chapter
      * @param skillPoints     the skillPoints rewarded for the content
      * @param skillTypes      the skillTypes of the content
      *
-     * @return indicates whether the content is updated successfully
+     * @return indicates whether the content is updated successfully. if content does not exist, false is returned.
      */
-    public boolean updateContent(UUID courseUUID, UUID contentUUID, int skillPoints, List<SkillType> skillTypes) {
-
-        boolean contentAlreadyExists = contentMetaDataRepository.existsById(contentUUID);
+    public boolean updateContent(UUID courseUUID, UUID contentUUID, UUID chapterUUID, int skillPoints, List<SkillType> skillTypes) {
 
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
-        if (contentAlreadyExists &&
-                courseEntity.isPresent() && courseEntity.get().getContent().contains(contentUUID)) {
-            return saveContent(courseUUID, contentUUID, skillPoints, skillTypes);
+        if (validateEdit(courseUUID, contentUUID, chapterUUID, skillPoints, skillTypes)) {
+            removeContent(courseUUID, chapterUUID, contentUUID);
+            return saveContent(courseUUID, contentUUID, chapterUUID, skillPoints, skillTypes);
         }
         return false;
 
@@ -219,19 +266,15 @@ public class BloomLevelService {
      *
      * @param courseUUID      the id of the course
      * @param contentUUID     the id of the content
+     * @param chapterUUID     the id of the chapter
      * @param skillPoints     the skillPoints rewarded for the content
      * @param skillTypes      the skillTypes of the content
      *
      * @return indicates whether the content is saved successfully
      */
-    public boolean saveContent(UUID courseUUID, UUID contentUUID, int skillPoints, List<SkillType> skillTypes) {
+    public boolean saveContent(UUID courseUUID, UUID contentUUID, UUID chapterUUID, int skillPoints, List<SkillType> skillTypes) {
 
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
-        if (courseEntity.isEmpty()
-                || skillPoints < 0 || skillPoints > 100
-                || skillTypes == null || skillTypes.isEmpty()) {
-            return false;
-        }
         SkillType maxSkillType = skillTypes.stream()
                 .max(Comparator.comparingInt(Enum::ordinal))
                 .get();
@@ -263,56 +306,33 @@ public class BloomLevelService {
     }
 
     /**
-     * Decreases the required exp for the chapter of the quizUUID.
+     * Decreases the required exp for the chapter of the content.
      *
      * @param courseUUID       the id of the course
-     * @param chapterUUID      the UUID of the chapter of the deleted quizUUID
-     * @param quizUUID             the UUID of the deleted quizUUID
+     * @param chapterUUID      the UUID of the chapter of the removed content
+     * @param contentUUID      the UUID of the removed content
      *
-     * @return indicates whether the quizUUID could be deleted successfully.
+     * @return indicates whether the content could be removed successfully.
      */
-    public boolean removeQuiz(UUID courseUUID, UUID chapterUUID, UUID quizUUID) {
+    public boolean removeContent(UUID courseUUID, UUID chapterUUID, UUID contentUUID) {
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
-        if (contentMetaDataRepository.existsById(quizUUID)
+        Optional<ContentMetaDataEntity> contentMetaDataEntity = contentMetaDataRepository.findById(contentUUID);
+
+        if (contentMetaDataEntity.isPresent()
                 && courseEntity.isPresent()
-                && courseEntity.get().getContent().contains(quizUUID)
+                && courseEntity.get().getContent().contains(contentUUID)
                 && courseEntity.get().getChapters().contains(chapterUUID)) {
             CourseEntity course = courseEntity.get();
-            course.removeQuiz(quizUUID, chapterUUID);
+            course.removeContent(contentUUID, chapterUUID, contentMetaDataEntity.get().getSkillPoints());
             courseRepository.save(course);
-            contentMetaDataRepository.deleteById(quizUUID);
-            return true;
-        }
-        return false;
-    }
-
-
-    /**
-     * Decreases the required exp for the chapter of the flashCardSet.
-     *
-     * @param courseUUID             the id of the course
-     * @param chapterUUID            the UUID of the chapter of the deleted flashCardSet
-     * @param flashCardSetUUID       the UUID of the deleted flashCardSet
-     *
-     * @return indicates whether the flashCardSet could be deleted successfully.
-     */
-    public boolean removeFlashCardSet(UUID courseUUID, UUID chapterUUID, UUID flashCardSetUUID) {
-        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
-        if (contentMetaDataRepository.existsById(flashCardSetUUID)
-                && courseEntity.isPresent()
-                && courseEntity.get().getContent().contains(flashCardSetUUID)
-                && courseEntity.get().getChapters().contains(chapterUUID)) {
-            CourseEntity course = courseEntity.get();
-            course.removeFlashCardSet(flashCardSetUUID, chapterUUID);
-            courseRepository.save(course);
-            contentMetaDataRepository.deleteById(flashCardSetUUID);
+            contentMetaDataRepository.deleteById(contentUUID);
             return true;
         }
         return false;
     }
 
     /**
-     * Grants a reward to a user for successfully completing content.
+     * Validates whether the input is correct for finishing content.
      *
      * @param courseUUID     the unique identifier of the course
      * @param userUUID       the unique identifier of the user
@@ -345,68 +365,32 @@ public class BloomLevelService {
     }
 
     /**
-     * Grants a reward to a user for successfully completing a quiz.
+     * Grants a reward to a user for successfully finishing content.
      *
      * @param courseUUID     the unique identifier of the course
      * @param userUUID       the unique identifier of the user
      * @param chapterUUID    the id of the chapter of the quiz
-     * @param quizUUID       the id of the quiz
+     * @param contentUUID    the id of the quiz
      * @param correctAnswers the number of correct answers given by the user
      * @param totalAnswers   the total number of questions in the quiz
      *
      * @return indicates whether the finishing is valid
      */
-    public boolean grantRewardToUserForFinishingQuiz(UUID courseUUID,
-                                                  UUID userUUID,
-                                                  UUID chapterUUID,
-                                                  UUID quizUUID,
-                                                  int correctAnswers,
-                                                  int totalAnswers) {
+    public boolean grantRewardToUserForFinishingContent(UUID courseUUID,
+                                                     UUID userUUID,
+                                                     UUID chapterUUID,
+                                                     UUID contentUUID,
+                                                     int correctAnswers,
+                                                     int totalAnswers) {
 
         BloomLevelEntity bloomLevel = bloomLevelRepository.findByUserUUIDAndCourseUUID(userUUID, courseUUID);
-        Optional<ContentMetaDataEntity> contentMetaData = contentMetaDataRepository.findById(quizUUID);
+        Optional<ContentMetaDataEntity> contentMetaData = contentMetaDataRepository.findById(contentUUID);
 
-        if (! validateFinish(courseUUID, userUUID, chapterUUID, quizUUID, correctAnswers, totalAnswers)
-                || bloomLevel == null || contentMetaData.isEmpty()) {
+        if (! validateFinish(courseUUID, userUUID, chapterUUID, contentUUID, correctAnswers, totalAnswers)) {
             return false;
         }
 
-        int level = getLevelOfChapter(chapterUUID, courseUUID);
-        bloomLevel.addExp(contentMetaData.get().rewardOfFinishingContent(
-                50, correctAnswers, totalAnswers, level));
-        bloomLevelRepository.save(bloomLevel);
-        return true;
-    }
-
-    /**
-     * Grants a reward to a user for successfully completing a flashCardSet.
-     *
-     * @param courseUUID            the unique identifier of the course
-     * @param userUUID              the unique identifier of the user
-     * @param chapterUUID           the id of the chapter of the flashCardSet
-     * @param flashCardSetUUID      the id of the flashCardSet
-     * @param correctAnswers        the number of correct answers given by the user
-     * @param totalAnswers          the total number of questions in the flashCardSet
-     *
-     * @return indicates whether the finishing is valid
-     */
-    public boolean grantRewardToUserForFinishingFlashCardSet(UUID courseUUID,
-                                                          UUID userUUID,
-                                                          UUID chapterUUID,
-                                                          UUID flashCardSetUUID,
-                                                          int correctAnswers,
-                                                          int totalAnswers) {
-        BloomLevelEntity bloomLevel = bloomLevelRepository.findByUserUUIDAndCourseUUID(userUUID, courseUUID);
-        Optional<ContentMetaDataEntity> contentMetaData = contentMetaDataRepository.findById(flashCardSetUUID);
-
-        if (! validateFinish(courseUUID, userUUID, chapterUUID, flashCardSetUUID, correctAnswers, totalAnswers)
-                || bloomLevel == null || contentMetaData.isEmpty()) {
-            return false;
-        }
-
-        int level = getLevelOfChapter(chapterUUID, courseUUID);
-        bloomLevel.addExp(contentMetaData.get().rewardOfFinishingContent(
-                30, correctAnswers, totalAnswers, level));
+        bloomLevel.addExp((int) contentMetaData.get().rewardOfFinishingContent(correctAnswers, totalAnswers));
         bloomLevelRepository.save(bloomLevel);
         return true;
     }

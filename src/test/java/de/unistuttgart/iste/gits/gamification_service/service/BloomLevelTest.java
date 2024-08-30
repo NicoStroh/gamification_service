@@ -152,7 +152,7 @@ class BloomLevelTest {
         assertEquals(1, courseEntity.get().getLevelOfChapter(chapter));
 
         assertEquals(2, courseEntity.get().getRequiredExpPerLevel().size());
-        assertEquals(300, courseEntity.get().getRequiredExpOfLevel(1));
+        assertEquals(0, courseEntity.get().getRequiredExpOfLevel(1));
     }
 
     /**
@@ -230,15 +230,15 @@ class BloomLevelTest {
 
         assertNotNull(lecturerBloomLevel);
         assertEquals(1, lecturerBloomLevel.getLevel());
-        assertEquals(70, lecturerBloomLevel.getExpForCurrentLevel());
         assertEquals(300, lecturerBloomLevel.getTotalExp());
+        assertEquals(245, lecturerBloomLevel.getExpForCurrentLevel());
         assertEquals(Integer.MAX_VALUE, lecturerBloomLevel.getRequiredExpForCurrentLevel());
 
         assertNotNull(user1BloomLevel);
         assertEquals(0, user1BloomLevel.getLevel());
-        assertEquals(50, user1BloomLevel.getExpForCurrentLevel());
         assertEquals(50, user1BloomLevel.getTotalExp());
-        assertEquals(230, user1BloomLevel.getRequiredExpForCurrentLevel());
+        assertEquals(50, user1BloomLevel.getExpForCurrentLevel());
+        assertEquals(55, user1BloomLevel.getRequiredExpForCurrentLevel());
     }
 
     /**

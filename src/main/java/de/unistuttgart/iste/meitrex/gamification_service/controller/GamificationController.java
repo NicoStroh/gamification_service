@@ -155,7 +155,7 @@ public class GamificationController {
     public String deleteBadgesAndQuestOfFlashCardSet(@Argument UUID flashCardSetUUID,
                                                      @Argument UUID courseUUID,
                                                      @Argument UUID chapterUUID) {
-        boolean removedSuccessfully = bloomLevelService.removeFlashCardSet(courseUUID, chapterUUID, flashCardSetUUID);
+        boolean removedSuccessfully = bloomLevelService.removeContent(courseUUID, chapterUUID, flashCardSetUUID);
         if (removedSuccessfully) {
             badgeService.deleteBadgesAndUserBadgesOfFCS(flashCardSetUUID);
             questService.deleteQuestOfFCS(courseUUID, flashCardSetUUID);
@@ -176,7 +176,7 @@ public class GamificationController {
     public String deleteBadgesAndQuestOfQuiz(@Argument UUID quizUUID,
                                              @Argument UUID courseUUID,
                                              @Argument UUID chapterUUID) {
-        boolean removedSuccessfully = bloomLevelService.removeQuiz(courseUUID, chapterUUID, quizUUID);
+        boolean removedSuccessfully = bloomLevelService.removeContent(courseUUID, chapterUUID, quizUUID);
         if (removedSuccessfully) {
             badgeService.deleteBadgesAndUserBadgesOfQuiz(quizUUID);
             questService.deleteQuestOfQuiz(courseUUID, quizUUID);
@@ -192,6 +192,7 @@ public class GamificationController {
      *
      * @param flashCardSetUUID       the id of the edited flashCardSet
      * @param courseUUID             the id of the course
+     * @param chapterUUID            the id of the chapter
      * @param name                   the new name of the flashCardSet
      * @param skillPoints            the new rewarded skillPoints of the flashCardSet
      * @param skillTypes             the new skill types of bloom of the flashCardSet
@@ -199,10 +200,11 @@ public class GamificationController {
     @MutationMapping
     public String editFlashCardSet(@Argument UUID flashCardSetUUID,
                                    @Argument UUID courseUUID,
+                                   @Argument UUID chapterUUID,
                                    @Argument String name,
                                    @Argument int skillPoints,
                                    @Argument List<SkillType> skillTypes) {
-        boolean flashCardSetExists = bloomLevelService.updateContent(courseUUID, flashCardSetUUID, skillPoints, skillTypes);
+        boolean flashCardSetExists = bloomLevelService.updateContent(courseUUID, flashCardSetUUID, chapterUUID, skillPoints, skillTypes);
         if (flashCardSetExists) {
             badgeService.changeFlashCardSetName(flashCardSetUUID, name);
             questService.changeFlashCardSetName(flashCardSetUUID, courseUUID, name);
@@ -218,6 +220,7 @@ public class GamificationController {
      *
      * @param quizUUID          the id of the edited quiz
      * @param courseUUID        the id of the course
+     * @param chapterUUID            the id of the chapter
      * @param name              the new name of the quiz
      * @param skillPoints       the new rewarded skillPoints of the quiz
      * @param skillTypes        the new skill types of bloom of the quiz
@@ -225,10 +228,11 @@ public class GamificationController {
     @MutationMapping
     public String editQuiz(@Argument UUID quizUUID,
                            @Argument UUID courseUUID,
+                           @Argument UUID chapterUUID,
                            @Argument String name,
                            @Argument int skillPoints,
                            @Argument List<SkillType> skillTypes) {
-        boolean quizExists = bloomLevelService.updateContent(courseUUID, quizUUID, skillPoints, skillTypes);
+        boolean quizExists = bloomLevelService.updateContent(courseUUID, quizUUID, chapterUUID, skillPoints, skillTypes);
         if (quizExists) {
             badgeService.changeQuizName(quizUUID, name);
             questService.changeQuizName(quizUUID, courseUUID, name);
@@ -245,36 +249,6 @@ public class GamificationController {
     @MutationMapping
     public PlayerTypeEntity evaluateTest(@Argument UUID userUUID) {
         return playerTypeService.evaluateTest(userUUID);
-    }
-
-    /**
-     * The user finishes a quiz. It is checked, whether the requirements for achieving the quizzes badges or quest
-     * are fulfilled. The user is rewarded some experience points for finishing the quiz.
-     *
-     * @param userUUID          the id of the user who finished quiz
-     * @param courseUUID        the id of the course where the quiz is located
-     * @param quizUUID          the id of the finished quiz
-     * @param correctAnswers    the number of correct answers the user had for the quiz
-     * @param totalAnswers      the total number of answers for the quiz
-     * @param chapterUUID       the id of the chapter where the quiz is located
-     */
-    @MutationMapping
-    public String finishQuiz(@Argument UUID userUUID,
-                             @Argument UUID courseUUID,
-                             @Argument UUID quizUUID,
-                             @Argument int correctAnswers,
-                             @Argument int totalAnswers,
-                             @Argument UUID chapterUUID) {
-
-        boolean finishingValid = bloomLevelService.grantRewardToUserForFinishingQuiz(courseUUID, userUUID, chapterUUID,
-                        quizUUID, correctAnswers, totalAnswers);
-        if (finishingValid) {
-            badgeService.markBadgesAsAchievedIfPassedQuiz(userUUID, quizUUID, correctAnswers, totalAnswers);
-            questService.markQuestAsFinishedIfPassedQuiz(userUUID, courseUUID, quizUUID, correctAnswers, totalAnswers);
-            return "Finished quiz!";
-        }
-        return "Error at finishing quiz.";
-
     }
 
     /**
@@ -297,14 +271,44 @@ public class GamificationController {
                                      @Argument int totalAnswers,
                                      @Argument UUID chapterUUID) {
 
-        boolean finishingValid = bloomLevelService.grantRewardToUserForFinishingFlashCardSet(courseUUID, userUUID, chapterUUID,
-                        flashCardSetUUID, correctAnswers, totalAnswers);
+        boolean finishingValid = bloomLevelService.grantRewardToUserForFinishingContent(courseUUID, userUUID, chapterUUID,
+                flashCardSetUUID, correctAnswers, totalAnswers);
         if (finishingValid) {
             badgeService.markBadgesAsAchievedIfPassedFlashCardSet(userUUID, flashCardSetUUID, correctAnswers, totalAnswers);
             questService.markQuestAsFinishedIfPassedFlashCardSet(userUUID, courseUUID, flashCardSetUUID, correctAnswers, totalAnswers);
             return "Finished flashCardSet!";
         }
         return "Error at finishing flashCardSet.";
+
+    }
+
+    /**
+     * The user finishes a quiz. It is checked, whether the requirements for achieving the quizzes badges or quest
+     * are fulfilled. The user is rewarded some experience points for finishing the quiz.
+     *
+     * @param userUUID          the id of the user who finished quiz
+     * @param courseUUID        the id of the course where the quiz is located
+     * @param quizUUID          the id of the finished quiz
+     * @param correctAnswers    the number of correct answers the user had for the quiz
+     * @param totalAnswers      the total number of answers for the quiz
+     * @param chapterUUID       the id of the chapter where the quiz is located
+     */
+    @MutationMapping
+    public String finishQuiz(@Argument UUID userUUID,
+                             @Argument UUID courseUUID,
+                             @Argument UUID quizUUID,
+                             @Argument int correctAnswers,
+                             @Argument int totalAnswers,
+                             @Argument UUID chapterUUID) {
+
+        boolean finishingValid = bloomLevelService.grantRewardToUserForFinishingContent(courseUUID, userUUID, chapterUUID,
+                        quizUUID, correctAnswers, totalAnswers);
+        if (finishingValid) {
+            badgeService.markBadgesAsAchievedIfPassedQuiz(userUUID, quizUUID, correctAnswers, totalAnswers);
+            questService.markQuestAsFinishedIfPassedQuiz(userUUID, courseUUID, quizUUID, correctAnswers, totalAnswers);
+            return "Finished quiz!";
+        }
+        return "Error at finishing quiz.";
 
     }
 

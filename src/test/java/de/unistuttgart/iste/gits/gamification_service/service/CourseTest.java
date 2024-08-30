@@ -166,7 +166,7 @@ class CourseTest {
         assertTrue(courseEntity.get().getContent().contains(quizUUID));
 
         assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
-        assertEquals(230, courseEntity.get().getRequiredExpOfLevel(0));
+        assertEquals(55, courseEntity.get().getRequiredExpOfLevel(0));
 
         assertEquals(6, badgeRepository.count());
         for (BadgeEntity badgeEntity : badgeRepository.findAll()) {
@@ -269,7 +269,7 @@ class CourseTest {
         assertTrue(courseEntity.isPresent());
         assertEquals(1, courseEntity.get().getUserUUIDs().size());
         assertTrue(courseEntity.get().getUserUUIDs().contains(lecturer));
-        assertEquals(150, courseEntity.get().getRequiredExpOfLevel(0));
+        assertEquals(0, courseEntity.get().getRequiredExpOfLevel(0));
 
         QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(course);
         assertEquals(2, questChainRepository.findAll().size());
@@ -325,7 +325,7 @@ class CourseTest {
         assertTrue(courseEntity.get().getContent().contains(quizUUID));
 
         assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
-        assertEquals(230, courseEntity.get().getRequiredExpOfLevel(0));
+        assertEquals(55, courseEntity.get().getRequiredExpOfLevel(0));
 
         assertEquals(6, badgeRepository.count());
         for (BadgeEntity badgeEntity : badgeRepository.findAll()) {

@@ -43,7 +43,7 @@ public class CourseEntity {
         if (this.requiredExpPerLevel == null) {
             this.requiredExpPerLevel = new ArrayList<>();
         }
-        requiredExpPerLevel.add(requiredExpOfLevel(requiredExpPerLevel.size() + 1));
+        requiredExpPerLevel.add(0);
 
         if (this.chapters == null) {
             this.chapters = new LinkedList<>();
@@ -65,52 +65,28 @@ public class CourseEntity {
         this.content.add(contentUUID);
     }
 
-    public boolean addQuiz(UUID quizUUID, UUID chapter) {
+    public boolean addContent(UUID contentUUID, UUID chapter, int skillPoints) {
         int level = this.getLevelOfChapter(chapter);
         if (level < 0) {
             return false;
         }
 
-        this.addContent(quizUUID);
+        this.addContent(contentUUID);
         if (this.requiredExpPerLevel == null || this.requiredExpPerLevel.size() < level) {
             return false;
         }
-        this.requiredExpPerLevel.set(level, requiredExpPerLevel.get(level) + 50);
+        this.requiredExpPerLevel.set(level, requiredExpPerLevel.get(level) + (skillPoints / 2));
         return true;
     }
 
-    public boolean addFlashCardSet(UUID flashCardSet, UUID chapter) {
+    public void removeContent(UUID contentUUID, UUID chapter, int skillPoints) {
         int level = this.getLevelOfChapter(chapter);
-        if (level < 0) {
-            return false;
-        }
-
-        this.addContent(flashCardSet);
-        if (this.requiredExpPerLevel == null || this.requiredExpPerLevel.size() < level) {
-            return false;
-        }
-        this.requiredExpPerLevel.set(level, requiredExpPerLevel.get(level) + 30);
-        return true;
-    }
-
-    public void removeQuiz(UUID quizUUID, UUID chapter) {
-        int level = this.getLevelOfChapter(chapter);
-        this.content.remove(quizUUID);
+        this.content.remove(contentUUID);
         if (this.requiredExpPerLevel == null || this.requiredExpPerLevel.size() < level) {
             return;
         }
-        this.requiredExpPerLevel.set(level, requiredExpPerLevel.get(level) - 50);
+        this.requiredExpPerLevel.set(level, requiredExpPerLevel.get(level) - (skillPoints / 2));
     }
-
-    public void removeFlashCardSet(UUID flashCardSet, UUID chapter) {
-        int level = this.getLevelOfChapter(chapter);
-        this.content.remove(flashCardSet);
-        if (this.requiredExpPerLevel == null || this.requiredExpPerLevel.size() < level) {
-            return;
-        }
-        this.requiredExpPerLevel.set(level, requiredExpPerLevel.get(level) - 30);
-    }
-
 
     public int calculateLevelForExp(int exp) {
         if (this.requiredExpPerLevel == null) {
@@ -162,11 +138,6 @@ public class CourseEntity {
             return Integer.MAX_VALUE;
         }
         return this.requiredExpPerLevel.get(level);
-    }
-
-
-    private static int requiredExpOfLevel(int level) {
-        return 100 + (50 * level * level);
     }
 
 }

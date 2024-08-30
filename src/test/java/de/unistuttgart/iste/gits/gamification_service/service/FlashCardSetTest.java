@@ -157,9 +157,9 @@ class FlashCardSetTest {
         assertEquals(3, courseEntity.get().getContent().size());
         assertTrue(courseEntity.get().getContent().contains(flashCardSet));
         assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
-        assertEquals(260, courseEntity.get().getRequiredExpOfLevel(0));
+        assertEquals(90, courseEntity.get().getRequiredExpOfLevel(0));
 
-        assertEquals(9, badgeRepository.findAll().size());
+        assertEquals(9, badgeRepository.count());
         List<BadgeEntity> fcsBadges = badgeRepository.findByFlashCardSetUUID(flashCardSet);
         assertEquals(3, fcsBadges.size());
 
@@ -176,7 +176,7 @@ class FlashCardSetTest {
             fcsUserBadges.addAll(userBadgeRepository.findByBadgeUUID(badge.getBadgeUUID()));
         }
 
-        assertEquals(27, userBadgeRepository.findAll().size());
+        assertEquals(27, userBadgeRepository.count());
         assertEquals(9, fcsUserBadges.size());
         for (UserBadgeEntity userBadge : fcsUserBadges) {
             assertNotNull(userBadge.getUserBadgeUUID());
@@ -188,7 +188,7 @@ class FlashCardSetTest {
         }
 
         QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
-        assertEquals(1, questChainRepository.findAll().size());
+        assertEquals(1, questChainRepository.count());
         assertNotNull(questChainEntity);
         assertEquals(3, questChainEntity.size());
         assertTrue(questChainEntity.getQuests().stream().anyMatch(
@@ -222,9 +222,9 @@ class FlashCardSetTest {
         assertEquals(2, courseEntity.get().getContent().size());
         assertTrue(courseEntity.get().getContent().contains(flashCardSetUUID));
         assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
-        assertEquals(230, courseEntity.get().getRequiredExpOfLevel(0));
+        assertEquals(55, courseEntity.get().getRequiredExpOfLevel(0));
 
-        assertEquals(6, badgeRepository.findAll().size());
+        assertEquals(6, badgeRepository.count());
         List<BadgeEntity> fcsBadges = badgeRepository.findByFlashCardSetUUID(flashCardSetUUID);
         assertEquals(3, fcsBadges.size());
 
@@ -233,7 +233,7 @@ class FlashCardSetTest {
             fcsUserBadges.addAll(userBadgeRepository.findByBadgeUUID(badge.getBadgeUUID()));
         }
 
-        assertEquals(18, userBadgeRepository.findAll().size());
+        assertEquals(18, userBadgeRepository.count());
         assertEquals(9, fcsUserBadges.size());
         for (UserBadgeEntity userBadge : fcsUserBadges) {
             assertNotNull(userBadge.getUserBadgeUUID());
@@ -242,7 +242,7 @@ class FlashCardSetTest {
         }
 
         QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
-        assertEquals(1, questChainRepository.findAll().size());
+        assertEquals(1, questChainRepository.count());
         assertNotNull(questChainEntity);
         assertEquals(2, questChainEntity.size());
         assertTrue(questChainEntity.getQuests().stream().anyMatch(
@@ -276,13 +276,13 @@ class FlashCardSetTest {
         Optional<CourseEntity> courseEntity = courseRepository.findById(course);
         assertFalse(courseEntity.isPresent());
 
-        assertEquals(6, badgeRepository.findAll().size());
+        assertEquals(6, badgeRepository.count());
         List<BadgeEntity> fcsBadges = badgeRepository.findByFlashCardSetUUID(flashCardSet);
         assertEquals(0, fcsBadges.size());
-        assertEquals(18, userBadgeRepository.findAll().size());
+        assertEquals(18, userBadgeRepository.count());
 
         QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(course);
-        assertEquals(1, questChainRepository.findAll().size());
+        assertEquals(1, questChainRepository.count());
         assertNull(questChainEntity);
 
     }
@@ -314,15 +314,15 @@ class FlashCardSetTest {
         assertEquals(2, courseEntity.get().getContent().size());
         assertFalse(courseEntity.get().getContent().contains(flashCardSet));
         assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
-        assertEquals(230, courseEntity.get().getRequiredExpOfLevel(0));
+        assertEquals(55, courseEntity.get().getRequiredExpOfLevel(0));
 
-        assertEquals(6, badgeRepository.findAll().size());
+        assertEquals(6, badgeRepository.count());
         List<BadgeEntity> fcsBadges = badgeRepository.findByFlashCardSetUUID(flashCardSet);
         assertEquals(0, fcsBadges.size());
-        assertEquals(18, userBadgeRepository.findAll().size());
+        assertEquals(18, userBadgeRepository.count());
 
         QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
-        assertEquals(1, questChainRepository.findAll().size());
+        assertEquals(1, questChainRepository.count());
         assertNotNull(questChainEntity);
         assertEquals(2, questChainEntity.size());
         assertFalse(questChainEntity.getQuests().stream().anyMatch(
@@ -356,15 +356,15 @@ class FlashCardSetTest {
         assertEquals(2, courseEntity.get().getContent().size());
         assertFalse(courseEntity.get().getContent().contains(flashCardSet));
         assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
-        assertEquals(230, courseEntity.get().getRequiredExpOfLevel(0));
+        assertEquals(55, courseEntity.get().getRequiredExpOfLevel(0));
 
-        assertEquals(6, badgeRepository.findAll().size());
+        assertEquals(6, badgeRepository.count());
         List<BadgeEntity> fcsBadges = badgeRepository.findByFlashCardSetUUID(flashCardSet);
         assertEquals(0, fcsBadges.size());
-        assertEquals(18, userBadgeRepository.findAll().size());
+        assertEquals(18, userBadgeRepository.count());
 
         QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
-        assertEquals(1, questChainRepository.findAll().size());
+        assertEquals(1, questChainRepository.count());
         assertNotNull(questChainEntity);
         assertEquals(2, questChainEntity.size());
         assertFalse(questChainEntity.getQuests().stream().anyMatch(
@@ -382,15 +382,15 @@ class FlashCardSetTest {
         assertEquals(2, courseEntity.get().getContent().size());
         assertFalse(courseEntity.get().getContent().contains(flashCardSet));
         assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
-        assertEquals(230, courseEntity.get().getRequiredExpOfLevel(0));
+        assertEquals(55, courseEntity.get().getRequiredExpOfLevel(0));
 
-        assertEquals(6, badgeRepository.findAll().size());
+        assertEquals(6, badgeRepository.count());
         fcsBadges = badgeRepository.findByFlashCardSetUUID(flashCardSet);
         assertEquals(0, fcsBadges.size());
-        assertEquals(18, userBadgeRepository.findAll().size());
+        assertEquals(18, userBadgeRepository.count());
 
         questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
-        assertEquals(1, questChainRepository.findAll().size());
+        assertEquals(1, questChainRepository.count());
         assertNotNull(questChainEntity);
         assertEquals(2, questChainEntity.size());
         assertFalse(questChainEntity.getQuests().stream().anyMatch(
@@ -424,15 +424,15 @@ class FlashCardSetTest {
         assertEquals(2, courseEntity.get().getContent().size());
         assertFalse(courseEntity.get().getContent().contains(flashCardSet));
         assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
-        assertEquals(230, courseEntity.get().getRequiredExpOfLevel(0));
+        assertEquals(55, courseEntity.get().getRequiredExpOfLevel(0));
 
-        assertEquals(6, badgeRepository.findAll().size());
+        assertEquals(6, badgeRepository.count());
         List<BadgeEntity> fcsBadges = badgeRepository.findByFlashCardSetUUID(flashCardSet);
         assertEquals(0, fcsBadges.size());
-        assertEquals(18, userBadgeRepository.findAll().size());
+        assertEquals(18, userBadgeRepository.count());
 
         QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
-        assertEquals(1, questChainRepository.findAll().size());
+        assertEquals(1, questChainRepository.count());
         assertNotNull(questChainEntity);
         assertEquals(2, questChainEntity.size());
         assertFalse(questChainEntity.getQuests().stream().anyMatch(
@@ -450,15 +450,15 @@ class FlashCardSetTest {
         assertEquals(2, courseEntity.get().getContent().size());
         assertFalse(courseEntity.get().getContent().contains(flashCardSet));
         assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
-        assertEquals(230, courseEntity.get().getRequiredExpOfLevel(0));
+        assertEquals(55, courseEntity.get().getRequiredExpOfLevel(0));
 
-        assertEquals(6, badgeRepository.findAll().size());
+        assertEquals(6, badgeRepository.count());
         fcsBadges = badgeRepository.findByFlashCardSetUUID(flashCardSet);
         assertEquals(0, fcsBadges.size());
-        assertEquals(18, userBadgeRepository.findAll().size());
+        assertEquals(18, userBadgeRepository.count());
 
         questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
-        assertEquals(1, questChainRepository.findAll().size());
+        assertEquals(1, questChainRepository.count());
         assertNotNull(questChainEntity);
         assertEquals(2, questChainEntity.size());
         assertFalse(questChainEntity.getQuests().stream().anyMatch(
@@ -496,7 +496,7 @@ class FlashCardSetTest {
         assertEquals(1, courseEntity.get().getContent().size());
         assertFalse(courseEntity.get().getContent().contains(flashCardSetUUID));
         assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
-        assertEquals(200, courseEntity.get().getRequiredExpOfLevel(0));
+        assertEquals(25, courseEntity.get().getRequiredExpOfLevel(0));
 
         List<BadgeEntity> allBadges = badgeRepository.findAll();
         assertEquals(3, allBadges.size());
@@ -520,7 +520,7 @@ class FlashCardSetTest {
                 userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), user1UUID);
         UserQuestChainEntity user2QuestChainEntity =
                 userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), user2UUID);
-        assertEquals(3, userQuestChainRepository.findAll().size());
+        assertEquals(3, userQuestChainRepository.count());
         assertEquals(0, lecturerQuestChainEntity.getUserLevel());
         assertEquals(0, user1QuestChainEntity.getUserLevel());
         assertEquals(1, user2QuestChainEntity.getUserLevel());
@@ -550,7 +550,7 @@ class FlashCardSetTest {
         assertTrue(courseEntity.isPresent());
         assertEquals(2, courseEntity.get().getContent().size());
         assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
-        assertEquals(230, courseEntity.get().getRequiredExpOfLevel(0));
+        assertEquals(55, courseEntity.get().getRequiredExpOfLevel(0));
 
         List<BadgeEntity> allBadges = badgeRepository.findAll();
         assertEquals(6, allBadges.size());
@@ -568,7 +568,7 @@ class FlashCardSetTest {
                 userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), user1UUID);
         UserQuestChainEntity user2QuestChainEntity =
                 userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), user2UUID);
-        assertEquals(3, userQuestChainRepository.findAll().size());
+        assertEquals(3, userQuestChainRepository.count());
         assertEquals(0, lecturerQuestChainEntity.getUserLevel());
         assertEquals(0, user1QuestChainEntity.getUserLevel());
         assertEquals(1, user2QuestChainEntity.getUserLevel());
@@ -599,7 +599,7 @@ class FlashCardSetTest {
         assertTrue(courseEntity.isPresent());
         assertEquals(2, courseEntity.get().getContent().size());
         assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
-        assertEquals(230, courseEntity.get().getRequiredExpOfLevel(0));
+        assertEquals(55, courseEntity.get().getRequiredExpOfLevel(0));
 
         List<BadgeEntity> allBadges = badgeRepository.findAll();
         assertEquals(6, allBadges.size());
@@ -617,7 +617,7 @@ class FlashCardSetTest {
                 userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), user1UUID);
         UserQuestChainEntity user2QuestChainEntity =
                 userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), user2UUID);
-        assertEquals(3, userQuestChainRepository.findAll().size());
+        assertEquals(3, userQuestChainRepository.count());
         assertEquals(0, lecturerQuestChainEntity.getUserLevel());
         assertEquals(0, user1QuestChainEntity.getUserLevel());
         assertEquals(1, user2QuestChainEntity.getUserLevel());
@@ -650,7 +650,7 @@ class FlashCardSetTest {
         assertTrue(courseEntity.isPresent());
         assertEquals(2, courseEntity.get().getContent().size());
         assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
-        assertEquals(230, courseEntity.get().getRequiredExpOfLevel(0));
+        assertEquals(55, courseEntity.get().getRequiredExpOfLevel(0));
 
         List<BadgeEntity> allBadges = badgeRepository.findAll();
         assertEquals(6, allBadges.size());
@@ -668,7 +668,7 @@ class FlashCardSetTest {
                 userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), user1UUID);
         UserQuestChainEntity user2QuestChainEntity =
                 userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), user2UUID);
-        assertEquals(4, userQuestChainRepository.findAll().size());
+        assertEquals(4, userQuestChainRepository.count());
         assertEquals(0, lecturerQuestChainEntity.getUserLevel());
         assertEquals(0, user1QuestChainEntity.getUserLevel());
         assertEquals(1, user2QuestChainEntity.getUserLevel());
@@ -699,7 +699,7 @@ class FlashCardSetTest {
         assertTrue(courseEntity.isPresent());
         assertEquals(2, courseEntity.get().getContent().size());
         assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
-        assertEquals(230, courseEntity.get().getRequiredExpOfLevel(0));
+        assertEquals(55, courseEntity.get().getRequiredExpOfLevel(0));
 
         List<BadgeEntity> allBadges = badgeRepository.findAll();
         assertEquals(6, allBadges.size());
@@ -717,7 +717,7 @@ class FlashCardSetTest {
                 userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), user1UUID);
         UserQuestChainEntity user2QuestChainEntity =
                 userQuestChainRepository.findByQuestChainUUIDAndUserUUID(questChainEntity.getQuestChainUUID(), user2UUID);
-        assertEquals(3, userQuestChainRepository.findAll().size());
+        assertEquals(3, userQuestChainRepository.count());
         assertEquals(0, lecturerQuestChainEntity.getUserLevel());
         assertEquals(0, user1QuestChainEntity.getUserLevel());
         assertEquals(1, user2QuestChainEntity.getUserLevel());
@@ -743,7 +743,7 @@ class FlashCardSetTest {
     void editFlashCardSetTest() {
         String newName = "New Name";
         assertEquals("Changed flashCardSet data!", gamificationController.editFlashCardSet(flashCardSetUUID,
-                courseUUID, newName, 55, List.of(SkillType.UNDERSTAND)));
+                courseUUID, chapterUUID, newName, 55, List.of(SkillType.UNDERSTAND)));
 
         List<BadgeEntity> fcsBadges = badgeRepository.findByFlashCardSetUUID(flashCardSetUUID);
         assertEquals(3, fcsBadges.size());
@@ -782,7 +782,7 @@ class FlashCardSetTest {
         UUID flashCardSet = UUID.randomUUID();
         String name = "New name";
         assertEquals("Error at editing flashCardSet.",
-                gamificationController.editFlashCardSet(flashCardSet, courseUUID, name,55,
+                gamificationController.editFlashCardSet(flashCardSet, courseUUID, chapterUUID, name,55,
                         List.of(SkillType.UNDERSTAND)));
 
         Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
@@ -820,19 +820,19 @@ class FlashCardSetTest {
         UUID course = UUID.randomUUID();
         String name = "FCS 2";
         assertEquals("Error at editing flashCardSet.",
-                gamificationController.editFlashCardSet(flashCardSetUUID, course, name,
+                gamificationController.editFlashCardSet(flashCardSetUUID, course, chapterUUID, name,
                         70, List.of(SkillType.REMEMBER)));
 
         Optional<CourseEntity> courseEntity = courseRepository.findById(course);
         assertFalse(courseEntity.isPresent());
 
-        assertEquals(6, badgeRepository.findAll().size());
+        assertEquals(6, badgeRepository.count());
         List<BadgeEntity> fcsBadges = badgeRepository.findByFlashCardSetUUID(flashCardSetUUID);
         assertEquals(3, fcsBadges.size());
-        assertEquals(18, userBadgeRepository.findAll().size());
+        assertEquals(18, userBadgeRepository.count());
 
         QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(course);
-        assertEquals(1, questChainRepository.findAll().size());
+        assertEquals(1, questChainRepository.count());
         assertNull(questChainEntity);
 
     }
@@ -858,20 +858,56 @@ class FlashCardSetTest {
 
         String name = "FCS 2";
         assertEquals("Error at editing flashCardSet.",
-                gamificationController.editFlashCardSet(flashCardSetUUID, course, name,
+                gamificationController.editFlashCardSet(flashCardSetUUID, course, chapterUUID, name,
                         70, List.of(SkillType.REMEMBER)));
 
         Optional<CourseEntity> courseEntity = courseRepository.findById(course);
         assertFalse(courseEntity.isPresent());
 
-        assertEquals(6, badgeRepository.findAll().size());
+        assertEquals(6, badgeRepository.count());
         List<BadgeEntity> fcsBadges = badgeRepository.findByFlashCardSetUUID(flashCardSetUUID);
         assertEquals(3, fcsBadges.size());
-        assertEquals(18, userBadgeRepository.findAll().size());
+        assertEquals(18, userBadgeRepository.count());
 
         QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(course);
-        assertEquals(1, questChainRepository.findAll().size());
+        assertEquals(1, questChainRepository.count());
         assertNull(questChainEntity);
+
+    }
+
+    /**
+     * Tests the editing of a flashCardSet for the wrong chapter id, that does not exist.
+     * <p>
+     * This test verifies that the editing of a flashCardSet for a wrong chapter fails.
+     * There should also be no changes to the repositories.
+     * <p>
+     *
+     * Expected Outcome:
+     * <ul>
+     *   <li>The flashCardSet is not edited.</li>
+     *   <li>No changes in the repositories.</li>
+     * </ul>
+     */
+    @Test
+    void editFlashCardSetForNotExistingChapterTest() {
+
+        UUID chapter = UUID.randomUUID();
+        String name = "FCS 2";
+        assertEquals("Error at editing flashCardSet.",
+                gamificationController.editFlashCardSet(flashCardSetUUID, courseUUID, chapter, name,
+                        70, List.of(SkillType.REMEMBER)));
+
+        Optional<CourseEntity> courseEntity = courseRepository.findById(courseUUID);
+        assertTrue(courseEntity.isPresent());
+
+        assertEquals(6, badgeRepository.count());
+        List<BadgeEntity> fcsBadges = badgeRepository.findByFlashCardSetUUID(flashCardSetUUID);
+        assertEquals(3, fcsBadges.size());
+        assertEquals(18, userBadgeRepository.count());
+
+        QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
+        assertEquals(1, questChainRepository.count());
+        assertNotNull(questChainEntity);
 
     }
 
@@ -891,7 +927,7 @@ class FlashCardSetTest {
 
         String name = "FCS 2";
         assertEquals("Error at editing flashCardSet.",
-                gamificationController.editFlashCardSet(flashCardSetUUID, courseUUID, name,
+                gamificationController.editFlashCardSet(flashCardSetUUID, courseUUID, chapterUUID, name,
                         -1, List.of(SkillType.UNDERSTAND)));
 
         Optional<ContentMetaDataEntity> contentMetaDataEntity = contentMetaDataRepository.findById(flashCardSetUUID);
@@ -905,15 +941,15 @@ class FlashCardSetTest {
         assertEquals(2, courseEntity.get().getContent().size());
         assertTrue(courseEntity.get().getContent().contains(flashCardSetUUID));
         assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
-        assertEquals(230, courseEntity.get().getRequiredExpOfLevel(0));
+        assertEquals(55, courseEntity.get().getRequiredExpOfLevel(0));
 
-        assertEquals(6, badgeRepository.findAll().size());
+        assertEquals(6, badgeRepository.count());
         List<BadgeEntity> fcsBadges = badgeRepository.findByFlashCardSetUUID(flashCardSetUUID);
         assertEquals(3, fcsBadges.size());
-        assertEquals(18, userBadgeRepository.findAll().size());
+        assertEquals(18, userBadgeRepository.count());
 
         QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
-        assertEquals(1, questChainRepository.findAll().size());
+        assertEquals(1, questChainRepository.count());
         assertNotNull(questChainEntity);
         assertEquals(2, questChainEntity.size());
         assertTrue(questChainEntity.getQuests().stream().anyMatch(
@@ -921,7 +957,7 @@ class FlashCardSetTest {
 
 
         assertEquals("Error at editing flashCardSet.",
-                gamificationController.editFlashCardSet(flashCardSetUUID, courseUUID, name,
+                gamificationController.editFlashCardSet(flashCardSetUUID, courseUUID, chapterUUID, name,
                         101, List.of(SkillType.APPLY)));
 
         contentMetaDataEntity = contentMetaDataRepository.findById(flashCardSetUUID);
@@ -935,15 +971,15 @@ class FlashCardSetTest {
         assertEquals(2, courseEntity.get().getContent().size());
         assertTrue(courseEntity.get().getContent().contains(flashCardSetUUID));
         assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
-        assertEquals(230, courseEntity.get().getRequiredExpOfLevel(0));
+        assertEquals(55, courseEntity.get().getRequiredExpOfLevel(0));
 
-        assertEquals(6, badgeRepository.findAll().size());
+        assertEquals(6, badgeRepository.count());
         fcsBadges = badgeRepository.findByFlashCardSetUUID(flashCardSetUUID);
         assertEquals(3, fcsBadges.size());
-        assertEquals(18, userBadgeRepository.findAll().size());
+        assertEquals(18, userBadgeRepository.count());
 
         questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
-        assertEquals(1, questChainRepository.findAll().size());
+        assertEquals(1, questChainRepository.count());
         assertNotNull(questChainEntity);
         assertEquals(2, questChainEntity.size());
         assertTrue(questChainEntity.getQuests().stream().anyMatch(
@@ -968,7 +1004,7 @@ class FlashCardSetTest {
 
         String name = "FCS 2";
         assertEquals("Error at editing flashCardSet.",
-                gamificationController.editFlashCardSet(flashCardSetUUID, courseUUID, name,
+                gamificationController.editFlashCardSet(flashCardSetUUID, courseUUID, chapterUUID, name,
                         65, null));
 
         Optional<ContentMetaDataEntity> contentMetaDataEntity = contentMetaDataRepository.findById(flashCardSetUUID);
@@ -982,15 +1018,15 @@ class FlashCardSetTest {
         assertEquals(2, courseEntity.get().getContent().size());
         assertTrue(courseEntity.get().getContent().contains(flashCardSetUUID));
         assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
-        assertEquals(230, courseEntity.get().getRequiredExpOfLevel(0));
+        assertEquals(55, courseEntity.get().getRequiredExpOfLevel(0));
 
-        assertEquals(6, badgeRepository.findAll().size());
+        assertEquals(6, badgeRepository.count());
         List<BadgeEntity> fcsBadges = badgeRepository.findByFlashCardSetUUID(flashCardSetUUID);
         assertEquals(3, fcsBadges.size());
-        assertEquals(18, userBadgeRepository.findAll().size());
+        assertEquals(18, userBadgeRepository.count());
 
         QuestChainEntity questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
-        assertEquals(1, questChainRepository.findAll().size());
+        assertEquals(1, questChainRepository.count());
         assertNotNull(questChainEntity);
         assertEquals(2, questChainEntity.size());
         assertTrue(questChainEntity.getQuests().stream().anyMatch(
@@ -998,7 +1034,7 @@ class FlashCardSetTest {
 
 
         assertEquals("Error at editing flashCardSet.",
-                gamificationController.editFlashCardSet(flashCardSetUUID, courseUUID, name,
+                gamificationController.editFlashCardSet(flashCardSetUUID, courseUUID, chapterUUID, name,
                         65, List.of()));
 
         contentMetaDataEntity = contentMetaDataRepository.findById(flashCardSetUUID);
@@ -1012,15 +1048,15 @@ class FlashCardSetTest {
         assertEquals(2, courseEntity.get().getContent().size());
         assertTrue(courseEntity.get().getContent().contains(flashCardSetUUID));
         assertEquals(1, courseEntity.get().getRequiredExpPerLevel().size());
-        assertEquals(230, courseEntity.get().getRequiredExpOfLevel(0));
+        assertEquals(55, courseEntity.get().getRequiredExpOfLevel(0));
 
-        assertEquals(6, badgeRepository.findAll().size());
+        assertEquals(6, badgeRepository.count());
         fcsBadges = badgeRepository.findByFlashCardSetUUID(flashCardSetUUID);
         assertEquals(3, fcsBadges.size());
-        assertEquals(18, userBadgeRepository.findAll().size());
+        assertEquals(18, userBadgeRepository.count());
 
         questChainEntity = questChainRepository.findByCourseUUID(courseUUID);
-        assertEquals(1, questChainRepository.findAll().size());
+        assertEquals(1, questChainRepository.count());
         assertNotNull(questChainEntity);
         assertEquals(2, questChainEntity.size());
         assertTrue(questChainEntity.getQuests().stream().anyMatch(
@@ -1123,9 +1159,9 @@ class FlashCardSetTest {
         assertNotNull(lecturerBloomLevel);
         assertNotNull(user1BloomLevel);
         assertNotNull(user2BloomLevel);
-        assertEquals(43, lecturerBloomLevel.getCollectedExp());
-        assertEquals(27, user1BloomLevel.getCollectedExp());
-        assertEquals(10, user2BloomLevel.getCollectedExp());
+        assertEquals(72, lecturerBloomLevel.getCollectedExp());
+        assertEquals(45, user1BloomLevel.getCollectedExp());
+        assertEquals(18, user2BloomLevel.getCollectedExp());
 
     }
 
