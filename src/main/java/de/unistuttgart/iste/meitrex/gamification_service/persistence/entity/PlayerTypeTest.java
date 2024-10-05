@@ -111,12 +111,12 @@ public class PlayerTypeTest {
     }
 
     private double calculateSocializerPercentage() {
-        return (double) (100 * (IA(! this.questions[0].getSelectedOption()))
+        return (double) (100 * (IA(! this.questions[0].getSelectedOption())
                 + IA(! this.questions[4].getSelectedOption())
                 + IA(! this.questions[5].getSelectedOption())
                 + IA(! this.questions[7].getSelectedOption())
                 + IA(! this.questions[8].getSelectedOption())
-                + IA(! this.questions[9].getSelectedOption())) / 6;
+                + IA(! this.questions[9].getSelectedOption()))) / 6;
     }
 
     private double calculateKillerPercentage() {

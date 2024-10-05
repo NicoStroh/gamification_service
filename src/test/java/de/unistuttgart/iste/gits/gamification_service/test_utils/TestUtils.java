@@ -38,6 +38,7 @@ public class TestUtils {
             repo.save(playerType);
             playerTypes.add(playerType);
         }
+
         return playerTypes;
     }
 

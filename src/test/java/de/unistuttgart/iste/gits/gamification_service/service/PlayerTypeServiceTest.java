@@ -94,6 +94,12 @@ class PlayerTypeServiceTest {
 
         List<PlayerTypeEntity> playerTypeEntityList = playerTypeRepository.findAll();
         assertEquals(1024, playerTypeEntityList.size());
+
+        int killers = 0;
+        int achievers = 0;
+        int explorers = 0;
+        int socializers = 0;
+
         for (PlayerTypeEntity playerTypeEntity : playerTypeEntityList) {
             assertTrue(playerTypeEntity.isUserHasTakenTest());
             assertNotNull(playerTypeEntity.getDominantPlayerType());
@@ -110,7 +116,29 @@ class PlayerTypeServiceTest {
             assertTrue(100 >= playerTypeEntity.getExplorerPercentage());
             assertTrue(100 >= playerTypeEntity.getSocializerPercentage());
             assertTrue(100 >= playerTypeEntity.getKillerPercentage());
+
+            switch (playerTypeEntity.getDominantPlayerType()) {
+                case None:
+                    break;
+                case Killer:
+                    killers++;
+                    break;
+                case Achiever:
+                    achievers++;
+                    break;
+                case Explorer:
+                    explorers++;
+                    break;
+                case Socializer:
+                    socializers++;
+                    break;
+            }
         }
+
+        System.out.println("Killers: " + killers);
+        System.out.println("Achievers: " + achievers);
+        System.out.println("Explorers: " + explorers);
+        System.out.println("Socializers: " + socializers);
     }
 
     /**
